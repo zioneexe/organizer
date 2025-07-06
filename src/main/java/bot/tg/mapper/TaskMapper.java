@@ -14,7 +14,7 @@ public class TaskMapper {
                 dto.getStatus() != null && dto.getStatus().toBoolean(),
                 dto.getStatus(),
                 dto.getCreatedAt(),
-                dto.getUpdatedAt()
+                null
         );
     }
 }

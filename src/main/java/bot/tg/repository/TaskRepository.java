@@ -1,8 +1,6 @@
 package bot.tg.repository;
 
-import bot.tg.dto.create.TaskCreateDto;
 import bot.tg.dto.update.TaskUpdateDto;
-import bot.tg.mapper.TaskMapper;
 import bot.tg.model.TodoTask;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -34,12 +32,6 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
     public TodoTask create(TodoTask dto) {
         tasks.insertOne(dto);
         return dto;
-    }
-
-    public TodoTask create(TaskCreateDto dto) {
-        TodoTask task = TaskMapper.fromDto(dto);
-        tasks.insertOne(task);
-        return task;
     }
 
     @Override

@@ -15,8 +15,7 @@ public class StateDispatcher {
 
     public void dispatch(UserState userState, Update update) {
         StateHandler handler = handlers.get(userState);
-        if (handler != null) {
-            handler.handle(update);
-        }
+        if (handler == null) return;
+        handler.handle(update);
     }
 }
