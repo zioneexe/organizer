@@ -15,6 +15,8 @@ import java.util.Map;
 
 public class TasksResponseHelper {
 
+    private TasksResponseHelper() {}
+
     public static SendMessage createTasksMessage(TaskRepository taskRepository, Update update) {
         long chatId = update.getMessage().getChatId();
         long userId = update.getMessage().getFrom().getId();
@@ -60,5 +62,4 @@ public class TasksResponseHelper {
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
-
 }

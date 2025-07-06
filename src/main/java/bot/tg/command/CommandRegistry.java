@@ -20,6 +20,7 @@ public class CommandRegistry {
         this.telegramClient = TelegramClientProvider.getInstance();
 
         register("/tasks", new TasksCommand());
+        register("/reminders", new RemindersCommand());
         register("/start", new StartCommand());
         register("/newtask", new NewTaskCommand());
         register("/newreminder", new NewReminderCommand());

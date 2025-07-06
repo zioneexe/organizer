@@ -36,7 +36,7 @@ public class ReminderDateHandler implements CallbackHandler {
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(DATE_REMINDER);
+        return data.startsWith(DATE_REMINDER + COLON_DELIMITER);
     }
 
     @Override

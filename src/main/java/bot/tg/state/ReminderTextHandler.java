@@ -8,7 +8,9 @@ import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.schedule.MessageService;
+import bot.tg.util.ReminderResponseHelper;
 import bot.tg.util.TelegramHelper;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -44,6 +46,9 @@ public class ReminderTextHandler implements StateHandler {
 
             userStateManager.setState(userId, UserState.IDLE);
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, REMINDER_CREATED);
+
+            SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(reminderRepository, update);
+            TelegramHelper.safeExecute(telegramClient, remindersMessage);
         }
     }
 }

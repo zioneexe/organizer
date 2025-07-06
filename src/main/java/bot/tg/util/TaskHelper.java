@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static bot.tg.util.Constants.*;
+import static bot.tg.util.TextHelper.escapeMarkdown;
 
 public class TaskHelper {
+
+    private TaskHelper() {}
 
     private static final Map<TaskStatus, String> STATUS_EMOJIS = new HashMap<>() {{
         put(TaskStatus.IN_PROGRESS, "\uD83D\uDFE8 ");
@@ -91,13 +94,6 @@ public class TaskHelper {
 
         String answer = answerBuilder.toString();
         return Map.entry(keyboardRows, answer);
-    }
-
-    private static String escapeMarkdown(String text) {
-        return text.replace("_", "\\_")
-                .replace("*", "\\*")
-                .replace("`", "\\`")
-                .replace("[", "\\[");
     }
 
 }

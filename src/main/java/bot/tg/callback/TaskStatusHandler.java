@@ -26,7 +26,7 @@ public class TaskStatusHandler implements CallbackHandler {
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(IN_PROGRESS_TASK) || data.startsWith(COMPLETED_TASK);
+        return data.startsWith(IN_PROGRESS_TASK + COLON_DELIMITER) || data.startsWith(COMPLETED_TASK + COLON_DELIMITER);
     }
 
     @Override

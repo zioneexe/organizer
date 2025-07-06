@@ -31,7 +31,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(TIME_PICKER);
+        return data.startsWith(TIME_PICKER + COLON_DELIMITER);
     }
 
     @Override

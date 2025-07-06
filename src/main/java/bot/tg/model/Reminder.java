@@ -22,6 +22,7 @@ public class Reminder {
 
     private String text;
 
+    @BsonProperty("date_time")
     private LocalDateTime dateTime;
 
     private Boolean fired;

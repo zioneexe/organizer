@@ -41,7 +41,18 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         LocalDateTime now = LocalDateTime.now();
         Bson filter = and(
                 eq("fired", false),
-                gt("dateTime", now)
+                gt("date_time", now)
+        );
+
+        return reminders.find(filter).into(new ArrayList<>());
+    }
+
+    public List<Reminder> getUpcomingForUser(long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        Bson filter = and(
+                eq("fired", false),
+                eq("user_id", userId),
+                gt("date_time", now)
         );
 
         return reminders.find(filter).into(new ArrayList<>());

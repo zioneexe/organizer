@@ -32,7 +32,7 @@ public class TaskDetailsHandler implements CallbackHandler {
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(DETAILS_TASK);
+        return data.startsWith(DETAILS_TASK + COLON_DELIMITER);
     }
 
     @Override

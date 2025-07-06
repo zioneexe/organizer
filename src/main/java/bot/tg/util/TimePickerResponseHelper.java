@@ -17,6 +17,8 @@ import static bot.tg.util.Constants.*;
 
 public class TimePickerResponseHelper {
 
+    private TimePickerResponseHelper() {}
+
     public static EditMessageText createTimePickerEditMessage(Update update) {
         UserStateManager userStateManager = ServiceProvider.getUserStateManager();
 
