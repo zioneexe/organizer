@@ -4,7 +4,6 @@ import bot.tg.dto.create.TaskCreateDto;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -16,7 +15,7 @@ public class TaskTitleHandler implements StateHandler {
     private final TelegramClient telegramClient;
 
     public TaskTitleHandler() {
-        this.userStateManager = ServiceProvider.getInstance().getUserStateManager();
+        this.userStateManager = ServiceProvider.getUserStateManager();
         this.telegramClient = TelegramClientProvider.getInstance();
     }
 
@@ -29,15 +28,11 @@ public class TaskTitleHandler implements StateHandler {
 
             userStateManager.setState(userId, UserState.AWAITING_TASK_DESCRIPTION);
 
-            userStateManager.createDraft(userId);
-            TaskCreateDto dto = userStateManager.getDraft(userId);
+            userStateManager.createTaskDraft(userId);
+            TaskCreateDto dto = userStateManager.getTaskDraft(userId);
             dto.setTitle(text);
 
-            SendMessage sendMessage = SendMessage.builder()
-                    .chatId(chatId)
-                    .text(TASK_DESCRIPTION)
-                    .build();
-            TelegramHelper.safeExecute(telegramClient, sendMessage);
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, TASK_DESCRIPTION);
         }
     }
 }

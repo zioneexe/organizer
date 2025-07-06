@@ -3,7 +3,7 @@ package bot.tg.command;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.ResponseMessageHelper;
+import bot.tg.util.TasksResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -16,12 +16,12 @@ public class TasksCommand implements BotCommand {
 
     public TasksCommand() {
         this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskRepository = RepositoryProvider.getInstance().getTaskRepository();
+        this.taskRepository = RepositoryProvider.getTaskRepository();
     }
 
     @Override
     public void execute(Update update) {
-        SendMessage sendMessage = ResponseMessageHelper.createTasksMessage(taskRepository, update);
+        SendMessage sendMessage = TasksResponseHelper.createTasksMessage(taskRepository, update);
         TelegramHelper.safeExecute(telegramClient, sendMessage);
     }
 }

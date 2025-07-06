@@ -2,6 +2,7 @@ package bot.tg.util;
 
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -12,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.List;
 import java.util.Map;
 
-public class ResponseMessageHelper {
+public class TasksResponseHelper {
 
     public static SendMessage createTasksMessage(TaskRepository taskRepository, Update update) {
         long chatId = update.getMessage().getChatId();
@@ -32,7 +33,7 @@ public class ResponseMessageHelper {
                                 new InlineKeyboardRow(keyboardRows.get(1))
                         ))
                         .build())
-                .parseMode("Markdown")
+                .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
 
@@ -56,7 +57,7 @@ public class ResponseMessageHelper {
                                 new InlineKeyboardRow(keyboardRows.get(1))
                         ))
                         .build())
-                .parseMode("Markdown")
+                .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
 

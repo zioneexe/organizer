@@ -5,15 +5,14 @@ import bot.tg.model.TaskStatus;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.ResponseMessageHelper;
+import bot.tg.util.TasksResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.COMPLETED_TASK;
-import static bot.tg.util.Constants.IN_PROGRESS_TASK;
+import static bot.tg.util.Constants.*;
 
 public class TaskStatusHandler implements CallbackHandler {
 
@@ -22,7 +21,7 @@ public class TaskStatusHandler implements CallbackHandler {
 
     public TaskStatusHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskRepository = RepositoryProvider.getInstance().getTaskRepository();
+        this.taskRepository = RepositoryProvider.getTaskRepository();
     }
 
     @Override
@@ -38,7 +37,7 @@ public class TaskStatusHandler implements CallbackHandler {
 
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
-        String[] parts = data.split(":");
+        String[] parts = data.split(COLON_DELIMITER);
 
         String status = parts[0];
         String taskId = parts[1];
@@ -54,14 +53,14 @@ public class TaskStatusHandler implements CallbackHandler {
 
         taskRepository.update(taskId, dto);
 
-        String answerText = updatedStatus == TaskStatus.COMPLETED ? "Завдання виконано. Вітаю!" : "Що ж.. Працюй далі :)";
+        String answerText = updatedStatus == TaskStatus.COMPLETED ? TASK_COMPLETED : TASK_IN_PROGRESS;
         AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
                 .callbackQueryId(callbackQueryId)
                 .text(answerText)
                 .showAlert(true)
                 .build();
 
-        EditMessageText editMessage = ResponseMessageHelper.createTasksEditMessage(taskRepository, update);
+        EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(taskRepository, update);
 
         TelegramHelper.safeExecute(telegramClient, answer);
         TelegramHelper.safeExecute(telegramClient, editMessage);

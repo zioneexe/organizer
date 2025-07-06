@@ -7,6 +7,7 @@ import bot.tg.repository.TaskRepository;
 import bot.tg.util.TaskHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -17,16 +18,17 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 import java.util.Map;
 
+import static bot.tg.util.Constants.COLON_DELIMITER;
 import static bot.tg.util.Constants.DETAILS_TASK;
 
-public class TaskDetailsHandler implements CallbackHandler{
+public class TaskDetailsHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final TaskRepository taskRepository;
 
     public TaskDetailsHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskRepository = RepositoryProvider.getInstance().getTaskRepository();
+        this.taskRepository = RepositoryProvider.getTaskRepository();
     }
 
     @Override
@@ -46,7 +48,7 @@ public class TaskDetailsHandler implements CallbackHandler{
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
 
-        String taskId = data.split(":")[1];
+        String taskId = data.split(COLON_DELIMITER)[1];
         if (!taskRepository.existsById(taskId)) {
             return;
         }
@@ -62,7 +64,7 @@ public class TaskDetailsHandler implements CallbackHandler{
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(List.of(new InlineKeyboardRow(buttons)))
                         .build())
-                .parseMode("Markdown")
+                .parseMode(ParseMode.MARKDOWN)
                 .build();
         TelegramHelper.safeExecute(telegramClient, editMessage);
 

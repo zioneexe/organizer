@@ -8,7 +8,6 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
-import bot.tg.schedule.MessageScheduler;
 import bot.tg.schedule.MessageService;
 import bot.tg.state.StateDispatcher;
 import bot.tg.state.StateRecognizer;
@@ -18,6 +17,9 @@ import com.mongodb.client.MongoDatabase;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import static bot.tg.util.Constants.COMMAND_SYMBOL;
+import static bot.tg.util.Constants.SPACE_DELIMITER;
+
 public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
     private static final String CONNECTION_STRING = System.getenv("CONNECTION_STRING");
@@ -26,7 +28,6 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
     private final CommandRegistry commandRegistry;
     private final MongoConnectionManager mongoConnectionManager;
 
-    private final MessageService messageService;
     private final UserRepository userRepository;
 
     private final UserStateManager userStateManager;
@@ -41,17 +42,15 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         ServiceProvider.init();
 
         this.commandRegistry = new CommandRegistry();
-        this.userStateManager = ServiceProvider.getInstance().getUserStateManager();
-        this.stateDispatcher = ServiceProvider.getInstance().getStateDispatcher();
-        this.callbackDispatcher = ServiceProvider.getInstance().getCallbackDispatcher();
+        this.userStateManager = ServiceProvider.getUserStateManager();
+        this.stateDispatcher = ServiceProvider.getStateDispatcher();
+        this.callbackDispatcher = ServiceProvider.getCallbackDispatcher();
 
-        this.userRepository = RepositoryProvider.getInstance().getUserRepository();
-        this.messageService = new MessageService();
+        this.userRepository = RepositoryProvider.getUserRepository();
 
-        MessageScheduler.scheduleDailyAt7AM(() -> {
-            System.out.println("⏰ Надсилаємо добрий ранок...");
-            messageService.sendGoodMorningToAll();
-        });
+        MessageService messageService = ServiceProvider.getMessageService();
+        messageService.scheduleGoodMorningToAll();
+        messageService.scheduleUnfiredReminders();
     }
 
     @Override
@@ -73,8 +72,8 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
             String text = update.getMessage().getText();
 
-            if (text.startsWith("/")) {
-                String command = text.split(" ")[0];
+            if (text.startsWith(COMMAND_SYMBOL)) {
+                String command = text.split(SPACE_DELIMITER)[0];
                 commandRegistry.handleCommand(command, update);
                 return;
             }

@@ -3,7 +3,7 @@ package bot.tg.callback;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.ResponseMessageHelper;
+import bot.tg.util.TasksResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,7 +17,7 @@ public class BackToTasksHandler implements CallbackHandler {
     private final TelegramClient telegramClient;
 
     public BackToTasksHandler() {
-        this.taskRepository = RepositoryProvider.getInstance().getTaskRepository();
+        this.taskRepository = RepositoryProvider.getTaskRepository();
         this.telegramClient = TelegramClientProvider.getInstance();
     }
 
@@ -28,7 +28,7 @@ public class BackToTasksHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        EditMessageText editMessage = ResponseMessageHelper.createTasksEditMessage(taskRepository, update);
+        EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(taskRepository, update);
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
 }

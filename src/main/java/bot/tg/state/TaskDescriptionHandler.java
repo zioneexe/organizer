@@ -1,11 +1,13 @@
 package bot.tg.state;
 
 import bot.tg.dto.create.TaskCreateDto;
+import bot.tg.mapper.TaskMapper;
+import bot.tg.model.TodoTask;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.ResponseMessageHelper;
+import bot.tg.util.TasksResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -20,9 +22,9 @@ public class TaskDescriptionHandler implements StateHandler {
     private final TaskRepository taskRepository;
 
     public TaskDescriptionHandler() {
-        this.userStateManager = ServiceProvider.getInstance().getUserStateManager();
+        this.userStateManager = ServiceProvider.getUserStateManager();
         this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskRepository = RepositoryProvider.getInstance().getTaskRepository();
+        this.taskRepository = RepositoryProvider.getTaskRepository();
     }
 
     @Override
@@ -34,18 +36,14 @@ public class TaskDescriptionHandler implements StateHandler {
 
             userStateManager.setState(userId, UserState.IDLE);
 
-            TaskCreateDto dto = userStateManager.getDraft(userId);
+            TaskCreateDto dto = userStateManager.getTaskDraft(userId);
             dto.setDescription(text);
 
-            SendMessage sendMessage = SendMessage.builder()
-                    .chatId(chatId)
-                    .text(TASK_CREATED)
-                    .build();
+            TodoTask task = TaskMapper.fromDto(dto);
+            taskRepository.create(task);
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, TASK_CREATED);
 
-            taskRepository.create(dto);
-            TelegramHelper.safeExecute(telegramClient, sendMessage);
-
-            SendMessage tasksMessage = ResponseMessageHelper.createTasksMessage(taskRepository, update);
+            SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(taskRepository, update);
             TelegramHelper.safeExecute(telegramClient, tasksMessage);
         }
     }

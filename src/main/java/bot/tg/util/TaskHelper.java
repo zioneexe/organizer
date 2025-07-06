@@ -77,12 +77,12 @@ public class TaskHelper {
 
             taskStatusButtons.add(InlineKeyboardButton.builder()
                     .text(index + " " + statusActionEmoji)
-                    .callbackData(callbackStatus + ":" + task.getId())
+                    .callbackData(callbackStatus + COLON_DELIMITER + task.getId())
                     .build());
 
             taskDetailsButtons.add(InlineKeyboardButton.builder()
                     .text(index + " ℹ️")
-                    .callbackData(DETAILS_TASK + ":" + task.getId())
+                    .callbackData(DETAILS_TASK + COLON_DELIMITER + task.getId())
                     .build());
         });
 

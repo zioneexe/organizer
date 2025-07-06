@@ -5,7 +5,6 @@ import bot.tg.provider.TelegramClientProvider;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -17,7 +16,7 @@ public class NewTaskCommand implements BotCommand {
     private final TelegramClient telegramClient;
 
     public NewTaskCommand() {
-        this.userStateManager = ServiceProvider.getInstance().getUserStateManager();
+        this.userStateManager = ServiceProvider.getUserStateManager();
         this.telegramClient = TelegramClientProvider.getInstance();
     }
 
@@ -26,12 +25,7 @@ public class NewTaskCommand implements BotCommand {
         long userId = update.getMessage().getFrom().getId();
         long chatId = update.getMessage().getChatId();
 
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(TASK_TITLE)
-                .build();
-
         userStateManager.setState(userId, UserState.AWAITING_TASK_TITLE);
-        TelegramHelper.safeExecute(telegramClient, sendMessage);
+        TelegramHelper.sendSimpleMessage(telegramClient, chatId, TASK_TITLE);
     }
 }
