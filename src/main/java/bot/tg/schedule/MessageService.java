@@ -6,8 +6,15 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MessageService {
 
@@ -22,13 +29,27 @@ public class MessageService {
     }
 
     public void scheduleReminder(Reminder reminder) {
-        if (!isSchedulable(reminder)) return;
+        String userTimeZone = userRepository.getById(reminder.getUserId()).getTimeZone();
+        if (!isSchedulable(reminder, userTimeZone)) return;
         messageScheduler.schedule(reminder);
     }
 
     public void scheduleUnfiredReminders() {
-        reminderRepository.getUnfiredAfterNow().stream()
-                .filter(this::isSchedulable)
+        List<Reminder> reminders = reminderRepository.getUnfiredAfterNow();
+
+        Set<Long> userIds = reminders.stream()
+                .map(Reminder::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<Long, User> usersById = userRepository.getByIds(userIds).stream()
+                .collect(Collectors.toMap(User::getUserId, Function.identity()));
+
+        reminders.stream()
+                .filter(reminder -> {
+                    User user = usersById.get(reminder.getUserId());
+                    String userTimeZone = user != null && user.getTimeZone() != null ? user.getTimeZone() : "";
+                    return isSchedulable(reminder, userTimeZone);
+                })
                 .forEach(messageScheduler::schedule);
     }
 
@@ -40,12 +61,23 @@ public class MessageService {
         }
     }
 
-    private boolean isSchedulable(Reminder reminder) {
-        LocalDateTime dateTime = reminder.getDateTime();
+    private boolean isSchedulable(Reminder reminder, String userTimeZone) {
+        LocalDateTime localDateTime = reminder.getDateTime();
         Boolean fired = reminder.getFired();
 
-        return dateTime != null
-                && !fired
-                && dateTime.isAfter(LocalDateTime.now());
+        if (localDateTime == null || fired) {
+            return false;
+        }
+
+        ZoneId zoneId = userTimeZone != null && !userTimeZone.isBlank()
+                ? ZoneId.of(userTimeZone)
+                : ZoneId.systemDefault();
+
+        ZonedDateTime userZonedDateTime = localDateTime.atZone(zoneId);
+        Instant reminderInstant = userZonedDateTime.toInstant();
+        Instant nowInstant = Instant.now();
+
+        return reminderInstant.isAfter(nowInstant);
     }
+
 }

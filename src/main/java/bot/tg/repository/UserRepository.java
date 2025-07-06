@@ -11,6 +11,7 @@ import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
@@ -29,6 +30,10 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
     public User getById(Long id) {
         return users.find(Filters.eq("user_id", id)).first();
+    }
+
+    public List<User> getByIds(Set<Long> userIds) {
+        return users.find(Filters.in("user_id", userIds)).into(new ArrayList<>());
     }
 
     public boolean existsById(Long id) {
