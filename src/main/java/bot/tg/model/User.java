@@ -20,4 +20,7 @@ public class User {
     private String lastName;
 
     private String username;
+
+    @BsonProperty("time_zone")
+    private String timeZone;
 }

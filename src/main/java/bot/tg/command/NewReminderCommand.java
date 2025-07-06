@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static bot.tg.util.Constants.*;
 
@@ -53,7 +54,7 @@ public class NewReminderCommand implements BotCommand {
             String text = switch (i) {
                 case 0 -> "Сьогодні";
                 case 1 -> "Завтра";
-                default -> date.format(DateTimeFormatter.ofPattern("d MMMM"));
+                default -> date.format(DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("uk")));
             };
             String callbackData = DATE_REMINDER + COLON_DELIMITER + date;
 

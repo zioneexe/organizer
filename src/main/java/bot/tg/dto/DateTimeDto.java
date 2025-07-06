@@ -12,4 +12,6 @@ public class DateTimeDto {
     private int hour;
 
     private int minute;
+
+    private String timeZone;
 }

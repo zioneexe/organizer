@@ -6,7 +6,6 @@ import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
 import bot.tg.util.TaskHelper;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -67,10 +66,6 @@ public class TaskDetailsHandler implements CallbackHandler {
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
         TelegramHelper.safeExecute(telegramClient, editMessage);
-
-        AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
-                .callbackQueryId(callbackQueryId)
-                .build();
-        TelegramHelper.safeExecute(telegramClient, answer);
+        TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
 }

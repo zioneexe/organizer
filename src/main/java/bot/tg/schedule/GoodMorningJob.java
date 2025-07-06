@@ -1,30 +1,24 @@
 package bot.tg.schedule;
 
-import bot.tg.model.User;
-import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
-import bot.tg.repository.UserRepository;
 import bot.tg.util.TelegramHelper;
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.util.List;
 
 public class GoodMorningJob implements Job {
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        UserRepository userRepository = RepositoryProvider.getUserRepository();
-        TelegramClient telegramClient = TelegramClientProvider.getInstance();
-        List<User> users = userRepository.getAll();
+    public void execute(JobExecutionContext context) {
+        JobDataMap data = context.getMergedJobDataMap();
+        long userId = data.getLong("userId");
+        String firstName = data.getString("firstName");
 
-        for (User user : users) {
-            long userId = user.getUserId();
-            String goodMorning = "🌅 Доброго ранку, " +
-                    user.getFirstName() +
-                    "! \n Прокидайся і готуйся якнайкраще провести цей день :)";
-            TelegramHelper.sendSimpleMessage(telegramClient, userId, goodMorning);
-        }
+        String msg = "🌅 Доброго ранку, " + firstName +
+                "! \n Прокидайся і готуйся якнайкраще провести цей день :)";
+
+        TelegramClient client = TelegramClientProvider.getInstance();
+        TelegramHelper.sendSimpleMessage(client, userId, msg);
     }
 }
+

@@ -17,6 +17,7 @@ import com.mongodb.client.MongoDatabase;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
 import static bot.tg.util.Constants.COMMAND_SYMBOL;
 import static bot.tg.util.Constants.SPACE_DELIMITER;
 
@@ -67,7 +68,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
             long userId = update.getMessage().getFrom().getId();
 
             if (!userRepository.existsById(userId)) {
-                userRepository.create(new User(userId, firstName, lastName, username));
+                userRepository.create(new User(userId, firstName, lastName, username, DEFAULT_TIMEZONE));
             }
 
             String text = update.getMessage().getText();
