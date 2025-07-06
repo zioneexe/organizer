@@ -93,6 +93,8 @@ public class MessageScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
                 .startAt(triggerTime)
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                        .withMisfireHandlingInstructionFireNow())
                 .build();
 
         try {
