@@ -1,4 +1,4 @@
-package bot.tg.helper;
+package bot.tg.util;
 
 import bot.tg.model.TaskStatus;
 import bot.tg.model.TodoTask;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static bot.tg.Constants.*;
+import static bot.tg.util.Constants.*;
 
 public class TaskHelper {
 
@@ -50,12 +50,16 @@ public class TaskHelper {
 
     public static Map.Entry<List<List<InlineKeyboardButton>>, String> formTasksMessage(List<TodoTask> tasks) {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
-        List<InlineKeyboardButton> taskStatusButtons = new ArrayList<>();
-        List<InlineKeyboardButton> taskDetailsButtons = new ArrayList<>();
+
+        if (tasks.isEmpty()) {
+            return Map.entry(keyboardRows, "📝 Завдань на сьогодні поки немає.");
+        }
 
         StringBuilder answerBuilder = new StringBuilder("*📝 Ваші завдання на сьогодні:*\n\n");
 
         AtomicInteger counter = new AtomicInteger(0);
+        List<InlineKeyboardButton> taskStatusButtons = new ArrayList<>();
+        List<InlineKeyboardButton> taskDetailsButtons = new ArrayList<>();
         tasks.forEach(task -> {
             int index = counter.incrementAndGet();
             boolean completed = task.getCompleted();

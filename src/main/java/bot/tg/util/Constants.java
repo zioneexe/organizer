@@ -1,4 +1,4 @@
-package bot.tg;
+package bot.tg.util;
 
 public class Constants {
 

@@ -3,12 +3,12 @@ package bot.tg.state;
 import bot.tg.dto.create.TaskCreateDto;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.Constants.TASK_DESCRIPTION;
+import static bot.tg.util.Constants.TASK_DESCRIPTION;
 
 public class TaskTitleHandler implements StateHandler {
 
@@ -31,19 +31,13 @@ public class TaskTitleHandler implements StateHandler {
 
             userStateManager.createDraft(userId);
             TaskCreateDto dto = userStateManager.getDraft(userId);
-
             dto.setTitle(text);
 
             SendMessage sendMessage = SendMessage.builder()
                     .chatId(chatId)
                     .text(TASK_DESCRIPTION)
                     .build();
-
-            try {
-                telegramClient.execute(sendMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            TelegramHelper.safeExecute(telegramClient, sendMessage);
         }
     }
 }

@@ -4,8 +4,8 @@ import bot.tg.model.User;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
@@ -31,13 +31,7 @@ public class MessageService {
                     .chatId(userId)
                     .text("🌅 Доброго ранку, " + user.getFirstName() + "! \n Прокидайся і готуйся якнайкраще провести цей день :)")
                     .build();
-
-            try {
-                client.execute(message);
-            } catch (TelegramApiException e) {
-                System.err.println("Не вдалося надіслати повідомлення користувачу: " + userId);
-            }
-
+            TelegramHelper.safeExecute(client, message);
         }
     }
 }

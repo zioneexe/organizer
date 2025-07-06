@@ -4,12 +4,12 @@ import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.Constants.TASK_TITLE;
+import static bot.tg.util.Constants.TASK_TITLE;
 
 public class NewTaskCommand implements BotCommand {
 
@@ -32,11 +32,6 @@ public class NewTaskCommand implements BotCommand {
                 .build();
 
         userStateManager.setState(userId, UserState.AWAITING_TASK_TITLE);
-
-        try {
-            telegramClient.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        TelegramHelper.safeExecute(telegramClient, sendMessage);
     }
 }

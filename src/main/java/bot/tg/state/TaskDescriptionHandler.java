@@ -5,12 +5,13 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
+import bot.tg.util.ResponseMessageHelper;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.Constants.TASK_CREATED;
+import static bot.tg.util.Constants.TASK_CREATED;
 
 public class TaskDescriptionHandler implements StateHandler {
 
@@ -42,12 +43,10 @@ public class TaskDescriptionHandler implements StateHandler {
                     .build();
 
             taskRepository.create(dto);
+            TelegramHelper.safeExecute(telegramClient, sendMessage);
 
-            try {
-                telegramClient.execute(sendMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            SendMessage tasksMessage = ResponseMessageHelper.createTasksMessage(taskRepository, update);
+            TelegramHelper.safeExecute(telegramClient, tasksMessage);
         }
     }
 }

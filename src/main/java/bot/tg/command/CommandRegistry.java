@@ -1,9 +1,9 @@
 package bot.tg.command;
 
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.HashMap;
@@ -18,6 +18,7 @@ public class CommandRegistry {
     public CommandRegistry() {
         this.telegramClient = TelegramClientProvider.getInstance();
 
+        register("/tasks", new TasksCommand());
         register("/start", new StartCommand());
         register("/newtask", new NewTaskCommand());
     }
@@ -36,11 +37,7 @@ public class CommandRegistry {
                     chatId(update.getMessage().getChatId().toString())
                     .text("Невідома команда.")
                     .build();
-            try {
-                telegramClient.execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            TelegramHelper.safeExecute(telegramClient, message);
         }
     }
 

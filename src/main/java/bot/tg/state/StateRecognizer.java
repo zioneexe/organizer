@@ -1,6 +1,6 @@
 package bot.tg.state;
 
-import static bot.tg.Constants.TASK_SELECTION;
+import static bot.tg.util.Constants.TASK_SELECTION;
 
 public class StateRecognizer {
 

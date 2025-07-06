@@ -1,23 +1,23 @@
 package bot.tg.callback;
 
-import bot.tg.helper.TaskHelper;
 import bot.tg.model.TodoTask;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
+import bot.tg.util.TaskHelper;
+import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 import java.util.Map;
 
-import static bot.tg.Constants.DETAILS_TASK;
+import static bot.tg.util.Constants.DETAILS_TASK;
 
 public class TaskDetailsHandler implements CallbackHandler{
 
@@ -64,21 +64,11 @@ public class TaskDetailsHandler implements CallbackHandler{
                         .build())
                 .parseMode("Markdown")
                 .build();
-
-        try {
-            telegramClient.execute(editMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        TelegramHelper.safeExecute(telegramClient, editMessage);
 
         AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
                 .callbackQueryId(callbackQueryId)
                 .build();
-
-        try {
-            telegramClient.execute(answer);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        TelegramHelper.safeExecute(telegramClient, answer);
     }
 }
