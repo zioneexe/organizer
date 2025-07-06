@@ -6,10 +6,7 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,7 +86,8 @@ public class MessageService {
                 ? ZoneId.of(userTimeZone)
                 : ZoneId.systemDefault();
 
-        ZonedDateTime userZonedDateTime = localDateTime.atZone(zoneId);
+        ZonedDateTime utcZonedDateTime = localDateTime.atZone(ZoneOffset.UTC);
+        ZonedDateTime userZonedDateTime = utcZonedDateTime.withZoneSameInstant(zoneId);
         Instant reminderInstant = userZonedDateTime.toInstant();
         Instant nowInstant = Instant.now();
 
