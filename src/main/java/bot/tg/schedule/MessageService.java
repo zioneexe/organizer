@@ -68,6 +68,14 @@ public class MessageService {
                 });
     }
 
+    public void scheduleGoodMorningToAll() {
+        List<User> users = userRepository.getAll();
+
+        for (User user : users) {
+            messageScheduler.scheduleGoodMorningForUser(user);
+        }
+    }
+
     private boolean isSchedulable(Reminder reminder, String userTimeZone) {
         LocalDateTime localDateTime = reminder.getDateTime();
         Boolean fired = reminder.getFired();
