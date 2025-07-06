@@ -24,6 +24,7 @@ public class MessageScheduler {
             SchedulerFactory schedulerFactory = new StdSchedulerFactory();
             this.scheduler = schedulerFactory.getScheduler();
             this.scheduler.start();
+            log("Quartz scheduler started: " + scheduler.isStarted());
         } catch (SchedulerException e) {
             throw new RuntimeException("Не вдалося розпочати роботу Quartz", e);
         }
@@ -66,7 +67,7 @@ public class MessageScheduler {
 
     public void schedule(Reminder reminder) {
         JobDataMap dataMap = new JobDataMap();
-        dataMap.put("reminderId", reminder.getId());
+        dataMap.put("reminderId", reminder.getId().toHexString());
         dataMap.put("userId", reminder.getUserId());
         dataMap.put("text", reminder.getText());
 
