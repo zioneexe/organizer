@@ -11,6 +11,8 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static bot.tg.logging.Logger.log;
+
 public class MessageScheduler {
 
     public static final String DEFAULT_TIMEZONE = "Europe/Kiev";
@@ -77,21 +79,36 @@ public class MessageScheduler {
                 .usingJobData(dataMap)
                 .build();
 
-        LocalDateTime utcDateTime = reminder.getDateTime();
-        Instant instant = utcDateTime.atOffset(ZoneOffset.UTC).toInstant();
+        LocalDateTime systemDateTime = reminder.getDateTime();
+        Instant instant = systemDateTime.atZone(ZoneOffset.systemDefault()).toInstant();
         Date triggerTime = Date.from(instant);
+
+        log("Scheduling reminder id=" + reminder.getId() +
+                ", userId=" + reminder.getUserId() +
+                ", text=" + reminder.getText() +
+                ", reminderDateTime=" + systemDateTime +
+                ", triggerTime=" + triggerTime +
+                ", now=" + new Date());
 
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
                 .startAt(triggerTime)
                 .build();
+
         try {
-            if (scheduler.checkExists(jobKey)) return;
+            if (scheduler.checkExists(jobKey)) {
+                log("Job already exists for reminder id=" + reminder.getId());
+                return;
+            }
+
             scheduler.scheduleJob(job, trigger);
+            log("Scheduled job for reminder id=" + reminder.getId() + " successfully.");
         } catch (SchedulerException e) {
+            log("Failed to schedule reminder id=" + reminder.getId() + ": " + e.getMessage());
             throw new RuntimeException("Failed to schedule reminder: " + jobId, e);
         }
     }
+
 
     public void cancel(Reminder reminder) {
         String jobId = "reminder-job-" + reminder.getId().toHexString();

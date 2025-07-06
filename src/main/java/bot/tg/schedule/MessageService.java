@@ -86,8 +86,8 @@ public class MessageService {
                 ? ZoneId.of(userTimeZone)
                 : ZoneId.systemDefault();
 
-        ZonedDateTime utcZonedDateTime = localDateTime.atZone(ZoneOffset.UTC);
-        ZonedDateTime userZonedDateTime = utcZonedDateTime.withZoneSameInstant(zoneId);
+        ZonedDateTime systemZonedDateTime = localDateTime.atZone(ZoneOffset.systemDefault());
+        ZonedDateTime userZonedDateTime = systemZonedDateTime.withZoneSameInstant(zoneId);
         Instant reminderInstant = userZonedDateTime.toInstant();
         Instant nowInstant = Instant.now();
 

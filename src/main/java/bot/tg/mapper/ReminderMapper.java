@@ -18,15 +18,15 @@ public class ReminderMapper {
                 .atTime(dateTimeDto.getHour(), dateTimeDto.getMinute());
         ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of(dateTimeDto.getTimeZone()));
 
-        LocalDateTime utcDateTime = zonedDateTime
-                .withZoneSameInstant(ZoneOffset.UTC)
+        LocalDateTime systemDateTime = zonedDateTime
+                .withZoneSameInstant(ZoneOffset.systemDefault())
                 .toLocalDateTime();
 
         return new Reminder(
                 null,
                 dto.getUserId(),
                 dto.getText(),
-                utcDateTime,
+                systemDateTime,
                 false,
                 dto.getCreatedAt(),
                 null

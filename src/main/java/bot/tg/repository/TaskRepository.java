@@ -39,6 +39,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         return tasks.find(Filters.eq("_id", new ObjectId(id))).first();
     }
 
+    // TODO: timeZone check
     public List<TodoTask> getForTodayByUserId(long userId) {
         ZoneId utc = ZoneOffset.UTC;
         var start = Date.from(LocalDate.now().atStartOfDay(utc).toInstant());
