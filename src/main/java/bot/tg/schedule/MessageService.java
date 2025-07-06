@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static bot.tg.logging.Logger.log;
+
 public class MessageService {
 
     private final MessageScheduler messageScheduler;
@@ -30,12 +32,19 @@ public class MessageService {
 
     public void scheduleReminder(Reminder reminder) {
         String userTimeZone = userRepository.getById(reminder.getUserId()).getTimeZone();
-        if (!isSchedulable(reminder, userTimeZone)) return;
+        log("Scheduling reminder for userId=" + reminder.getUserId() + ", timeZone='" + userTimeZone + "', reminderId=" + reminder.getId());
+
+        if (!isSchedulable(reminder, userTimeZone)) {
+            log("Reminder with id=" + reminder.getId() + " is not schedulable, skipping.");
+            return;
+        }
         messageScheduler.schedule(reminder);
+        log("Reminder with id=" + reminder.getId() + " scheduled successfully.");
     }
 
     public void scheduleUnfiredReminders() {
         List<Reminder> reminders = reminderRepository.getUnfiredAfterNow();
+        log("Found " + reminders.size() + " unfired reminders to schedule.");
 
         Set<Long> userIds = reminders.stream()
                 .map(Reminder::getUserId)
@@ -48,17 +57,15 @@ public class MessageService {
                 .filter(reminder -> {
                     User user = usersById.get(reminder.getUserId());
                     String userTimeZone = user != null && user.getTimeZone() != null ? user.getTimeZone() : "";
-                    return isSchedulable(reminder, userTimeZone);
+                    boolean schedulable = isSchedulable(reminder, userTimeZone);
+                    log("Reminder id=" + reminder.getId() + " for userId=" + reminder.getUserId() +
+                            " with timezone='" + userTimeZone + "' schedulable=" + schedulable);
+                    return schedulable;
                 })
-                .forEach(messageScheduler::schedule);
-    }
-
-    public void scheduleGoodMorningToAll() {
-        List<User> users = userRepository.getAll();
-
-        for (User user : users) {
-            messageScheduler.scheduleGoodMorningForUser(user);
-        }
+                .forEach(reminder -> {
+                    messageScheduler.schedule(reminder);
+                    log("Scheduled reminder with id=" + reminder.getId() + " for userId=" + reminder.getUserId());
+                });
     }
 
     private boolean isSchedulable(Reminder reminder, String userTimeZone) {
@@ -66,6 +73,7 @@ public class MessageService {
         Boolean fired = reminder.getFired();
 
         if (localDateTime == null || fired) {
+            log("Reminder id=" + reminder.getId() + " is not schedulable because localDateTime is null or fired=" + fired);
             return false;
         }
 
@@ -77,7 +85,11 @@ public class MessageService {
         Instant reminderInstant = userZonedDateTime.toInstant();
         Instant nowInstant = Instant.now();
 
-        return reminderInstant.isAfter(nowInstant);
+        boolean result = reminderInstant.isAfter(nowInstant);
+        log("Checking schedulability for reminder id=" + reminder.getId() +
+                ": reminderInstant=" + reminderInstant + ", nowInstant=" + nowInstant + ", result=" + result);
+
+        return result;
     }
 
 }
