@@ -2,12 +2,13 @@ package bot.tg.command;
 
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static bot.tg.util.Constants.UNKNOWN_COMMAND;
 
 public class CommandRegistry {
 
@@ -21,6 +22,7 @@ public class CommandRegistry {
         register("/tasks", new TasksCommand());
         register("/start", new StartCommand());
         register("/newtask", new NewTaskCommand());
+        register("/newreminder", new NewReminderCommand());
     }
 
     public void register(String commandName, BotCommand command) {
@@ -33,11 +35,8 @@ public class CommandRegistry {
         if (command != null) {
             command.execute(update);
         } else {
-            SendMessage message = SendMessage.builder().
-                    chatId(update.getMessage().getChatId().toString())
-                    .text("Невідома команда.")
-                    .build();
-            TelegramHelper.safeExecute(telegramClient, message);
+            long chatId = update.getMessage().getChatId();
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, UNKNOWN_COMMAND);
         }
     }
 

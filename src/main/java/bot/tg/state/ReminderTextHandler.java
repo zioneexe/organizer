@@ -1,0 +1,49 @@
+package bot.tg.state;
+
+import bot.tg.dto.create.ReminderCreateDto;
+import bot.tg.mapper.ReminderMapper;
+import bot.tg.model.Reminder;
+import bot.tg.provider.RepositoryProvider;
+import bot.tg.provider.ServiceProvider;
+import bot.tg.provider.TelegramClientProvider;
+import bot.tg.repository.ReminderRepository;
+import bot.tg.schedule.MessageService;
+import bot.tg.util.TelegramHelper;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import static bot.tg.util.Constants.REMINDER_CREATED;
+
+public class ReminderTextHandler implements StateHandler {
+
+    private final TelegramClient telegramClient;
+    private final UserStateManager userStateManager;
+    private final MessageService messageService;
+    private final ReminderRepository reminderRepository;
+
+    public ReminderTextHandler() {
+        this.telegramClient = TelegramClientProvider.getInstance();
+        this.userStateManager = ServiceProvider.getUserStateManager();
+        this.messageService = ServiceProvider.getMessageService();
+        this.reminderRepository = RepositoryProvider.getReminderRepository();
+    }
+
+    @Override
+    public void handle(Update update) {
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            long chatId = update.getMessage().getChatId();
+            long userId = update.getMessage().getFrom().getId();
+            String text = update.getMessage().getText();
+
+            ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
+            dto.setText(text);
+
+            Reminder reminder = ReminderMapper.fromDto(dto);
+            reminderRepository.create(reminder);
+            messageService.scheduleReminder(reminder);
+
+            userStateManager.setState(userId, UserState.IDLE);
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, REMINDER_CREATED);
+        }
+    }
+}

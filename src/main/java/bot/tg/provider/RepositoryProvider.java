@@ -8,32 +8,17 @@ import lombok.Getter;
 
 public class RepositoryProvider {
 
-    private static RepositoryProvider instance;
-
     @Getter
-    private final TaskRepository taskRepository;
+    private static TaskRepository taskRepository;
     @Getter
-    private final UserRepository userRepository;
+    private static UserRepository userRepository;
     @Getter
-    private final ReminderRepository reminderRepository;
-
-    private RepositoryProvider(MongoDatabase database) {
-        this.userRepository = new UserRepository(database);
-        this.taskRepository = new TaskRepository(database);
-        this.reminderRepository = new ReminderRepository(database);
-    }
+    private static ReminderRepository reminderRepository;
 
     public static void init(MongoDatabase database) {
-        if (instance == null) {
-            instance = new RepositoryProvider(database);
-        }
-    }
-
-    public static RepositoryProvider getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("Repository provider not initialized");
-        }
-        return instance;
+        RepositoryProvider.userRepository = new UserRepository(database);
+        RepositoryProvider.taskRepository = new TaskRepository(database);
+        RepositoryProvider.reminderRepository = new ReminderRepository(database);
     }
 
 }

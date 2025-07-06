@@ -10,8 +10,11 @@ import com.mongodb.client.result.DeleteResult;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.mongodb.client.model.Filters.*;
 
 public class ReminderRepository implements Repository<Reminder, ReminderUpdateDto, String> {
 
@@ -31,12 +34,22 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
 
     @Override
     public Reminder getById(String id) {
-        return reminders.find(Filters.eq("_id", new ObjectId(id))).first();
+        return reminders.find(eq("_id", new ObjectId(id))).first();
+    }
+
+    public List<Reminder> getUnfiredAfterNow() {
+        LocalDateTime now = LocalDateTime.now();
+        Bson filter = and(
+                eq("fired", false),
+                gt("dateTime", now)
+        );
+
+        return reminders.find(filter).into(new ArrayList<>());
     }
 
     @Override
     public boolean existsById(String id) {
-        return reminders.find(Filters.eq("_id", new ObjectId(id))).first() != null;
+        return reminders.find(eq("_id", new ObjectId(id))).first() != null;
     }
 
     @Override
@@ -50,7 +63,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
 
     @Override
     public Reminder update(String id, ReminderUpdateDto dto) {
-        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson filter = eq("_id", new ObjectId(id));
         Bson update = Updates.set("time", dto.getTime());
         reminders.updateOne(filter, update);
         return getById(id);
@@ -58,7 +71,17 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
 
     @Override
     public boolean deleteById(String id) {
-        DeleteResult result = reminders.deleteOne(Filters.eq("_id", new ObjectId(id)));
+        DeleteResult result = reminders.deleteOne(eq("_id", new ObjectId(id)));
         return result.getDeletedCount() > 0;
+    }
+
+    public void markAsFired(String id) {
+        Bson filter = Filters.eq("_id", id);
+        Bson update = Updates.combine(
+                Updates.set("fired", true),
+                Updates.set("updatedAt", LocalDateTime.now())
+        );
+
+        reminders.updateOne(filter, update);
     }
 }

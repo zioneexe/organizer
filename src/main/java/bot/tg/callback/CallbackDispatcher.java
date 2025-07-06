@@ -12,6 +12,8 @@ public class CallbackDispatcher {
     public CallbackDispatcher() {
        register(new TaskStatusHandler());
        register(new TaskDetailsHandler());
+       register(new ReminderDateHandler());
+       register(new ReminderTimePickerHandler());
        register(new BackToTasksHandler());
     }
 

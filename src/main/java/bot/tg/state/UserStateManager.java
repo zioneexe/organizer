@@ -1,5 +1,6 @@
 package bot.tg.state;
 
+import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.dto.create.TaskCreateDto;
 
 import java.util.Map;
@@ -7,7 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UserStateManager {
 
-    private final Map<Long, TaskCreateDto> drafts = new ConcurrentHashMap<>();
+    private final Map<Long, TaskCreateDto> taskDrafts = new ConcurrentHashMap<>();
+    private final Map<Long, ReminderCreateDto> reminderDrafts = new ConcurrentHashMap<>();
 
     private final Map<Long, UserState> userStates = new ConcurrentHashMap<>();
 
@@ -23,11 +25,19 @@ public class UserStateManager {
         userStates.remove(userId);
     }
 
-    public TaskCreateDto getDraft(Long userId) {
-        return drafts.get(userId);
+    public TaskCreateDto getTaskDraft(Long userId) {
+        return taskDrafts.get(userId);
     }
 
-    public void createDraft(Long userId) {
-        drafts.put(userId, new TaskCreateDto(userId));
+    public void createTaskDraft(Long userId) {
+        taskDrafts.put(userId, new TaskCreateDto(userId));
+    }
+
+    public ReminderCreateDto getReminderDraft(Long userId) {
+        return reminderDrafts.get(userId);
+    }
+
+    public void createReminderDraft(Long userId) {
+        reminderDrafts.put(userId, new ReminderCreateDto(userId));
     }
 }

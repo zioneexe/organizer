@@ -11,6 +11,7 @@ public class StateDispatcher {
         put(UserState.AWAITING_TASK_SELECTION, new TaskSelectionHandler());
         put(UserState.AWAITING_TASK_TITLE, new TaskTitleHandler());
         put(UserState.AWAITING_TASK_DESCRIPTION, new TaskDescriptionHandler());
+        put(UserState.AWAITING_REMINDER_TEXT, new ReminderTextHandler());
     }};
 
     public void dispatch(UserState userState, Update update) {

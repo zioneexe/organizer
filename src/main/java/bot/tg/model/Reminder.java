@@ -15,14 +15,21 @@ import java.time.LocalDateTime;
 public class Reminder {
 
     @BsonId
-    private ObjectId _id;
+    private ObjectId id;
 
     @BsonProperty("user_id")
     private Long userId;
 
     private String text;
 
-    private LocalDateTime time;
+    private LocalDateTime dateTime;
 
     private Boolean fired;
+
+    @BsonProperty("created_at")
+    private LocalDateTime createdAt;
+
+    @BsonProperty("updated_at")
+    private LocalDateTime updatedAt;
+
 }

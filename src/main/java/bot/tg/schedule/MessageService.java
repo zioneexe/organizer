@@ -1,37 +1,42 @@
 package bot.tg.schedule;
 
-import bot.tg.model.User;
+import bot.tg.model.Reminder;
 import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.TelegramClientProvider;
-import bot.tg.repository.UserRepository;
-import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
+import bot.tg.repository.ReminderRepository;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 public class MessageService {
 
-    private final TelegramClient client;
-
-    private final UserRepository repository;
+    private final MessageScheduler messageScheduler;
+    private final ReminderRepository reminderRepository;
 
     public MessageService() {
-        this.client = TelegramClientProvider.getInstance();
-        this.repository = RepositoryProvider.getInstance().getUserRepository();
+        this.reminderRepository = RepositoryProvider.getReminderRepository();
+        this.messageScheduler = new MessageScheduler();
     }
 
-    public void sendGoodMorningToAll() {
-        List<User> users = repository.getAll();
+    public void scheduleReminder(Reminder reminder) {
+        if (!isSchedulable(reminder)) return;
+        messageScheduler.schedule(reminder);
+    }
 
-        for (User user : users) {
-            long userId = user.getUserId();
+    public void scheduleUnfiredReminders() {
+        reminderRepository.getUnfiredAfterNow().stream()
+                .filter(this::isSchedulable)
+                .forEach(messageScheduler::schedule);
+    }
 
-            SendMessage message = SendMessage.builder()
-                    .chatId(userId)
-                    .text("🌅 Доброго ранку, " + user.getFirstName() + "! \n Прокидайся і готуйся якнайкраще провести цей день :)")
-                    .build();
-            TelegramHelper.safeExecute(client, message);
-        }
+    public void scheduleGoodMorningToAll() {
+        messageScheduler.scheduleGoodMorningToAll();
+    }
+
+    private boolean isSchedulable(Reminder reminder) {
+        LocalDateTime dateTime = reminder.getDateTime();
+        Boolean fired = reminder.getFired();
+
+        return dateTime != null
+                && !fired
+                && dateTime.isAfter(LocalDateTime.now());
     }
 }

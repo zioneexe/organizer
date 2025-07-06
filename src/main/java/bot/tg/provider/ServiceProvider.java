@@ -1,35 +1,26 @@
 package bot.tg.provider;
 
 import bot.tg.callback.CallbackDispatcher;
+import bot.tg.schedule.MessageService;
 import bot.tg.state.StateDispatcher;
 import bot.tg.state.UserStateManager;
+import lombok.Getter;
 
 public class ServiceProvider {
-    private static final ServiceProvider INSTANCE = new ServiceProvider();
 
+    @Getter
     private static UserStateManager userStateManager;
+    @Getter
     private static StateDispatcher stateDispatcher;
+    @Getter
     private static CallbackDispatcher callbackDispatcher;
+    @Getter
+    private static MessageService messageService;
 
     public static void init() {
+        ServiceProvider.messageService = new MessageService();
         ServiceProvider.userStateManager = new UserStateManager();
         ServiceProvider.stateDispatcher = new StateDispatcher();
         ServiceProvider.callbackDispatcher = new CallbackDispatcher();
-    }
-
-    public static ServiceProvider getInstance() {
-        return INSTANCE;
-    }
-
-    public UserStateManager getUserStateManager() {
-        return userStateManager;
-    }
-
-    public StateDispatcher getStateDispatcher() {
-        return stateDispatcher;
-    }
-
-    public CallbackDispatcher getCallbackDispatcher() {
-        return callbackDispatcher;
     }
 }
