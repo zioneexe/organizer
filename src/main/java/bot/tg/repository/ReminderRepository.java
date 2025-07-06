@@ -76,10 +76,10 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
     }
 
     public void markAsFired(String id) {
-        Bson filter = Filters.eq("_id", id);
+        Bson filter = Filters.eq("_id", new ObjectId(id));
         Bson update = Updates.combine(
                 Updates.set("fired", true),
-                Updates.set("updatedAt", LocalDateTime.now())
+                Updates.set("updated_at", LocalDateTime.now())
         );
 
         reminders.updateOne(filter, update);

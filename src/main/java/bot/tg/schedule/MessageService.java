@@ -29,14 +29,11 @@ public class MessageService {
 
     public void scheduleReminder(Reminder reminder) {
         String userTimeZone = userRepository.getById(reminder.getUserId()).getTimeZone();
-        log("Scheduling reminder for userId=" + reminder.getUserId() + ", timeZone='" + userTimeZone + "', reminderId=" + reminder.getId());
 
         if (!isSchedulable(reminder, userTimeZone)) {
-            log("Reminder with id=" + reminder.getId() + " is not schedulable, skipping.");
             return;
         }
         messageScheduler.schedule(reminder);
-        log("Reminder with id=" + reminder.getId() + " scheduled successfully.");
     }
 
     public void scheduleUnfiredReminders() {

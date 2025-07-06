@@ -24,7 +24,6 @@ public class MessageScheduler {
             SchedulerFactory schedulerFactory = new StdSchedulerFactory();
             this.scheduler = schedulerFactory.getScheduler();
             this.scheduler.start();
-            log("Quartz scheduler started: " + scheduler.isStarted());
         } catch (SchedulerException e) {
             throw new RuntimeException("Не вдалося розпочати роботу Quartz", e);
         }
@@ -83,13 +82,6 @@ public class MessageScheduler {
         LocalDateTime systemDateTime = reminder.getDateTime();
         Instant instant = systemDateTime.atZone(ZoneOffset.systemDefault()).toInstant();
         Date triggerTime = Date.from(instant);
-
-        log("Scheduling reminder id=" + reminder.getId() +
-                ", userId=" + reminder.getUserId() +
-                ", text=" + reminder.getText() +
-                ", reminderDateTime=" + systemDateTime +
-                ", triggerTime=" + triggerTime +
-                ", now=" + new Date());
 
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
