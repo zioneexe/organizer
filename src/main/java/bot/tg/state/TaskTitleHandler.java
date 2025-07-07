@@ -4,7 +4,9 @@ import bot.tg.dto.create.TaskCreateDto;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.TelegramHelper;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.util.Constants.TASK_DESCRIPTION;
@@ -28,11 +30,16 @@ public class TaskTitleHandler implements StateHandler {
 
             userStateManager.setState(userId, UserState.AWAITING_TASK_DESCRIPTION);
 
-            userStateManager.createTaskDraft(userId);
             TaskCreateDto dto = userStateManager.getTaskDraft(userId);
             dto.setTitle(text);
 
-            TelegramHelper.sendSimpleMessage(telegramClient, chatId, TASK_DESCRIPTION);
+            SendMessage message = SendMessage.builder()
+                    .chatId(chatId)
+                    .text(TASK_DESCRIPTION)
+                    .replyMarkup(ForceReplyKeyboard.builder().forceReply(true).build())
+                    .build();
+
+            TelegramHelper.safeExecute(telegramClient, message);
         }
     }
 }

@@ -9,7 +9,7 @@ public class Constants {
     public static final String TASK_TITLE = "Яка назва завдання? ✨";
     public static final String TASK_DESCRIPTION = "Який опис завдання? \uD83D\uDC40";
     public static final String REMINDER_DATE = "📅 Обери дату для нагадування:";
-    public static final String REMINDER_TIME = "Окей, оберемо час для нагадування. ⌛";
+    public static final String REMINDER_TIME = "⌛ Оберемо час для нагадування. ";
     public static final String REMINDER_TEXT = "Для чого нагадування? ✨";
 
     public static final String TASK_CREATED = "Вітаю, завдання створено!";
@@ -19,6 +19,7 @@ public class Constants {
     public static final String TASK_IN_PROGRESS = "Що ж.. Працюй далі :)";
 
     public static final String UNKNOWN_COMMAND = "Невідома команда.";
+    public static final String INVALID_TIME = "⏰ Не можна вибрати час у минулому";
 
     public static final String DATE_REMINDER = "date";
     public static final String IN_PROGRESS_TASK = "in_progress";

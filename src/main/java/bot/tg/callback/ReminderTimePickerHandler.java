@@ -9,8 +9,11 @@ import bot.tg.repository.UserRepository;
 import bot.tg.state.UserState;
 import bot.tg.util.TelegramHelper;
 import bot.tg.util.TimePickerResponseHelper;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
@@ -41,6 +44,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
         }
 
         long userId = update.getCallbackQuery().getFrom().getId();
+        long chatId = update.getCallbackQuery().getMessage().getChatId();
 
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
@@ -61,28 +65,43 @@ public class ReminderTimePickerHandler implements CallbackHandler {
         int currentHour = LocalTime.now(zoneId).getHour();
         int currentMinute = LocalTime.now(zoneId).getMinute();
 
+        boolean isValidAction = true;
         switch (action) {
             case CHANGE_HOUR -> {
                 int delta = Integer.parseInt(parts[2]);
                 int newHour = (dateTimeDto.getHour() + delta + 24) % 24;
 
-                if (isToday && newHour < currentHour) return;
-                dateTimeDto.setHour(newHour);
+                if (isToday && newHour < currentHour) isValidAction = false;
+                if (isValidAction) dateTimeDto.setHour(newHour);
             }
             case CHANGE_MINUTE -> {
                 int previousHour = dateTimeDto.getHour();
                 int delta = Integer.parseInt(parts[2]);
                 int newMinute = (dateTimeDto.getMinute() + delta + 60) % 60;
 
-                if (isToday && previousHour < currentHour) return;
-                if (isToday && previousHour == currentHour && newMinute < currentMinute) return;
-                dateTimeDto.setMinute(newMinute);
+                if (isToday && previousHour < currentHour) isValidAction = false;
+                if (isToday && previousHour == currentHour && newMinute < currentMinute) isValidAction = false;
+                if (isValidAction) dateTimeDto.setMinute(newMinute);
             }
             case CONFIRM -> {
                 ServiceProvider.getUserStateManager().setState(userId, UserState.AWAITING_REMINDER_TEXT);
-                TelegramHelper.sendSimpleMessage(telegramClient, userId, REMINDER_TEXT);
+                SendMessage message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(REMINDER_TEXT)
+                        .replyMarkup(ForceReplyKeyboard.builder().forceReply(true).build())
+                        .build();
+                TelegramHelper.safeExecute(telegramClient, message);
             }
             case CANCEL -> ServiceProvider.getUserStateManager().clearState(userId);
+        }
+
+        if (!isValidAction) {
+            AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
+                    .callbackQueryId(callbackQueryId)
+                    .text(INVALID_TIME)
+                    .build();
+            TelegramHelper.safeExecute(telegramClient, answer);
+            return;
         }
 
         EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update);

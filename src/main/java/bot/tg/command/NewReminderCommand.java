@@ -8,6 +8,7 @@ import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -34,6 +35,13 @@ public class NewReminderCommand implements BotCommand {
     public void execute(Update update) {
         long userId = update.getMessage().getFrom().getId();
         long chatId = update.getMessage().getChatId();
+
+        SendMessage removeKeyboard = SendMessage.builder()
+                .chatId(chatId)
+                .text("Окей!")
+                .replyMarkup(new ReplyKeyboardRemove(true))
+                .build();
+        TelegramHelper.safeExecute(telegramClient, removeKeyboard);
 
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)

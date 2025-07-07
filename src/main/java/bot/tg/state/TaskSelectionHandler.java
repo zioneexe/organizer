@@ -1,6 +1,7 @@
 package bot.tg.state;
 
 import bot.tg.provider.RepositoryProvider;
+import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
 import bot.tg.util.TasksResponseHelper;
@@ -11,10 +12,12 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class TaskSelectionHandler implements StateHandler {
 
+    private final UserStateManager userStateManager;
     private final TaskRepository taskRepository;
     private final TelegramClient telegramClient;
 
     public TaskSelectionHandler() {
+        this.userStateManager = ServiceProvider.getUserStateManager();
         this.taskRepository = RepositoryProvider.getTaskRepository();
         this.telegramClient = TelegramClientProvider.getInstance();
     }
@@ -23,5 +26,8 @@ public class TaskSelectionHandler implements StateHandler {
     public void handle(Update update) {
         SendMessage sendMessage = TasksResponseHelper.createTasksMessage(taskRepository, update);
         TelegramHelper.safeExecute(telegramClient, sendMessage);
+
+        long userId = update.getMessage().getFrom().getId();
+        userStateManager.setState(userId, UserState.IDLE);
     }
 }
