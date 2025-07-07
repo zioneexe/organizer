@@ -50,13 +50,13 @@ public class TimePickerResponseHelper {
                 button("<<", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-3"),
                 button("<", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-1"),
                 button(timeDisplay, IGNORE),
-                button(">", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-1"),
+                button(">", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "+1"),
                 button(">>", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER +  "+3")
         );
 
         InlineKeyboardRow minuteRow = new InlineKeyboardRow(
-                button("-1 хв", TIME_PICKER + COLON_DELIMITER + CHANGE_MINUTE + COLON_DELIMITER + "-1"),
                 button("-5 хв", TIME_PICKER + COLON_DELIMITER + CHANGE_MINUTE + COLON_DELIMITER + "-5"),
+                button("-1 хв", TIME_PICKER + COLON_DELIMITER + CHANGE_MINUTE + COLON_DELIMITER + "-1"),
                 button("+1 хв", TIME_PICKER + COLON_DELIMITER + CHANGE_MINUTE + COLON_DELIMITER + "+1"),
                 button("+5 хв", TIME_PICKER + COLON_DELIMITER + CHANGE_MINUTE + COLON_DELIMITER + "+5")
         );

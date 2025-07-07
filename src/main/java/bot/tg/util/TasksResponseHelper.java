@@ -32,7 +32,8 @@ public class TasksResponseHelper {
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : List.of(
                                 new InlineKeyboardRow(keyboardRows.get(0)),
-                                new InlineKeyboardRow(keyboardRows.get(1))
+                                new InlineKeyboardRow(keyboardRows.get(1)),
+                                new InlineKeyboardRow(keyboardRows.get(2))
                         ))
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
@@ -56,7 +57,8 @@ public class TasksResponseHelper {
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(List.of(
                                 new InlineKeyboardRow(keyboardRows.get(0)),
-                                new InlineKeyboardRow(keyboardRows.get(1))
+                                new InlineKeyboardRow(keyboardRows.get(1)),
+                                new InlineKeyboardRow(keyboardRows.get(2))
                         ))
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
