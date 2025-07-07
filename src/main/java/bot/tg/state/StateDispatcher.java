@@ -9,6 +9,7 @@ public class StateDispatcher {
 
     private final Map<UserState, StateHandler> handlers = new HashMap<>() {{
         put(UserState.AWAITING_TASK_SELECTION, new TaskSelectionHandler());
+        put(UserState.AWAITING_REMINDER_SELECTION, new ReminderSelectionHandler());
         put(UserState.AWAITING_TASK_TITLE, new TaskTitleHandler());
         put(UserState.AWAITING_TASK_DESCRIPTION, new TaskDescriptionHandler());
         put(UserState.AWAITING_REMINDER_TEXT, new ReminderTextHandler());

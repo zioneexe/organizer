@@ -9,8 +9,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.START_MESSAGE;
-import static bot.tg.util.Constants.TASK_SELECTION;
+import java.util.List;
+
+import static bot.tg.util.Constants.*;
 
 public class StartCommand implements BotCommand {
 
@@ -28,7 +29,10 @@ public class StartCommand implements BotCommand {
                         .chatId(chatId)
                         .text(START_MESSAGE)
                         .replyMarkup(ReplyKeyboardMarkup.builder()
-                                .keyboardRow(new KeyboardRow(new KeyboardButton(TASK_SELECTION)))
+                                .keyboard(List.of(
+                                        new KeyboardRow(new KeyboardButton(TASK_SELECTION)),
+                                        new KeyboardRow(new KeyboardButton(REMINDER_SELECTION))
+                                ))
                                 .resizeKeyboard(true)
                                 .oneTimeKeyboard(true)
                                 .build())

@@ -4,6 +4,7 @@ public class Constants {
 
     public static final String START_MESSAGE = "Оберіть, що вам потрібно";
     public static final String TASK_SELECTION = "Завдання на день";
+    public static final String REMINDER_SELECTION = "Ваші нагадування";
 
     public static final String TASK_TITLE = "Яка назва завдання? ✨";
     public static final String TASK_DESCRIPTION = "Який опис завдання? \uD83D\uDC40";
