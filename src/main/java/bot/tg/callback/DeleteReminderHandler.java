@@ -46,7 +46,7 @@ public class DeleteReminderHandler implements CallbackHandler {
 
         String response = deleted
                 ? "🗑 Нагадування видалено."
-                : "⚠️ Нагадування не знайдено або не ваше.";
+                : "⚠️ Нагадування не знайдено.";
 
         TelegramHelper.sendSimpleMessage(telegramClient, chatId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
