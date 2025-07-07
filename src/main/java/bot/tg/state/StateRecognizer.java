@@ -1,7 +1,6 @@
 package bot.tg.state;
 
-import static bot.tg.util.Constants.REMINDER_SELECTION;
-import static bot.tg.util.Constants.TASK_SELECTION;
+import static bot.tg.util.Constants.*;
 
 public class StateRecognizer {
 
@@ -9,6 +8,7 @@ public class StateRecognizer {
         return switch (text) {
             case TASK_SELECTION -> UserState.AWAITING_TASK_SELECTION;
             case REMINDER_SELECTION -> UserState.AWAITING_REMINDER_SELECTION;
+            case CONNECT_GOOGLE_CALENDAR -> UserState.GOOGLE_CONNECT;
             default -> UserState.IDLE;
         };
     }

@@ -1,12 +1,14 @@
 package bot.tg;
 
+import bot.tg.server.JettyServer;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
 public class Main {
 
     public static final String API_KEY = System.getenv("TELEGRAM_BOT_API_KEY");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        JettyServer.start();
         OrganizerBot bot = new OrganizerBot(API_KEY);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

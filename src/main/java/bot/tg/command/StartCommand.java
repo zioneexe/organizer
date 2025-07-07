@@ -36,7 +36,8 @@ public class StartCommand implements BotCommand {
                         .replyMarkup(ReplyKeyboardMarkup.builder()
                                 .keyboard(List.of(
                                         new KeyboardRow(new KeyboardButton(TASK_SELECTION)),
-                                        new KeyboardRow(new KeyboardButton(REMINDER_SELECTION))
+                                        new KeyboardRow(new KeyboardButton(REMINDER_SELECTION)),
+                                        new KeyboardRow(new KeyboardButton(CONNECT_GOOGLE_CALENDAR))
                                 ))
                                 .resizeKeyboard(true)
                                 .oneTimeKeyboard(true)

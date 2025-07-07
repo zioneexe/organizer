@@ -8,6 +8,7 @@ import java.util.Map;
 public class StateDispatcher {
 
     private final Map<UserState, StateHandler> handlers = new HashMap<>() {{
+        put(UserState.GOOGLE_CONNECT, new GoogleConnectHandler());
         put(UserState.AWAITING_TASK_SELECTION, new TaskSelectionHandler());
         put(UserState.AWAITING_REMINDER_SELECTION, new ReminderSelectionHandler());
         put(UserState.AWAITING_TASK_TITLE, new TaskTitleHandler());

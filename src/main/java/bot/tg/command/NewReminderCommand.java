@@ -38,7 +38,7 @@ public class NewReminderCommand implements BotCommand {
 
         SendMessage removeKeyboard = SendMessage.builder()
                 .chatId(chatId)
-                .text("Окей!")
+                .text(ALRIGHT)
                 .replyMarkup(new ReplyKeyboardRemove(true))
                 .build();
         TelegramHelper.safeExecute(telegramClient, removeKeyboard);
@@ -66,12 +66,12 @@ public class NewReminderCommand implements BotCommand {
             };
             String callbackData = DATE_REMINDER + COLON_DELIMITER + date;
 
-            InlineKeyboardButton btn = InlineKeyboardButton.builder()
+            InlineKeyboardButton dayButton = InlineKeyboardButton.builder()
                     .text(text)
                     .callbackData(callbackData)
                     .build();
 
-            rows.add(new InlineKeyboardRow(btn));
+            rows.add(new InlineKeyboardRow(dayButton));
         }
 
         return InlineKeyboardMarkup.builder().keyboard(rows).build();

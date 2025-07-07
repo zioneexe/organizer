@@ -1,5 +1,6 @@
 package bot.tg.provider;
 
+import bot.tg.repository.MongoTokenStore;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
@@ -14,11 +15,14 @@ public class RepositoryProvider {
     private static UserRepository userRepository;
     @Getter
     private static ReminderRepository reminderRepository;
+    @Getter
+    private static MongoTokenStore tokenStore;
 
     public static void init(MongoDatabase database) {
         RepositoryProvider.userRepository = new UserRepository(database);
         RepositoryProvider.taskRepository = new TaskRepository(database);
         RepositoryProvider.reminderRepository = new ReminderRepository(database);
+        RepositoryProvider.tokenStore = new MongoTokenStore(database);
     }
 
 }

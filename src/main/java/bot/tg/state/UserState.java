@@ -2,6 +2,7 @@ package bot.tg.state;
 
 public enum UserState {
     IDLE,
+    GOOGLE_CONNECT,
     AWAITING_TASK_SELECTION,
     AWAITING_TASK_TITLE,
     AWAITING_TASK_DESCRIPTION,

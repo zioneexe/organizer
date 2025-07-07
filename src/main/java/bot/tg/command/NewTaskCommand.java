@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import static bot.tg.util.Constants.ALRIGHT;
 import static bot.tg.util.Constants.TASK_TITLE;
 
 public class NewTaskCommand implements BotCommand {
@@ -30,7 +31,7 @@ public class NewTaskCommand implements BotCommand {
 
         SendMessage removeKeyboard = SendMessage.builder()
                 .chatId(chatId)
-                .text("Гаразд!")
+                .text(ALRIGHT)
                 .replyMarkup(new ReplyKeyboardRemove(true))
                 .build();
         TelegramHelper.safeExecute(telegramClient, removeKeyboard);
