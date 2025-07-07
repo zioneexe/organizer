@@ -8,7 +8,9 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +55,16 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         Bson update = Updates.set("username", userUpdateDto.getUsername());
         users.updateOne(filter, update);
         return getById(id);
+    }
+
+    public void markAsGoogleConnected(String id, boolean isConnected) {
+        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson update = Updates.combine(
+                Updates.set("is_google_connected", isConnected),
+                Updates.set("updated_at", LocalDateTime.now())
+        );
+
+        users.updateOne(filter, update);
     }
 
     public boolean deleteById(Long id) {

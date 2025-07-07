@@ -68,7 +68,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
             long userId = update.getMessage().getFrom().getId();
 
             if (!userRepository.existsById(userId)) {
-                userRepository.create(new User(userId, firstName, lastName, username, DEFAULT_TIMEZONE));
+                userRepository.create(new User(userId, firstName, lastName, username, DEFAULT_TIMEZONE, false));
             }
 
             String text = update.getMessage().getText();

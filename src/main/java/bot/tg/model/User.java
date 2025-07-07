@@ -23,4 +23,7 @@ public class User {
 
     @BsonProperty("time_zone")
     private String timeZone;
+
+    @BsonProperty("is_google_connected")
+    private Boolean isGoogleConnected;
 }
