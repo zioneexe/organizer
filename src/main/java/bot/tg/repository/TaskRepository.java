@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.eq;
+
 public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, String> {
 
     private static final String COLLECTION_NAME = "tasks";
@@ -36,7 +38,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
 
     @Override
     public TodoTask getById(String id) {
-        return tasks.find(Filters.eq("_id", new ObjectId(id))).first();
+        return tasks.find(eq("_id", new ObjectId(id))).first();
     }
 
     // TODO: timeZone check
@@ -46,7 +48,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         var end = Date.from(LocalDate.now().plusDays(1).atStartOfDay(utc).toInstant());
 
         var filter = Filters.and(
-                Filters.eq("user_id", userId),
+                eq("user_id", userId),
                 Filters.gte("created_at", start),
                 Filters.lt("created_at", end)
         );
@@ -56,7 +58,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
 
     @Override
     public boolean existsById(String id) {
-        return tasks.find(Filters.eq("_id", new ObjectId(id))).first() != null;
+        return tasks.find(eq("_id", new ObjectId(id))).first() != null;
     }
 
     @Override
@@ -70,7 +72,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
 
     @Override
     public TodoTask update(String id, TaskUpdateDto dto) {
-        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson filter = eq("_id", new ObjectId(id));
 
         List<Bson> updates = new ArrayList<>();
 
@@ -96,7 +98,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
 
     @Override
     public boolean deleteById(String id) {
-        DeleteResult result = tasks.deleteOne(Filters.eq("_id", new ObjectId(id)));
+        DeleteResult result = tasks.deleteOne(eq("_id", new ObjectId(id)));
         return result.getDeletedCount() > 0;
     }
 }

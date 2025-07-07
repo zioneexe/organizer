@@ -39,7 +39,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
 
     public List<Reminder> getUnfiredAfterNow() {
         LocalDateTime now = LocalDateTime.now();
-        Bson filter = and(
+        Bson filter = Filters.and(
                 eq("fired", false),
                 gt("date_time", now)
         );
