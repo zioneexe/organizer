@@ -47,9 +47,11 @@ public class TimePickerResponseHelper {
         List<InlineKeyboardRow> rows = new ArrayList<>();
 
         InlineKeyboardRow hourRow = new InlineKeyboardRow(
-                button("«", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-1"),
+                button("<<", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-3"),
+                button("<", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-1"),
                 button(timeDisplay, IGNORE),
-                button("»", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER +  "+1")
+                button(">", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-1"),
+                button(">>", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER +  "+3")
         );
 
         InlineKeyboardRow minuteRow = new InlineKeyboardRow(
