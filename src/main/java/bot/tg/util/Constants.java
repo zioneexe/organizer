@@ -28,6 +28,7 @@ public class Constants {
     public static final String CHANGE_HOUR = "change_hour";
     public static final String CHANGE_MINUTE = "change_minute";
     public static final String DELETE_REMINDER = "delete_reminder";
+    public static final String DELETE_TASK = "delete_task";
 
     public static final String CONFIRM = "confirm";
     public static final String CANCEL = "cancel";

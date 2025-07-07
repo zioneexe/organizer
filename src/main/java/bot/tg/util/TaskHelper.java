@@ -63,6 +63,7 @@ public class TaskHelper {
         AtomicInteger counter = new AtomicInteger(0);
         List<InlineKeyboardButton> taskStatusButtons = new ArrayList<>();
         List<InlineKeyboardButton> taskDetailsButtons = new ArrayList<>();
+        List<InlineKeyboardButton> taskDeleteButtons = new ArrayList<>();
         tasks.forEach(task -> {
             int index = counter.incrementAndGet();
             boolean completed = task.getCompleted();
@@ -87,13 +88,18 @@ public class TaskHelper {
                     .text(index + " ℹ️")
                     .callbackData(DETAILS_TASK + COLON_DELIMITER + task.getId())
                     .build());
+
+            taskDeleteButtons.add(InlineKeyboardButton.builder()
+                    .text(index + " 🗑")
+                    .callbackData(DELETE_TASK + COLON_DELIMITER + task.getId())
+                    .build());
         });
 
         keyboardRows.add(taskStatusButtons);
         keyboardRows.add(taskDetailsButtons);
+        keyboardRows.add(taskDeleteButtons);
 
-        String answer = answerBuilder.toString();
-        return Map.entry(keyboardRows, answer);
+        return Map.entry(keyboardRows, answerBuilder.toString());
     }
 
 }
