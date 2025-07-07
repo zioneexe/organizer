@@ -53,7 +53,7 @@ public class OAuthCallbackServlet extends HttpServlet {
                     .replyMarkup(new ReplyKeyboardRemove(true))
                     .build();
             TelegramHelper.safeExecute(telegramClient, message);
-            userRepository.markAsGoogleConnected(userIdString, true);
+            userRepository.markAsGoogleConnected(userId, true);
 
             resp.getWriter().write("✅ Авторизація успішна! Можете повертатися до Telegram.");
         } catch (Exception e) {

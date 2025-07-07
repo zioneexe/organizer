@@ -6,8 +6,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 
-import java.io.IOException;
-
 public class MongoTokenStore implements TokenStore {
 
     private static final String COLLECTION_NAME = "tokens";
@@ -19,17 +17,20 @@ public class MongoTokenStore implements TokenStore {
     }
 
     @Override
-    public String load(String userId) throws IOException {
+    public String load(String userIdString) {
+        long userId = Long.parseLong(userIdString);
         Document document = tokens.find(new Document("user_id", userId)).first();
-        if (document == null) return null;
-        return document.getString("tokens");
+        return document != null ? document.getString("tokens") : null;
     }
 
     @Override
-    public void store(String userId, String tokens)  {
+    public void store(String userIdString, String tokens)  {
+        long userId = Long.parseLong(userIdString);
+
         Document filter = new Document("user_id", userId);
         Document document = new Document("user_id", userId)
                 .append("tokens", tokens);
+
         this.tokens.replaceOne(filter, document, new ReplaceOptions().upsert(true));
     }
 
