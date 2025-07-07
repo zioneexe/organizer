@@ -8,7 +8,8 @@ import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.schedule.MessageService;
+import bot.tg.service.GoogleCalendarService;
+import bot.tg.service.MessageService;
 import bot.tg.util.ReminderResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -47,8 +48,16 @@ public class ReminderTextHandler implements StateHandler {
             reminderRepository.create(reminder);
             messageService.scheduleReminder(reminder);
 
+            String replyText = REMINDER_CREATED;
+            String calendarLink;
+            boolean isConnected = userRepository.isGoogleConnected(userId);
+            if (isConnected) {
+                calendarLink = GoogleCalendarService.createCalendarEvent(userId, dto);
+                if (!calendarLink.isBlank()) replyText += "\n\nПодія додана в Google Календар: " + calendarLink;
+            }
+
             userStateManager.setState(userId, UserState.IDLE);
-            TelegramHelper.sendSimpleMessage(telegramClient, chatId, REMINDER_CREATED);
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyText);
 
             SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(userRepository, reminderRepository, update);
             TelegramHelper.safeExecute(telegramClient, remindersMessage);

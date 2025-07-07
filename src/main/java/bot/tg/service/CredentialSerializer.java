@@ -1,4 +1,4 @@
-package bot.tg.server;
+package bot.tg.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.TokenResponse;

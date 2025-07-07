@@ -8,7 +8,7 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
-import bot.tg.schedule.MessageService;
+import bot.tg.service.MessageService;
 import bot.tg.state.StateDispatcher;
 import bot.tg.state.StateRecognizer;
 import bot.tg.state.UserState;

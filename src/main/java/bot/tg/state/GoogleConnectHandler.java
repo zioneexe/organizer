@@ -1,7 +1,7 @@
 package bot.tg.state;
 
 import bot.tg.provider.TelegramClientProvider;
-import bot.tg.server.GoogleOAuthService;
+import bot.tg.service.GoogleClientService;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -23,7 +23,7 @@ public class GoogleConnectHandler implements StateHandler {
         long userId = update.getMessage().getFrom().getId();
         long chatId = update.getMessage().getChatId();
 
-        String url = GoogleOAuthService.getAuthorizationUrl(String.valueOf(userId));
+        String url = GoogleClientService.getAuthorizationUrl(String.valueOf(userId));
 
         InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(

@@ -1,7 +1,7 @@
 package bot.tg.provider;
 
 import bot.tg.callback.CallbackDispatcher;
-import bot.tg.schedule.MessageService;
+import bot.tg.service.MessageService;
 import bot.tg.state.StateDispatcher;
 import bot.tg.state.UserStateManager;
 import lombok.Getter;

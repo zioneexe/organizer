@@ -4,6 +4,8 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.MongoTokenStore;
 import bot.tg.repository.UserRepository;
+import bot.tg.service.GoogleClientService;
+import bot.tg.service.CredentialSerializer;
 import bot.tg.util.TelegramHelper;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -37,7 +39,7 @@ public class OAuthCallbackServlet extends HttpServlet {
         }
 
         try {
-            Credential credential = GoogleOAuthService.exchangeCodeForTokens(code);
+            Credential credential = GoogleClientService.exchangeCodeForTokens(code);
             TokenResponse tokenResponse = new TokenResponse()
                     .setAccessToken(credential.getAccessToken())
                     .setRefreshToken(credential.getRefreshToken())

@@ -56,6 +56,12 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         return getById(id);
     }
 
+    public boolean isGoogleConnected(Long id) {
+        Bson filter = Filters.eq("user_id", id);
+        User user = users.find(filter).first();
+        return user != null && user.getIsGoogleConnected();
+    }
+
     public void markAsGoogleConnected(Long id, boolean isConnected) {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(

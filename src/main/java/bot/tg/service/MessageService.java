@@ -1,10 +1,11 @@
-package bot.tg.schedule;
+package bot.tg.service;
 
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
+import bot.tg.schedule.MessageScheduler;
 
 import java.time.*;
 import java.util.List;
