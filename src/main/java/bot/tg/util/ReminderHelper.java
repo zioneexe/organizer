@@ -4,6 +4,8 @@ import bot.tg.model.Reminder;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +19,7 @@ public class ReminderHelper {
 
     private ReminderHelper() {}
 
-    public static Map.Entry<List<List<InlineKeyboardButton>>, String> formRemindersMessage(List<Reminder> reminders) {
+    public static Map.Entry<List<List<InlineKeyboardButton>>, String> formRemindersMessage(List<Reminder> reminders, ZoneId userZoneId) {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
 
         if (reminders.isEmpty()) {
@@ -27,7 +29,12 @@ public class ReminderHelper {
         StringBuilder answerBuilder = new StringBuilder("*🔔 Ваші нагадування:*\n\n");
         Map<LocalDate, List<Reminder>> grouped = reminders.stream()
                 .sorted(Comparator.comparing(Reminder::getDateTime))
-                .collect(Collectors.groupingBy(r -> r.getDateTime().toLocalDate(), LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(r -> r.getDateTime()
+                        .atZone(ZoneId.systemDefault())
+                        .withZoneSameInstant(userZoneId)
+                        .toLocalDate(),
+                        LinkedHashMap::new, Collectors.toList())
+                );
 
         AtomicInteger counter = new AtomicInteger(0);
         List<InlineKeyboardButton> deleteButtons = new ArrayList<>();
@@ -45,7 +52,11 @@ public class ReminderHelper {
                 int index = counter.incrementAndGet();
                 boolean fired = reminder.getFired();
                 String emoji = fired ? "✅" : "⏰";
-                String time = reminder.getDateTime().format(timeFormatter);
+
+                ZonedDateTime zonedDateTime = reminder.getDateTime()
+                        .atZone(ZoneId.systemDefault())
+                        .withZoneSameInstant(userZoneId);
+                String time = zonedDateTime.format(timeFormatter);
 
                 answerBuilder.append(index)
                         .append(".   ")

@@ -7,6 +7,7 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
+import bot.tg.repository.UserRepository;
 import bot.tg.schedule.MessageService;
 import bot.tg.util.ReminderResponseHelper;
 import bot.tg.util.TelegramHelper;
@@ -21,12 +22,14 @@ public class ReminderTextHandler implements StateHandler {
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final MessageService messageService;
+    private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
 
     public ReminderTextHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.messageService = ServiceProvider.getMessageService();
+        this.userRepository = RepositoryProvider.getUserRepository();
         this.reminderRepository = RepositoryProvider.getReminderRepository();
     }
 
@@ -47,7 +50,7 @@ public class ReminderTextHandler implements StateHandler {
             userStateManager.setState(userId, UserState.IDLE);
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, REMINDER_CREATED);
 
-            SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(reminderRepository, update);
+            SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(userRepository, reminderRepository, update);
             TelegramHelper.safeExecute(telegramClient, remindersMessage);
         }
     }
