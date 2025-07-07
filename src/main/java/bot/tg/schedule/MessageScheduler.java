@@ -51,7 +51,7 @@ public class MessageScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
                 .withSchedule(
-                        CronScheduleBuilder.dailyAtHourAndMinute(8, 0)
+                        CronScheduleBuilder.dailyAtHourAndMinute(7, 30)
                                 .inTimeZone(TimeZone.getTimeZone(zoneId))
                 )
                 .build();
