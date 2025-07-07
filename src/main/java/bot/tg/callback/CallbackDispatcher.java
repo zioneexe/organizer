@@ -13,6 +13,7 @@ public class CallbackDispatcher {
        register(new TaskStatusHandler());
        register(new TaskDetailsHandler());
        register(new ReminderDateHandler());
+       register(new DeleteTaskHandler());
        register(new DeleteReminderHandler());
        register(new ReminderTimePickerHandler());
        register(new BackToTasksHandler());
