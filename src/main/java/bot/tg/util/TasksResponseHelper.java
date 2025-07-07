@@ -30,11 +30,9 @@ public class TasksResponseHelper {
                 .chatId(chatId)
                 .text(answer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(keyboardRows.isEmpty() ? List.of() : List.of(
-                                new InlineKeyboardRow(keyboardRows.get(0)),
-                                new InlineKeyboardRow(keyboardRows.get(1)),
-                                new InlineKeyboardRow(keyboardRows.get(2))
-                        ))
+                        .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
+                                .map(InlineKeyboardRow::new)
+                                .toList())
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
@@ -55,11 +53,9 @@ public class TasksResponseHelper {
                 .messageId(messageId)
                 .text(editAnswer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(List.of(
-                                new InlineKeyboardRow(keyboardRows.get(0)),
-                                new InlineKeyboardRow(keyboardRows.get(1)),
-                                new InlineKeyboardRow(keyboardRows.get(2))
-                        ))
+                        .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
+                                .map(InlineKeyboardRow::new)
+                                .toList())
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
