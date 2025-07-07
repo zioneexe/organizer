@@ -54,6 +54,7 @@ public class GoogleOAuthService {
                 .setTransport(HTTP_TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
                 .setClientAuthentication(new ClientParametersAuthentication(CLIENT_ID, CLIENT_SECRET))
+                .setTokenServerEncodedUrl("https://oauth2.googleapis.com/token")
                 .build()
                 .setFromTokenResponse(tokenResponse);
     }
