@@ -19,16 +19,18 @@ public class MongoTokenStore implements TokenStore {
     }
 
     @Override
-    public String load(String id) throws IOException {
-        Document doc = tokens.find(new Document("_id", id)).first();
-        if (doc == null) return null;
-        return doc.getString("tokens");
+    public String load(String userId) throws IOException {
+        Document document = tokens.find(new Document("user_id", userId)).first();
+        if (document == null) return null;
+        return document.getString("tokens");
     }
 
     @Override
-    public void store(String id, String tokens)  {
-        Document doc = new Document("_id", id).append("tokens", tokens);
-        this.tokens.replaceOne(new Document("_id", id), doc, new ReplaceOptions().upsert(true));
+    public void store(String userId, String tokens)  {
+        Document filter = new Document("user_id", userId);
+        Document document = new Document("user_id", userId)
+                .append("tokens", tokens);
+        this.tokens.replaceOne(filter, document, new ReplaceOptions().upsert(true));
     }
 
     @Override
