@@ -14,6 +14,7 @@ public class JettyServer {
         handler.setContextPath("/");
 
         handler.addServlet(new ServletHolder(new OAuthCallbackServlet()), "/oauth2callback");
+        handler.addServlet(new ServletHolder(new BroadcastServlet()), "/broadcast");
 
         server.setHandler(handler);
         server.start();
