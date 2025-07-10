@@ -8,8 +8,8 @@ public class Main {
     public static final String API_KEY = System.getenv("TELEGRAM_BOT_API_KEY");
 
     public static void main(String[] args) throws Exception {
-        JettyServer.start();
         OrganizerBot bot = new OrganizerBot(API_KEY);
+        JettyServer.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("🛑 Закриваємо підключення до Mongo...");

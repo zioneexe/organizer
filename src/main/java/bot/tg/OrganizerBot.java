@@ -13,9 +13,13 @@ import bot.tg.state.StateDispatcher;
 import bot.tg.state.StateRecognizer;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
+import bot.tg.util.StickerHelper;
 import com.mongodb.client.MongoDatabase;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
 import static bot.tg.util.Constants.COMMAND_SYMBOL;
@@ -59,6 +63,17 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         if (update.hasCallbackQuery()) {
             callbackDispatcher.dispatch(update);
             return;
+        }
+
+        if (update.hasMessage() && update.getMessage().hasSticker()) {
+            TelegramClient telegramClient = TelegramClientProvider.getInstance();
+            SendSticker sendSticker = StickerHelper.sendSticker(update);
+            try {
+                telegramClient.execute(sendSticker);
+                return;
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
         }
 
         if (update.hasMessage() && update.getMessage().hasText()) {
