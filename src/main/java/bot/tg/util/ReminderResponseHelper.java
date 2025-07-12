@@ -10,9 +10,16 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+
+import static bot.tg.constant.Reminder.Callback.DATE_PICKER;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class ReminderResponseHelper {
 
@@ -30,7 +37,7 @@ public class ReminderResponseHelper {
                 ZoneId.of(userTimeZone);
 
         List<Reminder> reminders = reminderRepository.getUpcomingForUser(userId);
-        Map.Entry<List<List<InlineKeyboardButton>>, String> remindersMessage = ReminderHelper.formRemindersMessage(
+        Map.Entry<List<List<InlineKeyboardButton>>, String> remindersMessage = ReminderMessageHelper.formRemindersMessage(
                 reminders, userZoneId
         );
 
@@ -47,5 +54,28 @@ public class ReminderResponseHelper {
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
+    }
+
+    public static InlineKeyboardMarkup formDateChoiceKeyboard() {
+        List<InlineKeyboardRow> rows = new ArrayList<>();
+
+        for (int i = 0; i < 8; i++) {
+            LocalDate date = LocalDate.now().plusDays(i);
+            String text = switch (i) {
+                case 0 -> "Сьогодні";
+                case 1 -> "Завтра";
+                default -> date.format(DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("uk")));
+            };
+            String callbackData = DATE_PICKER + COLON_DELIMITER + date;
+
+            InlineKeyboardButton dayButton = InlineKeyboardButton.builder()
+                    .text(text)
+                    .callbackData(callbackData)
+                    .build();
+
+            rows.add(new InlineKeyboardRow(dayButton));
+        }
+
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 }
