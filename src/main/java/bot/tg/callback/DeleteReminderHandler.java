@@ -1,9 +1,13 @@
 package bot.tg.callback;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
+import bot.tg.repository.UserRepository;
+import bot.tg.util.ReminderResponseHelper;
 import bot.tg.util.TelegramHelper;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -14,10 +18,12 @@ public class DeleteReminderHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final ReminderRepository reminderRepository;
+    private final UserRepository userRepository;
 
     public DeleteReminderHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
         this.reminderRepository = RepositoryProvider.getReminderRepository();
+        this.userRepository = RepositoryProvider.getUserRepository();
     }
 
     @Override
@@ -27,15 +33,14 @@ public class DeleteReminderHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        if (!update.hasCallbackQuery()) {
-            return;
-        }
-
+        long userId = update.getCallbackQuery().getFrom().getId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
+        int messageId = update.getCallbackQuery().getMessage().getMessageId();
+
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
 
-        String[] parts = data.split(COLON_DELIMITER, 2);
+        String[] parts = data.split(COLON_DELIMITER);
         if (parts.length < 2) {
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, "❌ Некоректний запит на видалення.");
             return;
@@ -48,7 +53,10 @@ public class DeleteReminderHandler implements CallbackHandler {
                 ? "🗑 Нагадування видалено."
                 : "⚠️ Нагадування не знайдено.";
 
-        TelegramHelper.sendSimpleMessage(telegramClient, chatId, response);
+        TelegramHelper.sendEditMessage(telegramClient, messageId, chatId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
+
+        SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(userRepository, reminderRepository, new ChatContext(userId, chatId));
+        TelegramHelper.safeExecute(telegramClient, remindersMessage);
     }
 }
