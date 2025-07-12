@@ -56,11 +56,16 @@ public class ReminderResponseHelper {
                 .build();
     }
 
-    public static InlineKeyboardMarkup formDateChoiceKeyboard() {
+    public static InlineKeyboardMarkup formDateChoiceKeyboard(UserRepository userRepository, long userId) {
         List<InlineKeyboardRow> rows = new ArrayList<>();
 
+        String userTimeZone = userRepository.getById(userId).getTimeZone();
+        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
+                ZoneId.systemDefault() :
+                ZoneId.of(userTimeZone);
+
         for (int i = 0; i < 8; i++) {
-            LocalDate date = LocalDate.now().plusDays(i);
+            LocalDate date = LocalDate.now(userZoneId).plusDays(i);
             String text = switch (i) {
                 case 0 -> "Сьогодні";
                 case 1 -> "Завтра";

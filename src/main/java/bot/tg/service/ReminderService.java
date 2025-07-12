@@ -1,8 +1,10 @@
 package bot.tg.service;
 
 import bot.tg.dto.ChatContext;
+import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.repository.UserRepository;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.TelegramHelper;
@@ -17,10 +19,12 @@ public class ReminderService {
 
     private final UserStateManager userStateManager;
     private final TelegramClient telegramClient;
+    private final UserRepository userRepository;
 
     public ReminderService() {
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.telegramClient = TelegramClientProvider.getInstance();
+        this.userRepository = RepositoryProvider.getUserRepository();
     }
 
     public void startReminderCreation(Update update) {
@@ -30,7 +34,10 @@ public class ReminderService {
         long userId = chatContext.getUserId();
 
         TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, chatId, ALRIGHT);
-        TelegramHelper.sendMessageWithMarkup(telegramClient, chatId, REMINDER_DATE, formDateChoiceKeyboard());
+        TelegramHelper.sendMessageWithMarkup(
+                telegramClient, chatId, REMINDER_DATE,
+                formDateChoiceKeyboard(userRepository, userId)
+        );
 
         userStateManager.createReminderDraft(userId);
         userStateManager.setState(userId, UserState.AWAITING_REMINDER_DATE);
