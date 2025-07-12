@@ -1,10 +1,12 @@
 package bot.tg.schedule;
 
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.util.MenuHelper;
 import bot.tg.util.TelegramHelper;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class GoodMorningJob implements Job {
@@ -14,11 +16,13 @@ public class GoodMorningJob implements Job {
         long userId = data.getLong("userId");
         String firstName = data.getString("firstName");
 
-        String msg = "🌅 Доброго ранку, " + firstName +
+        String morningMessage = "🌅 Доброго ранку, " + firstName +
                 "! \n Прокидайся і готуйся якнайкраще провести цей день :)";
 
         TelegramClient client = TelegramClientProvider.getInstance();
-        TelegramHelper.sendSimpleMessage(client, userId, msg);
+        TelegramHelper.sendSimpleMessage(client, userId, morningMessage);
+
+        SendMessage menuMessage = MenuHelper.formMenuMessage(userId);
+        TelegramHelper.safeExecute(client, menuMessage);
     }
 }
-
