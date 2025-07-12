@@ -10,13 +10,17 @@ public class CallbackDispatcher {
     private final List<CallbackHandler> handlers = new ArrayList<>();
 
     public CallbackDispatcher() {
-       register(new TaskStatusHandler());
-       register(new TaskDetailsHandler());
-       register(new ReminderDateHandler());
-       register(new DeleteTaskHandler());
-       register(new DeleteReminderHandler());
-       register(new ReminderTimePickerHandler());
-       register(new BackToTasksHandler());
+        register(new TaskStatusHandler());
+        register(new TaskDetailsHandler());
+        register(new ReminderDateHandler());
+        register(new EditTaskHandler());
+        register(new DeleteTaskHandler());
+        register(new DeleteReminderHandler());
+        register(new ReminderTimePickerHandler());
+        register(new BackToTasksHandler());
+        register(new IgnoreHandler());
+        register(new NewReminderHandler());
+        register(new NewTaskHandler());
     }
 
     public void register(CallbackHandler handler) {
