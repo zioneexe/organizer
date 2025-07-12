@@ -1,5 +1,6 @@
 package bot.tg.state;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.mapper.ReminderMapper;
 import bot.tg.model.Reminder;
@@ -41,6 +42,17 @@ public class ReminderTextHandler implements StateHandler {
             long userId = update.getMessage().getFrom().getId();
             String text = update.getMessage().getText();
 
+            if (text.length() > 40) {
+                TelegramHelper.sendMessageWithForceReply(
+                        telegramClient,
+                        chatId,
+                        "Назва занадто довга. 🙈 Скороти до 40 символів."
+                );
+                return;
+            }
+
+            userStateManager.setState(userId, UserState.IDLE);
+
             ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
             dto.setText(text);
 
@@ -56,7 +68,6 @@ public class ReminderTextHandler implements StateHandler {
                 if (!calendarLink.isBlank()) replyText += "\n\nПодія додана в Google Календар: " + calendarLink;
             }
 
-            userStateManager.setState(userId, UserState.IDLE);
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyText);
 
             SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(

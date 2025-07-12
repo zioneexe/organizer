@@ -26,6 +26,15 @@ public class TaskTitleHandler implements StateHandler {
             long userId = update.getMessage().getFrom().getId();
             String text = update.getMessage().getText();
 
+            if (text.length() > 40) {
+                TelegramHelper.sendMessageWithForceReply(
+                        telegramClient,
+                        chatId,
+                        "Назва занадто довга. 🙈 Скороти до 40 символів."
+                );
+                return;
+            }
+
             userStateManager.setState(userId, UserState.AWAITING_TASK_DESCRIPTION);
 
             TaskCreateDto dto = userStateManager.getTaskDraft(userId);

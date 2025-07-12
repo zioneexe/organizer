@@ -2,5 +2,5 @@ package bot.tg.constant;
 
 public class Core {
 
-    public static final String DATABASE_NAME = "organizer";
+    public static int DEFAULT_PAGE_SIZE = 3;
 }
