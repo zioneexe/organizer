@@ -10,6 +10,8 @@ import lombok.Getter;
 public class ServiceProvider {
 
     @Getter
+    private static MessageService messageService;
+    @Getter
     private static UserStateManager userStateManager;
     @Getter
     private static CommandRegistry commandRegistry;
@@ -17,14 +19,15 @@ public class ServiceProvider {
     private static StateDispatcher stateDispatcher;
     @Getter
     private static CallbackDispatcher callbackDispatcher;
-    @Getter
-    private static MessageService messageService;
 
     public static void init() {
+        // needs to be instantiated before handlers
+        // because they are dependent on it
+        ServiceProvider.messageService = new MessageService();
+
         ServiceProvider.userStateManager = new UserStateManager();
         ServiceProvider.commandRegistry = new CommandRegistry();
         ServiceProvider.stateDispatcher = new StateDispatcher();
         ServiceProvider.callbackDispatcher = new CallbackDispatcher();
-        ServiceProvider.messageService = new MessageService();
     }
 }
