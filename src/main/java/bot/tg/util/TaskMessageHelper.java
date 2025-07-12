@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static bot.tg.util.Constants.*;
+import static bot.tg.constant.Callback.*;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
+import static bot.tg.constant.Task.Callback.*;
 import static bot.tg.util.TextHelper.escapeMarkdown;
 
-public class TaskHelper {
+public class TaskMessageHelper {
 
-    private TaskHelper() {}
+    private TaskMessageHelper() {}
 
     private static final Map<TaskStatus, String> STATUS_EMOJIS = new HashMap<>() {{
         put(TaskStatus.IN_PROGRESS, "\uD83D\uDFE8 ");
@@ -40,13 +42,18 @@ public class TaskHelper {
                 "*Опис:* " + description + "\n" +
                 "*Статус:* " + statusLabel;
 
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        row.add(InlineKeyboardButton.builder()
+        List<InlineKeyboardButton> actionButtonsRow = new ArrayList<>();
+
+        actionButtonsRow.add(InlineKeyboardButton.builder()
                 .text("🔙 Назад")
                 .callbackData(BACK_TO_TASKS)
                 .build());
+        actionButtonsRow.add(InlineKeyboardButton.builder()
+                .text("🗑")
+                .callbackData(DELETE_TASK + COLON_DELIMITER + task.getId())
+                .build());
 
-        keyboardRows.add(row);
+        keyboardRows.add(actionButtonsRow);
 
         return Map.entry(keyboardRows, builder);
     }
@@ -55,22 +62,29 @@ public class TaskHelper {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
 
         if (tasks.isEmpty()) {
+            List<InlineKeyboardButton> addNewTaskButton = new ArrayList<>();
+
+            addNewTaskButton.add(InlineKeyboardButton.builder()
+                    .text("Нове завдання")
+                    .callbackData("new_task")
+                    .build());
+
+            keyboardRows.add(addNewTaskButton);
+
             return Map.entry(keyboardRows, "📝 Завдань на сьогодні поки немає.");
         }
 
         StringBuilder answerBuilder = new StringBuilder("*📝 Ваші завдання на сьогодні:*\n\n");
 
         AtomicInteger counter = new AtomicInteger(0);
-        List<InlineKeyboardButton> taskStatusButtons = new ArrayList<>();
-        List<InlineKeyboardButton> taskDetailsButtons = new ArrayList<>();
-        List<InlineKeyboardButton> taskDeleteButtons = new ArrayList<>();
+        List<InlineKeyboardButton> taskActionButtons = new ArrayList<>();
         tasks.forEach(task -> {
             int index = counter.incrementAndGet();
             boolean completed = task.getCompleted();
             TaskStatus taskStatus = completed ? TaskStatus.COMPLETED : TaskStatus.IN_PROGRESS;
             String statusEmoji = STATUS_EMOJIS.get(taskStatus);
             String statusActionEmoji = STATUS_ACTION_EMOJIS.get(taskStatus);
-            String callbackStatus = completed ? IN_PROGRESS_TASK : COMPLETED_TASK;
+            String statusCallback = completed ? IN_PROGRESS_TASK : COMPLETED_TASK;
 
             answerBuilder.append(index)
                     .append(". ")
@@ -79,25 +93,39 @@ public class TaskHelper {
                     .append("_").append(escapeMarkdown(task.getTitle())).append("_")
                     .append("\n");
 
-            taskStatusButtons.add(InlineKeyboardButton.builder()
+            taskActionButtons.add(InlineKeyboardButton.builder()
                     .text(index + " " + statusActionEmoji)
-                    .callbackData(callbackStatus + COLON_DELIMITER + task.getId())
+                    .callbackData(statusCallback + COLON_DELIMITER + task.getId())
                     .build());
 
-            taskDetailsButtons.add(InlineKeyboardButton.builder()
+            taskActionButtons.add(InlineKeyboardButton.builder()
+                    .text(index + " ℹ️")
+                    .callbackData(EDIT_TASK + COLON_DELIMITER + task.getId())
+                    .build());
+
+            taskActionButtons.add(InlineKeyboardButton.builder()
                     .text(index + " ℹ️")
                     .callbackData(DETAILS_TASK + COLON_DELIMITER + task.getId())
                     .build());
-
-            taskDeleteButtons.add(InlineKeyboardButton.builder()
-                    .text(index + " 🗑")
-                    .callbackData(DELETE_TASK + COLON_DELIMITER + task.getId())
-                    .build());
         });
 
-        keyboardRows.add(taskStatusButtons);
-        keyboardRows.add(taskDetailsButtons);
-        keyboardRows.add(taskDeleteButtons);
+        List<InlineKeyboardButton> paginationButtons = new ArrayList<>();
+
+        paginationButtons.add(InlineKeyboardButton.builder()
+                .text("Prev")
+                .callbackData("")
+                .build());
+        paginationButtons.add(InlineKeyboardButton.builder()
+                .text(",")
+                .callbackData(IGNORE)
+                .build());
+        paginationButtons.add(InlineKeyboardButton.builder()
+                .text("Next")
+                .callbackData("")
+                .build());
+
+        keyboardRows.add(paginationButtons);
+        keyboardRows.add(taskActionButtons);
 
         return Map.entry(keyboardRows, answerBuilder.toString());
     }

@@ -22,7 +22,7 @@ public class TasksResponseHelper {
         long userId = update.getMessage().getFrom().getId();
 
         List<TodoTask> tasks = taskRepository.getForTodayByUserId(userId);
-        Map.Entry<List<List<InlineKeyboardButton>>, String> tasksMessage = TaskHelper.formTasksMessage(tasks);
+        Map.Entry<List<List<InlineKeyboardButton>>, String> tasksMessage = TaskMessageHelper.formTasksMessage(tasks);
         List<List<InlineKeyboardButton>> keyboardRows = tasksMessage.getKey();
         String answer = tasksMessage.getValue();
 
@@ -44,7 +44,7 @@ public class TasksResponseHelper {
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
         List<TodoTask> updatedTasks = taskRepository.getForTodayByUserId(userId);
-        Map.Entry<List<List<InlineKeyboardButton>>, String> updatedTasksMessage = TaskHelper.formTasksMessage(updatedTasks);
+        Map.Entry<List<List<InlineKeyboardButton>>, String> updatedTasksMessage = TaskMessageHelper.formTasksMessage(updatedTasks);
         List<List<InlineKeyboardButton>> keyboardRows = updatedTasksMessage.getKey();
         String editAnswer = updatedTasksMessage.getValue();
 

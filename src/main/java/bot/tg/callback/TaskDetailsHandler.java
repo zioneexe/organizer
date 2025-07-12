@@ -4,7 +4,7 @@ import bot.tg.model.TodoTask;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.TaskHelper;
+import bot.tg.util.TaskMessageHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -53,7 +53,7 @@ public class TaskDetailsHandler implements CallbackHandler {
         }
 
         TodoTask task = taskRepository.getById(taskId);
-        Map.Entry<List<List<InlineKeyboardButton>>, String> details = TaskHelper.formDetailsMessage(task);
+        Map.Entry<List<List<InlineKeyboardButton>>, String> details = TaskMessageHelper.formDetailsMessage(task);
         List<InlineKeyboardButton> buttons = details.getKey().getFirst();
 
         EditMessageText editMessage = EditMessageText.builder()
