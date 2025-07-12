@@ -59,7 +59,11 @@ public class ReminderTextHandler implements StateHandler {
             userStateManager.setState(userId, UserState.IDLE);
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyText);
 
-            SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(userRepository, reminderRepository, update);
+            SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
+                    userRepository,
+                    reminderRepository,
+                    new ChatContext(userId, chatId)
+            );
             TelegramHelper.safeExecute(telegramClient, remindersMessage);
         }
     }

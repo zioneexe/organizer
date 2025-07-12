@@ -1,13 +1,12 @@
 package bot.tg.service;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.constant.Reminder.Response.REMINDER_DATE;
@@ -25,24 +24,16 @@ public class ReminderService {
     }
 
     public void startReminderCreation(Update update) {
-        long userId = update.getMessage().getFrom().getId();
-        long chatId = update.getMessage().getChatId();
+        ChatContext chatContext = TelegramHelper.extractChatContext(update);
+        if (chatContext == null) return;
+        long chatId = chatContext.getChatId();
+        long userId = chatContext.getUserId();
 
-        SendMessage removeKeyboard = SendMessage.builder()
-                .chatId(chatId)
-                .text(ALRIGHT)
-                .replyMarkup(new ReplyKeyboardRemove(true))
-                .build();
-        TelegramHelper.safeExecute(telegramClient, removeKeyboard);
-
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(REMINDER_DATE)
-                .replyMarkup(formDateChoiceKeyboard())
-                .build();
+        TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, chatId, ALRIGHT);
+        TelegramHelper.sendMessageWithMarkup(telegramClient, chatId, REMINDER_DATE, formDateChoiceKeyboard());
 
         userStateManager.createReminderDraft(userId);
         userStateManager.setState(userId, UserState.AWAITING_REMINDER_DATE);
-        TelegramHelper.safeExecute(telegramClient, sendMessage);
     }
+
 }

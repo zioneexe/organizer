@@ -89,23 +89,13 @@ public class ReminderTimePickerHandler implements CallbackHandler {
             }
             case CONFIRM -> {
                 ServiceProvider.getUserStateManager().setState(userId, UserState.AWAITING_REMINDER_TEXT);
-                SendMessage message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(REMINDER_TEXT)
-                        .replyMarkup(ForceReplyKeyboard.builder().forceReply(true).build())
-                        .build();
-                TelegramHelper.safeExecute(telegramClient, message);
+                TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, REMINDER_TEXT);
             }
-            case CANCEL -> ServiceProvider.getUserStateManager().clearState(userId);
+            case CANCEL -> TelegramHelper.sendEditMessage(telegramClient, messageId, chatId, "Створення скасовано.");
         }
 
         if (!isValidAction) {
-            AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
-                    .callbackQueryId(callbackQueryId)
-                    .text(INVALID_TIME)
-                    .build();
-            TelegramHelper.safeExecute(telegramClient, answer);
-            return;
+            TelegramHelper.sendCallbackAnswerWithMessage(telegramClient, callbackQueryId, INVALID_TIME);
         }
 
         EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update);

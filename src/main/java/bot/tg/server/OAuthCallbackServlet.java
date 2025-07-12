@@ -4,16 +4,14 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.MongoTokenStore;
 import bot.tg.repository.UserRepository;
-import bot.tg.service.GoogleClientService;
 import bot.tg.service.CredentialSerializer;
+import bot.tg.service.GoogleClientService;
 import bot.tg.util.TelegramHelper;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.IOException;
@@ -49,12 +47,11 @@ public class OAuthCallbackServlet extends HttpServlet {
             tokenStore.store(userIdString, jsonTokens);
 
             long userId = Long.parseLong(userIdString);
-            SendMessage message = SendMessage.builder()
-                    .chatId(userId)
-                    .text("✅ Ви успішно авторизувалися! Тепер ваші завдання та нагадування синхронізуватимуться з Google Calendar.")
-                    .replyMarkup(new ReplyKeyboardRemove(true))
-                    .build();
-            TelegramHelper.safeExecute(telegramClient, message);
+            TelegramHelper.sendMessageWithKeyboardRemove(
+                    telegramClient,
+                    userId,
+                    "✅ Ви успішно авторизувалися! Тепер ваші завдання та нагадування синхронізуватимуться з Google Calendar."
+            );
             userRepository.markAsGoogleConnected(userId, true);
 
             resp.getWriter().write("✅ Авторизація успішна! Можете повертатися до Telegram.");

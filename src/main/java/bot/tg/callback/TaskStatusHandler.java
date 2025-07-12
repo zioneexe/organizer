@@ -58,11 +58,7 @@ public class TaskStatusHandler implements CallbackHandler {
         taskRepository.update(taskId, dto);
 
         String answerText = updatedStatus == TaskStatus.COMPLETED ? TASK_COMPLETED : TASK_IN_PROGRESS;
-        AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
-                .callbackQueryId(callbackQueryId)
-                .text(answerText)
-                .showAlert(true)
-                .build();
+        TelegramHelper.sendCallbackAnswerWithMessageAlert(telegramClient, callbackQueryId, answerText);
 
         EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(taskRepository, update);
 
