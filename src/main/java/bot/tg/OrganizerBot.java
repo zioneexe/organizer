@@ -14,21 +14,21 @@ import bot.tg.state.StateRecognizer;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.StickerHelper;
+import bot.tg.util.TelegramHelper;
 import com.mongodb.client.MongoDatabase;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import static bot.tg.constant.Core.DATABASE_NAME;
+import static bot.tg.constant.Symbol.COMMAND_SYMBOL;
+import static bot.tg.constant.Symbol.SPACE_DELIMITER;
 import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
-import static bot.tg.util.Constants.COMMAND_SYMBOL;
-import static bot.tg.util.Constants.SPACE_DELIMITER;
 
 public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
     private static final String CONNECTION_STRING = System.getenv("CONNECTION_STRING");
-    private static final String DATABASE_NAME = "organizer";
 
     private final CommandRegistry commandRegistry;
     private final MongoConnectionManager mongoConnectionManager;
@@ -46,7 +46,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         TelegramClientProvider.init(apiKey);
         ServiceProvider.init();
 
-        this.commandRegistry = new CommandRegistry();
+        this.commandRegistry = ServiceProvider.getCommandRegistry();
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.stateDispatcher = ServiceProvider.getStateDispatcher();
         this.callbackDispatcher = ServiceProvider.getCallbackDispatcher();
@@ -66,46 +66,68 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         }
 
         if (update.hasMessage() && update.getMessage().hasSticker()) {
-            TelegramClient telegramClient = TelegramClientProvider.getInstance();
-            SendSticker sendSticker = StickerHelper.sendSticker(update);
-            try {
-                telegramClient.execute(sendSticker);
-                return;
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            respondWithSticker(update);
         }
 
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String firstName = update.getMessage().getChat().getFirstName();
-            String lastName = update.getMessage().getChat().getLastName();
-            String username = update.getMessage().getChat().getUserName();
-            long userId = update.getMessage().getFrom().getId();
-
-            if (!userRepository.existsById(userId)) {
-                userRepository.create(new User(userId, firstName, lastName, username, DEFAULT_TIMEZONE, false));
-            }
+            createUserIfNotExists(update);
 
             String text = update.getMessage().getText();
-
             if (text.startsWith(COMMAND_SYMBOL)) {
-                String command = text.split(SPACE_DELIMITER)[0];
-                commandRegistry.handleCommand(command, update);
+                handleCommand(text, update);
                 return;
             }
 
-            UserState userState = userStateManager.getState(userId);
-            if (userState == UserState.IDLE) {
-                UserState recognizedState = StateRecognizer.recognize(text);
-                userStateManager.setState(userId, recognizedState);
-                userState = userStateManager.getState(userId);
-            }
-
-            stateDispatcher.dispatch(userState, update);
+            handleState(update);
         }
     }
 
     public void close() {
         mongoConnectionManager.close();
+    }
+
+    private void respondWithSticker(Update update) {
+        TelegramClient telegramClient = TelegramClientProvider.getInstance();
+        SendSticker sendSticker = StickerHelper.sendSticker(update);
+        TelegramHelper.safeExecute(telegramClient, sendSticker);
+    }
+
+    private void handleCommand(String text, Update update) {
+        String command = text.split(SPACE_DELIMITER)[0];
+        commandRegistry.handleCommand(command, update);
+    }
+
+    private void handleState(Update update) {
+        long userId = update.getMessage().getFrom().getId();
+        String text = update.getMessage().getText();
+
+        UserState userState = userStateManager.getState(userId);
+        if (userState == UserState.IDLE) {
+            UserState recognizedState = StateRecognizer.recognize(text);
+            userStateManager.setState(userId, recognizedState);
+            userState = userStateManager.getState(userId);
+        }
+
+        stateDispatcher.dispatch(userState, update);
+    }
+
+    private void createUserIfNotExists(Update update) {
+        String firstName = update.getMessage().getChat().getFirstName();
+        String lastName = update.getMessage().getChat().getLastName();
+        String username = update.getMessage().getChat().getUserName();
+        long userId = update.getMessage().getFrom().getId();
+
+        if (!userRepository.existsById(userId)) {
+            userRepository.create(
+                    User.builder()
+                            .userId(userId)
+                            .firstName(firstName)
+                            .lastName(lastName)
+                            .username(username)
+                            .timeZone(DEFAULT_TIMEZONE)
+                            .isGoogleConnected(false)
+                            .build()
+            );
+        }
     }
 }

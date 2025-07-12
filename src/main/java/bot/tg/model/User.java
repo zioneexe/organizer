@@ -1,6 +1,7 @@
 package bot.tg.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -8,6 +9,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
 
     @BsonProperty("user_id")
