@@ -102,7 +102,10 @@ public class ReminderTimePickerHandler implements CallbackHandler {
                 ServiceProvider.getUserStateManager().setState(userId, UserState.AWAITING_REMINDER_TEXT);
                 TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, REMINDER_TEXT);
             }
-            case CANCEL -> TelegramHelper.sendEditMessage(telegramClient, messageId, chatId, "Створення скасовано.");
+            case CANCEL -> {
+                TelegramHelper.sendEditMessage(telegramClient, messageId, chatId, "Створення скасовано.");
+                return;
+            }
         }
 
         if (!isValidAction) {
