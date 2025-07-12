@@ -6,6 +6,8 @@ import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.schedule.MessageScheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.*;
 import java.util.List;
@@ -14,13 +16,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static bot.tg.logging.Logger.log;
-
 public class MessageService {
 
     private final MessageScheduler messageScheduler;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
 
     public MessageService() {
         this.reminderRepository = RepositoryProvider.getReminderRepository();
@@ -39,7 +41,7 @@ public class MessageService {
 
     public void scheduleUnfiredReminders() {
         List<Reminder> reminders = reminderRepository.getUnfiredAfterNow();
-        log("Found " + reminders.size() + " unfired reminders to schedule.");
+        log.info("Found {} unfired reminders to schedule.", reminders.size());
 
         Set<Long> userIds = reminders.stream()
                 .map(Reminder::getUserId)
@@ -53,13 +55,12 @@ public class MessageService {
                     User user = usersById.get(reminder.getUserId());
                     String userTimeZone = user != null && user.getTimeZone() != null ? user.getTimeZone() : "";
                     boolean schedulable = isSchedulable(reminder, userTimeZone);
-                    log("Reminder id=" + reminder.getId() + " for userId=" + reminder.getUserId() +
-                            " with timezone='" + userTimeZone + "' schedulable=" + schedulable);
+                    log.info("Reminder id={} for userId={} with timezone='{}' schedulable={}", reminder.getId(), reminder.getUserId(), userTimeZone, schedulable);
                     return schedulable;
                 })
                 .forEach(reminder -> {
                     messageScheduler.schedule(reminder);
-                    log("Scheduled reminder with id=" + reminder.getId() + " for userId=" + reminder.getUserId());
+                    log.info("Scheduled reminder with id={} for userId={}", reminder.getId(), reminder.getUserId());
                 });
     }
 
@@ -76,7 +77,7 @@ public class MessageService {
         Boolean fired = reminder.getFired();
 
         if (localDateTime == null || fired) {
-            log("Reminder id=" + reminder.getId() + " is not schedulable because localDateTime is null or fired=" + fired);
+            log.error("Reminder id={} is not schedulable because localDateTime is null or fired={}", reminder.getId(), fired);
             return false;
         }
 
@@ -90,8 +91,7 @@ public class MessageService {
         Instant nowInstant = Instant.now();
 
         boolean result = reminderInstant.isAfter(nowInstant);
-        log("Checking schedulability for reminder id=" + reminder.getId() +
-                ": reminderInstant=" + reminderInstant + ", nowInstant=" + nowInstant + ", result=" + result);
+        log.info("Checking schedulability for reminder id={}: reminderInstant={}, nowInstant={}, result={}", reminder.getId(), reminderInstant, nowInstant, result);
 
         return result;
     }

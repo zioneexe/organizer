@@ -4,6 +4,8 @@ import bot.tg.model.Reminder;
 import bot.tg.model.User;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -11,13 +13,13 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static bot.tg.logging.Logger.log;
-
 public class MessageScheduler {
 
     public static final String DEFAULT_TIMEZONE = "Europe/Kiev";
 
     private final Scheduler scheduler;
+
+    private static final Logger log = LoggerFactory.getLogger(MessageScheduler.class);
 
     public MessageScheduler() {
         try {
@@ -57,8 +59,8 @@ public class MessageScheduler {
                 .build();
 
         try {
-            if (scheduler.checkExists(jobKey)) return;
-            scheduler.scheduleJob(job, trigger);
+            if (this.scheduler.checkExists(jobKey)) return;
+            this.scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to schedule good morning job for user " + user.getUserId(), e);
         }
@@ -91,15 +93,15 @@ public class MessageScheduler {
                 .build();
 
         try {
-            if (scheduler.checkExists(jobKey)) {
-                log("Job already exists for reminder id=" + reminder.getId());
+            if (this.scheduler.checkExists(jobKey)) {
+                log.info("Job already exists for reminder id=" + reminder.getId());
                 return;
             }
 
-            scheduler.scheduleJob(job, trigger);
-            log("Scheduled job for reminder id=" + reminder.getId() + " successfully.");
+            this.scheduler.scheduleJob(job, trigger);
+            log.info("Scheduled job for reminder id={} successfully.", reminder.getId());
         } catch (SchedulerException e) {
-            log("Failed to schedule reminder id=" + reminder.getId() + ": " + e.getMessage());
+            log.error("Failed to schedule reminder id={}: {}", reminder.getId(), e.getMessage());
             throw new RuntimeException("Failed to schedule reminder: " + jobId, e);
         }
     }
@@ -108,7 +110,7 @@ public class MessageScheduler {
     public void cancel(Reminder reminder) {
         String jobId = "reminder-job-" + reminder.getId().toHexString();
         try {
-            scheduler.deleteJob(new JobKey(jobId, "reminders"));
+            this.scheduler.deleteJob(new JobKey(jobId, "reminders"));
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
