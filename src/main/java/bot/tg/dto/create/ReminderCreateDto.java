@@ -1,6 +1,6 @@
 package bot.tg.dto.create;
 
-import bot.tg.dto.DateTimeDto;
+import bot.tg.dto.DateTime;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,13 +12,13 @@ public class ReminderCreateDto {
 
     private String text;
 
-    private DateTimeDto dateTime;
+    private DateTime dateTime;
 
     private LocalDateTime createdAt;
 
     public ReminderCreateDto(Long userId) {
         this.userId = userId;
-        this.dateTime = new DateTimeDto();
+        this.dateTime = new DateTime();
         this.createdAt = LocalDateTime.now();
     }
 }

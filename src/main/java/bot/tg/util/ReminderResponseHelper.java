@@ -1,11 +1,11 @@
 package bot.tg.util;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -27,9 +27,9 @@ public class ReminderResponseHelper {
 
     public static SendMessage createRemindersMessage(UserRepository userRepository,
                                                      ReminderRepository reminderRepository,
-                                                     Update update) {
-        long chatId = update.getMessage().getChatId();
-        long userId = update.getMessage().getFrom().getId();
+                                                     ChatContext chatContext) {
+        long userId = chatContext.getChatId();
+        long chatId = chatContext.getChatId();
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
@@ -48,9 +48,9 @@ public class ReminderResponseHelper {
                 .chatId(chatId)
                 .text(answer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(keyboardRows.isEmpty() ? List.of() : List.of(
-                                new InlineKeyboardRow(keyboardRows.getFirst())
-                        ))
+                        .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
+                                .map(InlineKeyboardRow::new)
+                                .toList())
                         .build())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();

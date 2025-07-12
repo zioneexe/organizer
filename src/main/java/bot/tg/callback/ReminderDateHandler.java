@@ -1,6 +1,5 @@
 package bot.tg.callback;
 
-import bot.tg.dto.DateTimeDto;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
@@ -15,8 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 
 import static bot.tg.constant.Reminder.Callback.DATE_PICKER;
@@ -41,30 +38,19 @@ public class ReminderDateHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        if (!update.hasCallbackQuery()) {
-            return;
-        }
-
         long userId = update.getCallbackQuery().getFrom().getId();
-
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
 
+        ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
         String dateString = data.split(COLON_DELIMITER)[1];
         LocalDate date = parseDate(dateString);
-        ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
-        DateTimeDto dateTimeDto = dto.getDateTime();
-
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of(userTimeZone));
-        dateTimeDto.setDate(date);
-        dateTimeDto.setHour(now.getHour());
-        dateTimeDto.setMinute(now.getMinute());
-        dateTimeDto.setTimeZone(userTimeZone);
-
+        dto.getDateTime().setDate(date);
         userStateManager.setState(userId, UserState.AWAITING_REMINDER_TIME);
 
-        EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update);
+        String userTimeZone = userRepository.getById(userId).getTimeZone();
+        EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update, userTimeZone);
+
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
