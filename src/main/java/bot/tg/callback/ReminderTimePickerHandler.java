@@ -1,6 +1,6 @@
 package bot.tg.callback;
 
-import bot.tg.dto.DateTimeDto;
+import bot.tg.dto.DateTime;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
@@ -9,18 +9,17 @@ import bot.tg.repository.UserRepository;
 import bot.tg.state.UserState;
 import bot.tg.util.TelegramHelper;
 import bot.tg.util.TimePickerResponseHelper;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-import static bot.tg.constant.Callback.*;
+import static bot.tg.constant.Callback.CANCEL;
+import static bot.tg.constant.Callback.CONFIRM;
 import static bot.tg.constant.Reminder.Callback.*;
 import static bot.tg.constant.Reminder.Response.REMINDER_TEXT;
 import static bot.tg.constant.ResponseMessage.INVALID_TIME;
@@ -43,12 +42,9 @@ public class ReminderTimePickerHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        if (!update.hasCallbackQuery()) {
-            return;
-        }
-
         long userId = update.getCallbackQuery().getFrom().getId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
+        int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
         String callbackQueryId = update.getCallbackQuery().getId();
         String data = update.getCallbackQuery().getData();
@@ -58,14 +54,14 @@ public class ReminderTimePickerHandler implements CallbackHandler {
 
         String action = parts[1];
         ReminderCreateDto dto = ServiceProvider.getUserStateManager().getReminderDraft(userId);
-        DateTimeDto dateTimeDto = dto.getDateTime();
+        DateTime dateTime = dto.getDateTime();
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId zoneId = userTimeZone != null && !userTimeZone.isBlank() ?
                 ZoneId.of(userTimeZone) :
                 ZoneId.systemDefault();
 
-        boolean isToday = dateTimeDto.getDate().isEqual(LocalDate.now(zoneId));
+        boolean isToday = dateTime.getDate().isEqual(LocalDate.now(zoneId));
         int currentHour = LocalTime.now(zoneId).getHour();
         int currentMinute = LocalTime.now(zoneId).getMinute();
 
@@ -73,21 +69,36 @@ public class ReminderTimePickerHandler implements CallbackHandler {
         switch (action) {
             case CHANGE_HOUR -> {
                 int delta = Integer.parseInt(parts[2]);
-                int newHour = (dateTimeDto.getHour() + delta + 24) % 24;
+                int newHour = (dateTime.getHour() + delta + 24) % 24;
 
                 if (isToday && newHour < currentHour) isValidAction = false;
-                if (isValidAction) dateTimeDto.setHour(newHour);
+                if (isValidAction) {
+                    dateTime.setHour(newHour);
+                    dateTime.setTimeManuallyEdited(true);
+                }
             }
             case CHANGE_MINUTE -> {
-                int previousHour = dateTimeDto.getHour();
+                int previousHour = dateTime.getHour();
                 int delta = Integer.parseInt(parts[2]);
-                int newMinute = (dateTimeDto.getMinute() + delta + 60) % 60;
+                int newMinute = (dateTime.getMinute() + delta + 60) % 60;
 
                 if (isToday && previousHour < currentHour) isValidAction = false;
                 if (isToday && previousHour == currentHour && newMinute < currentMinute) isValidAction = false;
-                if (isValidAction) dateTimeDto.setMinute(newMinute);
+
+                if (isValidAction) {
+                    dateTime.setMinute(newMinute);
+                    dateTime.setTimeManuallyEdited(true);
+                }
             }
             case CONFIRM -> {
+                ZonedDateTime now = ZonedDateTime.now(zoneId).withSecond(0).withNano(0);
+                ZonedDateTime currentlySetTime = DateTime.DateTimeMapper.toZonedDateTime(dateTime).withSecond(0).withNano(0);
+
+                if (now.isAfter(currentlySetTime)) {
+                    isValidAction = false;
+                    break;
+                }
+
                 ServiceProvider.getUserStateManager().setState(userId, UserState.AWAITING_REMINDER_TEXT);
                 TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, REMINDER_TEXT);
             }
@@ -98,7 +109,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
             TelegramHelper.sendCallbackAnswerWithMessage(telegramClient, callbackQueryId, INVALID_TIME);
         }
 
-        EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update);
+        EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update, userTimeZone);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
