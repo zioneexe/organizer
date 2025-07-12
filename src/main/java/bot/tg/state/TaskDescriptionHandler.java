@@ -13,7 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.TASK_CREATED;
+import static bot.tg.constant.Task.Response.TASK_CREATED;
 
 public class TaskDescriptionHandler implements StateHandler {
 

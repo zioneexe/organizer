@@ -1,6 +1,6 @@
 package bot.tg.state;
 
-import static bot.tg.util.Constants.*;
+import static bot.tg.constant.Actions.*;
 
 public class StateRecognizer {
 

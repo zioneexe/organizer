@@ -7,8 +7,8 @@ import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.COLON_DELIMITER;
-import static bot.tg.util.Constants.DELETE_TASK;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
+import static bot.tg.constant.Task.Callback.DELETE_TASK;
 
 public class DeleteTaskHandler implements CallbackHandler {
 

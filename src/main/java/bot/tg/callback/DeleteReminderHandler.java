@@ -7,8 +7,8 @@ import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.COLON_DELIMITER;
-import static bot.tg.util.Constants.DELETE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.DELETE_REMINDER;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class DeleteReminderHandler implements CallbackHandler {
 

@@ -13,7 +13,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
-import static bot.tg.util.Constants.*;
+import static bot.tg.constant.Callback.*;
+import static bot.tg.constant.Reminder.Callback.*;
+import static bot.tg.constant.Reminder.Response.REMINDER_TIME;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class TimePickerResponseHelper {
 

@@ -19,8 +19,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 
-import static bot.tg.util.Constants.COLON_DELIMITER;
-import static bot.tg.util.Constants.DATE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.DATE_PICKER;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class ReminderDateHandler implements CallbackHandler {
 
@@ -36,7 +36,7 @@ public class ReminderDateHandler implements CallbackHandler {
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(DATE_REMINDER + COLON_DELIMITER);
+        return data.startsWith(DATE_PICKER + COLON_DELIMITER);
     }
 
     @Override

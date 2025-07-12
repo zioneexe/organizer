@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.BACK_TO_TASKS;
+import static bot.tg.constant.Task.Callback.BACK_TO_TASKS;
 
 public class BackToTasksHandler implements CallbackHandler {
 

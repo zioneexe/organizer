@@ -12,7 +12,11 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.*;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
+import static bot.tg.constant.Task.Callback.COMPLETED_TASK;
+import static bot.tg.constant.Task.Callback.IN_PROGRESS_TASK;
+import static bot.tg.constant.Task.Response.TASK_COMPLETED;
+import static bot.tg.constant.Task.Response.TASK_IN_PROGRESS;
 
 public class TaskStatusHandler implements CallbackHandler {
 

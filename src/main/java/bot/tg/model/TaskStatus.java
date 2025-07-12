@@ -1,7 +1,7 @@
 package bot.tg.model;
 
-import static bot.tg.util.Constants.COMPLETED_TASK;
-import static bot.tg.util.Constants.IN_PROGRESS_TASK;
+import static bot.tg.constant.Task.Callback.COMPLETED_TASK;
+import static bot.tg.constant.Task.Callback.IN_PROGRESS_TASK;
 
 public enum TaskStatus {
     IN_PROGRESS,

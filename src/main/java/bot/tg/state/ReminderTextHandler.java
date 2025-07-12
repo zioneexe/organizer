@@ -16,7 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.REMINDER_CREATED;
+import static bot.tg.constant.Reminder.Response.REMINDER_CREATED;
 
 public class ReminderTextHandler implements StateHandler {
 

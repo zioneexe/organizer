@@ -17,8 +17,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 import java.util.Map;
 
-import static bot.tg.util.Constants.COLON_DELIMITER;
-import static bot.tg.util.Constants.DETAILS_TASK;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
+import static bot.tg.constant.Task.Callback.DETAILS_TASK;
 
 public class TaskDetailsHandler implements CallbackHandler {
 

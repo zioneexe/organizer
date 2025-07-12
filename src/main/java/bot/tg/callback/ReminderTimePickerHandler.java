@@ -20,7 +20,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 
-import static bot.tg.util.Constants.*;
+import static bot.tg.constant.Callback.*;
+import static bot.tg.constant.Reminder.Callback.*;
+import static bot.tg.constant.Reminder.Response.REMINDER_TEXT;
+import static bot.tg.constant.ResponseMessage.INVALID_TIME;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class ReminderTimePickerHandler implements CallbackHandler {
 

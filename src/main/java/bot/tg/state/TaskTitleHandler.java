@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.util.Constants.TASK_DESCRIPTION;
+import static bot.tg.constant.Task.Response.TASK_DESCRIPTION;
 
 public class TaskTitleHandler implements StateHandler {
 

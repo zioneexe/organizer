@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.HashMap;
 import java.util.Map;
 
-import static bot.tg.util.Constants.UNKNOWN_COMMAND;
+import static bot.tg.constant.ResponseMessage.UNKNOWN_COMMAND;
 
 public class CommandRegistry {
 

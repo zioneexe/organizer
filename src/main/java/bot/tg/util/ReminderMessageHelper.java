@@ -11,18 +11,24 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static bot.tg.util.Constants.COLON_DELIMITER;
-import static bot.tg.util.Constants.DELETE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.DELETE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.NEW_REMINDER;
+import static bot.tg.constant.Reminder.Response.REMINDER_CREATE;
+import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.util.TextHelper.escapeMarkdown;
 
-public class ReminderHelper {
+public class ReminderMessageHelper {
 
-    private ReminderHelper() {}
+    private ReminderMessageHelper() {}
 
     public static Map.Entry<List<List<InlineKeyboardButton>>, String> formRemindersMessage(List<Reminder> reminders, ZoneId userZoneId) {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
+        List<InlineKeyboardButton> actionButtons = new ArrayList<>();
 
         if (reminders.isEmpty()) {
+            actionButtons.add(formNewReminderButton());
+            keyboardRows.add(actionButtons);
+
             return Map.entry(keyboardRows, "🔔 Немає запланованих нагадувань.");
         }
 
@@ -37,7 +43,6 @@ public class ReminderHelper {
                 );
 
         AtomicInteger counter = new AtomicInteger(0);
-        List<InlineKeyboardButton> deleteButtons = new ArrayList<>();
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -65,18 +70,26 @@ public class ReminderHelper {
                         .append("`[").append(time).append("]`")
                         .append("\n");
 
-                deleteButtons.add(InlineKeyboardButton.builder()
+                actionButtons.add(InlineKeyboardButton.builder()
                         .text(index + " 🗑")
                         .callbackData(DELETE_REMINDER + COLON_DELIMITER + reminder.getId())
                         .build());
+
+                actionButtons.add(formNewReminderButton());
             }
 
             answerBuilder.append("\n");
         }
+        keyboardRows.add(actionButtons);
 
-        keyboardRows.add(deleteButtons);
         return Map.entry(keyboardRows, answerBuilder.toString());
     }
 
+    public static InlineKeyboardButton formNewReminderButton() {
+        return InlineKeyboardButton.builder()
+                .text(REMINDER_CREATE)
+                .callbackData(NEW_REMINDER)
+                .build();
+    }
 
 }
