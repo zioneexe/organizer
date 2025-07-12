@@ -1,10 +1,12 @@
 package bot.tg.repository;
 
+import bot.tg.dto.Pageable;
 import bot.tg.dto.update.TaskUpdateDto;
 import bot.tg.model.TodoTask;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.conversions.Bson;
@@ -13,7 +15,6 @@ import org.bson.types.ObjectId;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,19 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         this.tasks = database.getCollection(COLLECTION_NAME, TodoTask.class);
     }
 
+    public long countByUserForDay(long userId, LocalDate date, ZoneId userZoneId) {
+        Date start = Date.from(date.atStartOfDay(userZoneId).toInstant());
+        Date end = Date.from(date.plusDays(1).atStartOfDay(userZoneId).toInstant());
+
+        Bson filter = Filters.and(
+                Filters.eq("user_id", userId),
+                Filters.gte("created_at", start),
+                Filters.lt("created_at", end)
+        );
+
+        return tasks.countDocuments(filter);
+    }
+
     @Override
     public TodoTask create(TodoTask dto) {
         tasks.insertOne(dto);
@@ -41,19 +55,22 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         return tasks.find(eq("_id", new ObjectId(id))).first();
     }
 
-    // TODO: timeZone check
-    public List<TodoTask> getForTodayByUserId(long userId) {
-        ZoneId utc = ZoneOffset.UTC;
-        var start = Date.from(LocalDate.now().atStartOfDay(utc).toInstant());
-        var end = Date.from(LocalDate.now().plusDays(1).atStartOfDay(utc).toInstant());
+    public List<TodoTask> getByUserForDayPaged(long userId, Pageable pageable, LocalDate date, ZoneId userZoneId) {
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPage();
+        int skip = pageSize * (pageNumber - 1);
 
-        var filter = Filters.and(
-                eq("user_id", userId),
+        Date start = Date.from(date.atStartOfDay(userZoneId).toInstant());
+        Date end = Date.from(date.plusDays(1).atStartOfDay(userZoneId).toInstant());
+
+        Bson sort = Sorts.ascending("created_at");
+        Bson filter = Filters.and(
+                Filters.eq("user_id", userId),
                 Filters.gte("created_at", start),
                 Filters.lt("created_at", end)
         );
 
-        return this.tasks.find(filter).into(new ArrayList<>());
+        return this.tasks.find(filter).sort(sort).skip(skip).limit(pageSize).into(new ArrayList<>());
     }
 
     @Override
@@ -80,11 +97,11 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
             updates.add(Updates.set("title", dto.getTitle()));
         }
 
-        if (dto.getDescription() != null)  {
+        if (dto.getDescription() != null) {
             updates.add(Updates.set("description", dto.getDescription()));
         }
 
-        if (dto.getStatus() != null)  {
+        if (dto.getStatus() != null) {
             updates.add(Updates.set("completed", dto.getStatus().toBoolean()));
         }
 
@@ -92,7 +109,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
             updates.add(Updates.set("updated_at", LocalDateTime.now()));
             tasks.updateOne(filter, Updates.combine(updates));
         }
-        
+
         return getById(id);
     }
 

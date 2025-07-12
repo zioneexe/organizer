@@ -8,6 +8,7 @@ public final class Task {
 
         private Response() {}
 
+        public static final String TASK_CREATE = "Нове завдання";
         public static final String TASK_TITLE = "Яка назва завдання? ✨";
         public static final String TASK_DESCRIPTION = "Який опис завдання? \uD83D\uDC40";
         public static final String TASK_CREATED = "Вітаю, завдання створено!";
@@ -20,6 +21,7 @@ public final class Task {
         private Callback() {}
 
         public static final String NEW_TASK = "task_new";
+        public static final String PAGE_TASK = "task_page";
         public static final String IN_PROGRESS_TASK = "task_in_progress";
         public static final String COMPLETED_TASK = "task_completed";
         public static final String EDIT_TASK = "task_edit";
