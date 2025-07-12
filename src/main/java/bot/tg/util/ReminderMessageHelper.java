@@ -64,10 +64,9 @@ public class ReminderMessageHelper {
                 String time = zonedDateTime.format(timeFormatter);
 
                 answerBuilder.append(index)
-                        .append(".   ")
-                        .append(emoji)
-                        .append("   _").append(escapeMarkdown(reminder.getText())).append("_   ")
-                        .append("`[").append(time).append("]`")
+                        .append(".")
+                        .append("   `").append(escapeMarkdown(reminder.getText())).append("`   ")
+                        .append("\\[").append(time).append("] ").append(emoji)
                         .append("\n");
 
                 actionButtons.add(InlineKeyboardButton.builder()
@@ -75,12 +74,13 @@ public class ReminderMessageHelper {
                         .callbackData(DELETE_REMINDER + COLON_DELIMITER + reminder.getId())
                         .build());
 
-                actionButtons.add(formNewReminderButton());
             }
 
             answerBuilder.append("\n");
         }
+
         keyboardRows.add(actionButtons);
+        keyboardRows.add(List.of(formNewReminderButton()));
 
         return Map.entry(keyboardRows, answerBuilder.toString());
     }

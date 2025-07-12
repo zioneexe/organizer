@@ -1,5 +1,6 @@
 package bot.tg.util;
 
+import bot.tg.dto.Pageable;
 import bot.tg.model.TaskStatus;
 import bot.tg.model.TodoTask;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -10,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static bot.tg.constant.Callback.*;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.*;
+import static bot.tg.constant.Task.Response.TASK_CREATE;
 import static bot.tg.util.TextHelper.escapeMarkdown;
 
 public class TaskMessageHelper {
@@ -58,27 +59,21 @@ public class TaskMessageHelper {
         return Map.entry(keyboardRows, builder);
     }
 
-    public static Map.Entry<List<List<InlineKeyboardButton>>, String> formTasksMessage(List<TodoTask> tasks) {
+    public static Map.Entry<List<List<InlineKeyboardButton>>, String> formTasksMessage(List<TodoTask> tasks, Pageable pageable) {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
-
         if (tasks.isEmpty()) {
-            List<InlineKeyboardButton> addNewTaskButton = new ArrayList<>();
-
-            addNewTaskButton.add(InlineKeyboardButton.builder()
-                    .text("Нове завдання")
-                    .callbackData("new_task")
-                    .build());
-
-            keyboardRows.add(addNewTaskButton);
-
+            keyboardRows.add(List.of(formNewTaskButton()));
             return Map.entry(keyboardRows, "📝 Завдань на сьогодні поки немає.");
         }
 
-        StringBuilder answerBuilder = new StringBuilder("*📝 Ваші завдання на сьогодні:*\n\n");
+        int currentPage = pageable.getPage();
+        int totalPages = pageable.getTotalPages();
 
+        StringBuilder answerBuilder = new StringBuilder("*📝 Ваші завдання на сьогодні:*\n\n");
         AtomicInteger counter = new AtomicInteger(0);
-        List<InlineKeyboardButton> taskActionButtons = new ArrayList<>();
         tasks.forEach(task -> {
+            List<InlineKeyboardButton> taskActionButtons = new ArrayList<>();
+
             int index = counter.incrementAndGet();
             boolean completed = task.getCompleted();
             TaskStatus taskStatus = completed ? TaskStatus.COMPLETED : TaskStatus.IN_PROGRESS;
@@ -87,11 +82,10 @@ public class TaskMessageHelper {
             String statusCallback = completed ? IN_PROGRESS_TASK : COMPLETED_TASK;
 
             answerBuilder.append(index)
-                    .append(". ")
+                    .append(".    ")
                     .append(statusEmoji)
-                    .append(" ")
-                    .append("_").append(escapeMarkdown(task.getTitle())).append("_")
-                    .append("\n");
+                    .append("   `").append(escapeMarkdown(task.getTitle())).append("`")
+                    .append("\n\n");
 
             taskActionButtons.add(InlineKeyboardButton.builder()
                     .text(index + " " + statusActionEmoji)
@@ -99,7 +93,7 @@ public class TaskMessageHelper {
                     .build());
 
             taskActionButtons.add(InlineKeyboardButton.builder()
-                    .text(index + " ℹ️")
+                    .text(index + " ✏️")
                     .callbackData(EDIT_TASK + COLON_DELIMITER + task.getId())
                     .build());
 
@@ -107,27 +101,36 @@ public class TaskMessageHelper {
                     .text(index + " ℹ️")
                     .callbackData(DETAILS_TASK + COLON_DELIMITER + task.getId())
                     .build());
+
+            keyboardRows.add(taskActionButtons);
         });
 
-        List<InlineKeyboardButton> paginationButtons = new ArrayList<>();
+        answerBuilder.append("Сторінка ").append(currentPage).append(" / ").append(totalPages);
 
-        paginationButtons.add(InlineKeyboardButton.builder()
-                .text("Prev")
-                .callbackData("")
+        List<InlineKeyboardButton> actionButtons = new ArrayList<>();
+        actionButtons.add(InlineKeyboardButton.builder()
+                .text("<")
+                .callbackData(PAGE_TASK + COLON_DELIMITER + Math.max(currentPage - 1, 1))
                 .build());
-        paginationButtons.add(InlineKeyboardButton.builder()
-                .text(",")
-                .callbackData(IGNORE)
+        actionButtons.add(InlineKeyboardButton.builder()
+                .text(TASK_CREATE)
+                .callbackData(NEW_TASK)
                 .build());
-        paginationButtons.add(InlineKeyboardButton.builder()
-                .text("Next")
-                .callbackData("")
+        actionButtons.add(InlineKeyboardButton.builder()
+                .text(">")
+                .callbackData(PAGE_TASK + COLON_DELIMITER + Math.min(currentPage + 1, totalPages))
                 .build());
 
-        keyboardRows.add(paginationButtons);
-        keyboardRows.add(taskActionButtons);
+        keyboardRows.add(actionButtons);
 
         return Map.entry(keyboardRows, answerBuilder.toString());
+    }
+
+    public static InlineKeyboardButton formNewTaskButton() {
+        return InlineKeyboardButton.builder()
+                .text(TASK_CREATE)
+                .callbackData(NEW_TASK)
+                .build();
     }
 
 }

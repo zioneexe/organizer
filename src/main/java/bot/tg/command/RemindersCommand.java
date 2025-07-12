@@ -1,5 +1,6 @@
 package bot.tg.command;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
@@ -29,10 +30,16 @@ public class RemindersCommand implements BotCommand {
 
     @Override
     public void execute(Update update) {
-        SendMessage sendMessage = ReminderResponseHelper.createRemindersMessage(userRepository, reminderRepository, update);
+        long userId = update.getMessage().getFrom().getId();
+        long chatId = update.getMessage().getChatId();
+
+        SendMessage sendMessage = ReminderResponseHelper.createRemindersMessage(
+                userRepository,
+                reminderRepository,
+                new ChatContext(userId, chatId)
+        );
         TelegramHelper.safeExecute(telegramClient, sendMessage);
 
-        long userId = update.getMessage().getFrom().getId();
         userStateManager.setState(userId, UserState.IDLE);
     }
 }

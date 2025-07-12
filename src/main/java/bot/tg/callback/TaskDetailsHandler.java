@@ -37,10 +37,6 @@ public class TaskDetailsHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        if (!update.hasCallbackQuery()) {
-            return;
-        }
-
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
