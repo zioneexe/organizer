@@ -1,7 +1,5 @@
 package bot.tg;
 
-import bot.tg.callback.CallbackDispatcher;
-import bot.tg.command.CommandRegistry;
 import bot.tg.database.MongoConnectionManager;
 import bot.tg.model.User;
 import bot.tg.provider.RepositoryProvider;
@@ -9,19 +7,16 @@ import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
-import bot.tg.state.StateDispatcher;
 import bot.tg.state.StateRecognizer;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.StickerHelper;
 import bot.tg.util.TelegramHelper;
-import com.mongodb.client.MongoDatabase;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.constant.Core.DATABASE_NAME;
 import static bot.tg.constant.Symbol.COMMAND_SYMBOL;
 import static bot.tg.constant.Symbol.SPACE_DELIMITER;
 import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
@@ -29,39 +24,23 @@ import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
 public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
     private static final String CONNECTION_STRING = System.getenv("CONNECTION_STRING");
+    public static final String DATABASE_NAME = System.getenv("DATABASE_NAME");
 
-    private final CommandRegistry commandRegistry;
     private final MongoConnectionManager mongoConnectionManager;
-
-    private final UserRepository userRepository;
-
-    private final UserStateManager userStateManager;
-    private final StateDispatcher stateDispatcher;
-    private final CallbackDispatcher callbackDispatcher;
 
     public OrganizerBot(String apiKey) {
         this.mongoConnectionManager = new MongoConnectionManager(CONNECTION_STRING, DATABASE_NAME);
-        MongoDatabase database = mongoConnectionManager.getDatabase();
-        RepositoryProvider.init(database);
+        RepositoryProvider.init(this.mongoConnectionManager.getDatabase());
         TelegramClientProvider.init(apiKey);
         ServiceProvider.init();
 
-        this.commandRegistry = ServiceProvider.getCommandRegistry();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.stateDispatcher = ServiceProvider.getStateDispatcher();
-        this.callbackDispatcher = ServiceProvider.getCallbackDispatcher();
-
-        this.userRepository = RepositoryProvider.getUserRepository();
-
-        MessageService messageService = ServiceProvider.getMessageService();
-        messageService.scheduleGoodMorningToAll();
-        messageService.scheduleUnfiredReminders();
+        scheduleStartupJobs();
     }
 
     @Override
     public void consume(Update update) {
         if (update.hasCallbackQuery()) {
-            callbackDispatcher.dispatch(update);
+            ServiceProvider.getCallbackDispatcher().dispatch(update);
             return;
         }
 
@@ -86,6 +65,12 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         mongoConnectionManager.close();
     }
 
+    private void scheduleStartupJobs() {
+        MessageService messageService = ServiceProvider.getMessageService();
+        messageService.scheduleGoodMorningToAll();
+        messageService.scheduleUnfiredReminders();
+    }
+
     private void respondWithSticker(Update update) {
         TelegramClient telegramClient = TelegramClientProvider.getInstance();
         SendSticker sendSticker = StickerHelper.sendSticker(update);
@@ -94,13 +79,14 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
     private void handleCommand(String text, Update update) {
         String command = text.split(SPACE_DELIMITER)[0];
-        commandRegistry.handleCommand(command, update);
+        ServiceProvider.getCommandRegistry().handleCommand(command, update);
     }
 
     private void handleState(Update update) {
         long userId = update.getMessage().getFrom().getId();
         String text = update.getMessage().getText();
 
+        UserStateManager userStateManager = ServiceProvider.getUserStateManager();
         UserState userState = userStateManager.getState(userId);
         if (userState == UserState.IDLE) {
             UserState recognizedState = StateRecognizer.recognize(text);
@@ -108,7 +94,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
             userState = userStateManager.getState(userId);
         }
 
-        stateDispatcher.dispatch(userState, update);
+        ServiceProvider.getStateDispatcher().dispatch(userState, update);
     }
 
     private void createUserIfNotExists(Update update) {
@@ -117,6 +103,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
         String username = update.getMessage().getChat().getUserName();
         long userId = update.getMessage().getFrom().getId();
 
+        UserRepository userRepository = RepositoryProvider.getUserRepository();
         if (!userRepository.existsById(userId)) {
             userRepository.create(
                     User.builder()
