@@ -16,10 +16,6 @@ public class IgnoreHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update) {
-        if (!update.hasCallbackQuery()) {
-            return;
-        }
-
         String callbackQueryId = update.getCallbackQuery().getId();
         TelegramClient telegramClient = TelegramClientProvider.getInstance();
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);

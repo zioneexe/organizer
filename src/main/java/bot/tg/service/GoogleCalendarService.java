@@ -1,11 +1,10 @@
 package bot.tg.service;
 
-import bot.tg.dto.DateTimeDto;
+import bot.tg.dto.DateTime;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.UserRepository;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
@@ -30,16 +29,16 @@ public class GoogleCalendarService {
                     .setSummary(reminder.getText())
                     .setDescription(reminder.getText());
 
-            String startIso = DateTimeDto.DateTimeMapper.toZonedDateTime(reminder.getDateTime())
+            String startIso = DateTime.DateTimeMapper.toZonedDateTime(reminder.getDateTime())
                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            String endIso = DateTimeDto.DateTimeMapper.toZonedDateTime(reminder.getDateTime()).plusMinutes(30)
+            String endIso = DateTime.DateTimeMapper.toZonedDateTime(reminder.getDateTime()).plusMinutes(30)
                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
             EventDateTime start = new EventDateTime()
-                    .setDateTime(new DateTime(startIso))
+                    .setDateTime(new com.google.api.client.util.DateTime(startIso))
                     .setTimeZone(userTimeZone.isEmpty() ? DEFAULT_TIMEZONE : userTimeZone);
             EventDateTime end = new EventDateTime()
-                    .setDateTime(new DateTime(endIso))
+                    .setDateTime(new com.google.api.client.util.DateTime(endIso))
                     .setTimeZone(userTimeZone.isEmpty() ? DEFAULT_TIMEZONE : userTimeZone);
 
             event.setStart(start).setEnd(end);

@@ -21,6 +21,7 @@ public class CallbackDispatcher {
         register(new IgnoreHandler());
         register(new NewReminderHandler());
         register(new NewTaskHandler());
+        register(new TaskPaginationHandler());
     }
 
     public void register(CallbackHandler handler) {
@@ -30,8 +31,8 @@ public class CallbackDispatcher {
     public void dispatch(Update update) {
         String data = update.getCallbackQuery().getData();
         handlers.stream()
-                .filter(h -> h.supports(data))
+                .filter(handler -> handler.supports(data))
                 .findFirst()
-                .ifPresent(h -> h.handle(update));
+                .ifPresent(handler -> handler.handle(update));
     }
 }

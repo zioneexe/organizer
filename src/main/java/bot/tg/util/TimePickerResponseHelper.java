@@ -1,6 +1,6 @@
 package bot.tg.util;
 
-import bot.tg.dto.DateTimeDto;
+import bot.tg.dto.DateTime;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.state.UserStateManager;
@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class TimePickerResponseHelper {
 
     private TimePickerResponseHelper() {}
 
-    public static EditMessageText createTimePickerEditMessage(Update update) {
+    public static EditMessageText createTimePickerEditMessage(Update update, String userTimeZone) {
         UserStateManager userStateManager = ServiceProvider.getUserStateManager();
 
         long userId = update.getCallbackQuery().getFrom().getId();
@@ -30,10 +32,17 @@ public class TimePickerResponseHelper {
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
         ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
-        DateTimeDto dateTimeDto = dto.getDateTime();
+        DateTime dateTime = dto.getDateTime();
+
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of(userTimeZone));
+        if (!dateTime.isTimeManuallyEdited() || now.isAfter(DateTime.DateTimeMapper.toZonedDateTime(dateTime))) {
+            dateTime.setHour(now.getHour());
+            dateTime.setMinute(now.getMinute());
+            dateTime.setTimeZone(userTimeZone);
+        }
 
         InlineKeyboardMarkup keyboard = TimePickerResponseHelper.buildTimePickerKeyboard(
-                dateTimeDto.getHour(), dateTimeDto.getMinute()
+                dateTime.getHour(), dateTime.getMinute()
         );
 
         return EditMessageText.builder()
@@ -47,7 +56,7 @@ public class TimePickerResponseHelper {
     private static InlineKeyboardMarkup buildTimePickerKeyboard(int hour, int minute) {
         String timeDisplay = String.format("%02d:%02d", hour, minute);
 
-        List<InlineKeyboardRow> rows = new ArrayList<>();
+        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
 
         InlineKeyboardRow hourRow = new InlineKeyboardRow(
                 button("<<", TIME_PICKER + COLON_DELIMITER + CHANGE_HOUR + COLON_DELIMITER + "-3"),
@@ -69,11 +78,11 @@ public class TimePickerResponseHelper {
                 button("❎ Скасувати", TIME_PICKER + COLON_DELIMITER + CANCEL)
         );
 
-        rows.add(hourRow);
-        rows.add(minuteRow);
-        rows.add(confirmRow);
+        keyboardRows.add(hourRow);
+        keyboardRows.add(minuteRow);
+        keyboardRows.add(confirmRow);
 
-        return new InlineKeyboardMarkup(rows);
+        return new InlineKeyboardMarkup(keyboardRows);
     }
 
     private static InlineKeyboardButton button(String text, String data) {
