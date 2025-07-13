@@ -49,6 +49,8 @@ public class TimeZoneHelper {
         List<InlineKeyboardRow> rows = new ArrayList<>();
 
         for (SupportedTimeZone timeZone : SupportedTimeZone.values()) {
+            if (timeZone == SupportedTimeZone.KYIV_OLD) continue;
+
             InlineKeyboardButton button = InlineKeyboardButton.builder()
                     .text(timeZone.getDisplayName())
                     .callbackData(TIMEZONE + COLON_DELIMITER + timeZone.getZoneId())
@@ -61,4 +63,6 @@ public class TimeZoneHelper {
                 .keyboard(rows)
                 .build();
     }
+
+
 }

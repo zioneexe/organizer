@@ -1,11 +1,13 @@
 package bot.tg.server;
 
 import bot.tg.service.BroadcastService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class BroadcastServlet extends HttpServlet {
 
@@ -20,12 +22,9 @@ public class BroadcastServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("text/plain; charset=UTF-8");
 
-        String text = req.getParameter("text");
-        if (text == null || text.isEmpty()) {
-            resp.setStatus(400);
-            resp.getWriter().write("Відсутній 'text' параметр.");
-            return;
-        }
+        String body = req.getReader().lines().collect(Collectors.joining("\n"));
+        ObjectMapper mapper = new ObjectMapper();
+        String text = mapper.readTree(body).get("text").asText();
 
         broadcastService.broadcast(text);
 
