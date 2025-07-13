@@ -89,9 +89,9 @@ public class TelegramHelper {
         safeExecute(telegramClient, sendMessage);
     }
 
-    public static void sendMessageWithMarkup(TelegramClient telegramClient, long chatId, String message, ReplyKeyboard markup) {
+    public static void sendMessageWithMarkup(TelegramClient telegramClient, long userId, String message, ReplyKeyboard markup) {
         SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
+                .chatId(userId)
                 .text(message)
                 .replyMarkup(markup)
                 .build();

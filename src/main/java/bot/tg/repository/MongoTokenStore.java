@@ -20,7 +20,7 @@ public class MongoTokenStore implements TokenStore {
     public String load(String userIdString) {
         long userId = Long.parseLong(userIdString);
         Document document = tokens.find(new Document("user_id", userId)).first();
-        return document != null ? document.getString("tokens") : null;
+        return document != null ? document.getString(COLLECTION_NAME) : null;
     }
 
     @Override
@@ -29,13 +29,14 @@ public class MongoTokenStore implements TokenStore {
 
         Document filter = new Document("user_id", userId);
         Document document = new Document("user_id", userId)
-                .append("tokens", tokens);
+                .append(COLLECTION_NAME, tokens);
 
         this.tokens.replaceOne(filter, document, new ReplaceOptions().upsert(true));
     }
 
     @Override
-    public void delete(String id) {
-        tokens.deleteOne(new Document("_id", id));
+    public void delete(String userIdString) {
+        long userId = Long.parseLong(userIdString);
+        tokens.deleteMany(new Document("user_id", userId));
     }
 }

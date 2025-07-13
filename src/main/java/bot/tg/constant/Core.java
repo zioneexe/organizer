@@ -2,5 +2,5 @@ package bot.tg.constant;
 
 public class Core {
 
-    public static int DEFAULT_PAGE_SIZE = 3;
+    public static int DEFAULT_PAGE_SIZE = 4;
 }

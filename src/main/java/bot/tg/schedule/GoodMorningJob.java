@@ -1,5 +1,6 @@
 package bot.tg.schedule;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.MenuHelper;
 import bot.tg.util.TelegramHelper;
@@ -22,7 +23,7 @@ public class GoodMorningJob implements Job {
         TelegramClient client = TelegramClientProvider.getInstance();
         TelegramHelper.sendSimpleMessage(client, userId, morningMessage);
 
-        SendMessage menuMessage = MenuHelper.formMenuMessage(userId);
+        SendMessage menuMessage = MenuHelper.formMenuMessage(new ChatContext(userId, userId));
         TelegramHelper.safeExecute(client, menuMessage);
     }
 }

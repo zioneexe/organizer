@@ -1,6 +1,7 @@
 package bot.tg;
 
 import bot.tg.database.MongoConnectionManager;
+import bot.tg.dto.SupportedTimeZone;
 import bot.tg.model.User;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
@@ -14,12 +15,12 @@ import bot.tg.util.StickerHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.constant.Symbol.COMMAND_SYMBOL;
 import static bot.tg.constant.Symbol.SPACE_DELIMITER;
-import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
 
 public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
@@ -48,11 +49,11 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
             respondWithSticker(update);
         }
 
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && (update.getMessage().hasText() || update.getMessage().hasLocation())) {
             createUserIfNotExists(update);
 
             String text = update.getMessage().getText();
-            if (text.startsWith(COMMAND_SYMBOL)) {
+            if (text != null && text.startsWith(COMMAND_SYMBOL)) {
                 handleCommand(text, update);
                 return;
             }
@@ -85,12 +86,20 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
     private void handleState(Update update) {
         long userId = update.getMessage().getFrom().getId();
         String text = update.getMessage().getText();
+        Location location = update.getMessage().getLocation();
 
         UserStateManager userStateManager = ServiceProvider.getUserStateManager();
         UserState userState = userStateManager.getState(userId);
         if (userState == UserState.IDLE) {
-            UserState recognizedState = StateRecognizer.recognize(text);
-            userStateManager.setState(userId, recognizedState);
+            if (text != null) {
+                UserState recognizedState = StateRecognizer.recognize(text);
+                userStateManager.setState(userId, recognizedState);
+            }
+
+            if (location != null) {
+                userStateManager.setState(userId, UserState.AWAITING_LOCATION);
+            }
+
             userState = userStateManager.getState(userId);
         }
 
@@ -111,7 +120,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
                             .firstName(firstName)
                             .lastName(lastName)
                             .username(username)
-                            .timeZone(DEFAULT_TIMEZONE)
+                            .timeZone(SupportedTimeZone.getDefault().getZoneId())
                             .isGoogleConnected(false)
                             .build()
             );

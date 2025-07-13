@@ -1,5 +1,6 @@
 package bot.tg.state;
 
+import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.service.GoogleClientService;
 import bot.tg.util.TelegramHelper;
@@ -13,9 +14,11 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class GoogleConnectHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
+    private final UserStateManager userStateManager;
 
     public GoogleConnectHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
+        this.userStateManager = ServiceProvider.getUserStateManager();
     }
 
     @Override
@@ -41,5 +44,7 @@ public class GoogleConnectHandler implements StateHandler {
                 .build();
 
         TelegramHelper.safeExecute(telegramClient, message);
+
+        userStateManager.setState(userId, UserState.IDLE);
     }
 }

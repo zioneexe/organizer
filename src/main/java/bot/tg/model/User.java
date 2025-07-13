@@ -28,4 +28,7 @@ public class User {
 
     @BsonProperty("is_google_connected")
     private Boolean isGoogleConnected;
+
+    @BsonProperty("morning_greetings_enabled")
+    private Boolean morningGreetingsEnabled;
 }

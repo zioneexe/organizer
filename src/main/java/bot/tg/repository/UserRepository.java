@@ -7,8 +7,10 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,18 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
     public UserRepository(MongoDatabase database) {
         this.users = database.getCollection(COLLECTION_NAME, User.class);
+    }
+
+    public void saveUserLocation(long userId, double latitude, double longitude) {
+        Document locationEntry = new Document()
+                .append("latitude", latitude)
+                .append("longitude", longitude)
+                .append("timestamp", Instant.now());
+
+        users.updateOne(
+                Filters.eq("user_id", userId),
+                Updates.push("location_history", locationEntry)
+        );
     }
 
     public User create(User dto) {
@@ -62,10 +76,36 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         return user != null && user.getIsGoogleConnected();
     }
 
-    public void markAsGoogleConnected(Long id, boolean isConnected) {
+    public boolean morningGreetingsEnabled(Long id) {
+        Bson filter = Filters.eq("user_id", id);
+        User user = users.find(filter).first();
+        return user != null && user.getMorningGreetingsEnabled();
+    }
+
+    public void setTimeZone(Long id, String timeZone) {
+        Bson filter = Filters.eq("user_id", id);
+        Bson update = Updates.combine(
+                Updates.set("time_zone", timeZone),
+                Updates.set("updated_at", LocalDateTime.now())
+        );
+
+        users.updateOne(filter, update);
+    }
+
+    public void markGoogleConnected(Long id, boolean isConnected) {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("is_google_connected", isConnected),
+                Updates.set("updated_at", LocalDateTime.now())
+        );
+
+        users.updateOne(filter, update);
+    }
+
+    public void markMorningGreetingsEnabled(Long id, boolean isEnabled) {
+        Bson filter = Filters.eq("user_id", id);
+        Bson update = Updates.combine(
+                Updates.set("morning_greetings_enabled", isEnabled),
                 Updates.set("updated_at", LocalDateTime.now())
         );
 

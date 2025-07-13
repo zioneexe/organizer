@@ -1,6 +1,7 @@
 package bot.tg.service;
 
 import bot.tg.dto.DateTime;
+import bot.tg.dto.SupportedTimeZone;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.UserRepository;
@@ -11,14 +12,14 @@ import com.google.api.services.calendar.model.EventDateTime;
 
 import java.time.format.DateTimeFormatter;
 
-import static bot.tg.schedule.MessageScheduler.DEFAULT_TIMEZONE;
-
 public class GoogleCalendarService {
 
     private static final String REMINDERS_ID = "primary";
 
     public static String createCalendarEvent(long userId, ReminderCreateDto reminder) {
         try {
+            String defaultZone = SupportedTimeZone.getDefault().getZoneId();
+
             UserRepository userRepository = RepositoryProvider.getUserRepository();
             String userTimeZone = userRepository.getById(userId).getTimeZone();
 
@@ -36,10 +37,10 @@ public class GoogleCalendarService {
 
             EventDateTime start = new EventDateTime()
                     .setDateTime(new com.google.api.client.util.DateTime(startIso))
-                    .setTimeZone(userTimeZone.isEmpty() ? DEFAULT_TIMEZONE : userTimeZone);
+                    .setTimeZone(userTimeZone.isEmpty() ? defaultZone : userTimeZone);
             EventDateTime end = new EventDateTime()
                     .setDateTime(new com.google.api.client.util.DateTime(endIso))
-                    .setTimeZone(userTimeZone.isEmpty() ? DEFAULT_TIMEZONE : userTimeZone);
+                    .setTimeZone(userTimeZone.isEmpty() ? defaultZone : userTimeZone);
 
             event.setStart(start).setEnd(end);
             event = calendar.events().insert(REMINDERS_ID, event).execute();

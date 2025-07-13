@@ -34,7 +34,7 @@ public class StickerHelper {
                 List<Sticker> stickers = stickerSet.getStickers();
 
                 List<Sticker> otherStickers = stickers.stream()
-                        .filter(s -> !s.getFileId().equals(receivedSticker.getFileId()))
+                        .filter(sticker -> !sticker.getFileId().equals(receivedSticker.getFileId()))
                         .toList();
 
                 if (!otherStickers.isEmpty()) {

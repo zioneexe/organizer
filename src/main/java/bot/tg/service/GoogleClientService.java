@@ -8,13 +8,16 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.CalendarScopes;
+import com.google.auth.oauth2.TokenStore;
 
+import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
 public class GoogleClientService {
 
@@ -22,22 +25,14 @@ public class GoogleClientService {
     public static final String CLIENT_SECRET = System.getenv("GOOGLE_CLIENT_SECRET");
     public static final String REDIRECT_URI = System.getenv("GOOGLE_REDIRECT_URI");
 
-    private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/calendar.events");
-
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final NetHttpTransport HTTP_TRANSPORT = createHttpTransport();
-    private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-    private static NetHttpTransport createHttpTransport() {
-        try {
-            return GoogleNetHttpTransport.newTrustedTransport();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
+    private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 
     public static String getAuthorizationUrl(String telegramUserId) {
-        return new GoogleAuthorizationCodeRequestUrl(CLIENT_ID, REDIRECT_URI, SCOPES)
+        return new GoogleAuthorizationCodeRequestUrl(CLIENT_ID, REDIRECT_URI, Collections.singleton(CalendarScopes.CALENDAR_EVENTS))
                 .setAccessType("offline")
                 .set("prompt", "consent")
                 .setState(telegramUserId)
@@ -83,5 +78,34 @@ public class GoogleClientService {
                 .setTokenServerEncodedUrl(SERVER_TOKEN_URL)
                 .build()
                 .setFromTokenResponse(tokenResponse);
+    }
+
+    public static void revokeRefreshTokenForUser(String userId) throws Exception {
+        TokenStore tokenStore = RepositoryProvider.getTokenStore();
+        String tokenString = tokenStore.load(userId);
+        TokenResponse tokenResponse = CredentialSerializer.deserialize(tokenString);
+
+        String refreshToken = tokenResponse.getRefreshToken();
+        revokeToken(refreshToken);
+    }
+
+    private static void revokeToken(String token) throws IOException {
+        HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
+
+        GenericUrl url = new GenericUrl(REVOKE_URL);
+        UrlEncodedContent content = new UrlEncodedContent(Collections.singletonMap("token", token));
+
+        HttpRequest request = requestFactory.buildPostRequest(url, content);
+        HttpResponse response = request.execute();
+
+        response.disconnect();
+    }
+
+    private static NetHttpTransport createHttpTransport() {
+        try {
+            return GoogleNetHttpTransport.newTrustedTransport();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

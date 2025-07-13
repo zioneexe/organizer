@@ -15,7 +15,8 @@ import java.util.TimeZone;
 
 public class MessageScheduler {
 
-    public static final String DEFAULT_TIMEZONE = "Europe/Kiev";
+    public static final int GOOD_MORNING_HOUR = 7;
+    public static final int GOOD_MORNING_MINUTE = 30;
 
     private final Scheduler scheduler;
 
@@ -28,6 +29,19 @@ public class MessageScheduler {
             this.scheduler.start();
         } catch (SchedulerException e) {
             throw new RuntimeException("Не вдалося розпочати роботу Quartz", e);
+        }
+    }
+
+    public void unscheduleGoodMorningForUser(User user) {
+        long userId = user.getUserId();
+
+        String jobId = "good-morning-" + userId;
+        JobKey jobKey = new JobKey(jobId + "-job", "good-morning");
+
+        try {
+            scheduler.deleteJob(jobKey);
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Failed to unschedule good morning job for user " + userId, e);
         }
     }
 
@@ -53,7 +67,7 @@ public class MessageScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
                 .withSchedule(
-                        CronScheduleBuilder.dailyAtHourAndMinute(7, 30)
+                        CronScheduleBuilder.dailyAtHourAndMinute(GOOD_MORNING_HOUR, GOOD_MORNING_MINUTE)
                                 .inTimeZone(TimeZone.getTimeZone(zoneId))
                 )
                 .build();
@@ -94,7 +108,7 @@ public class MessageScheduler {
 
         try {
             if (this.scheduler.checkExists(jobKey)) {
-                log.info("Job already exists for reminder id=" + reminder.getId());
+                log.info("Job already exists for reminder id={}", reminder.getId());
                 return;
             }
 

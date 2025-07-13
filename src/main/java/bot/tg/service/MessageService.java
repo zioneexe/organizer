@@ -64,10 +64,19 @@ public class MessageService {
                 });
     }
 
+    public void scheduleGoodMorningForUser(User user) {
+        messageScheduler.scheduleGoodMorningForUser(user);
+    }
+
+    public void unscheduleGoodMorningForUser(User user) {
+        messageScheduler.unscheduleGoodMorningForUser(user);
+    }
+
     public void scheduleGoodMorningToAll() {
         List<User> users = userRepository.getAll();
 
         for (User user : users) {
+            if (!user.getMorningGreetingsEnabled()) continue;
             messageScheduler.scheduleGoodMorningForUser(user);
         }
     }
