@@ -1,22 +1,29 @@
-package bot.tg.state;
+package bot.tg.state.handler;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.dto.create.TaskCreateDto;
+import bot.tg.mapper.TaskMapper;
+import bot.tg.model.TodoTask;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.service.TaskService;
+import bot.tg.state.StateHandler;
+import bot.tg.state.UserState;
+import bot.tg.state.UserStateManager;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.constant.Task.Response.TASK_DESCRIPTION;
-
-public class TaskTitleHandler implements StateHandler {
+public class TaskDescriptionHandler implements StateHandler {
 
     private final UserStateManager userStateManager;
     private final TelegramClient telegramClient;
+    private final TaskService taskService;
 
-    public TaskTitleHandler() {
+    public TaskDescriptionHandler() {
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.telegramClient = TelegramClientProvider.getInstance();
+        this.taskService = new TaskService();
     }
 
     @Override
@@ -26,21 +33,21 @@ public class TaskTitleHandler implements StateHandler {
             long userId = update.getMessage().getFrom().getId();
             String text = update.getMessage().getText();
 
-            if (text.length() > 40) {
+            if (text.length() > 512) {
                 TelegramHelper.sendMessageWithForceReply(
                         telegramClient,
                         chatId,
-                        "Назва занадто довга. 🙈 Скороти до 40 символів."
+                        "Опис занадто довгий. 🙈 Максимум 512 символів."
                 );
                 return;
             }
 
-            userStateManager.setState(userId, UserState.AWAITING_TASK_DESCRIPTION);
+            userStateManager.setState(userId, UserState.IDLE);
 
             TaskCreateDto dto = userStateManager.getTaskDraft(userId);
-            dto.setTitle(text);
-
-            TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, TASK_DESCRIPTION);
+            dto.setDescription(text);
+            TodoTask task = TaskMapper.fromDto(dto);
+            taskService.endTaskCreation(task, new ChatContext(userId, chatId));
         }
     }
 }
