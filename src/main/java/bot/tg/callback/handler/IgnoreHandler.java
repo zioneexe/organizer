@@ -1,5 +1,6 @@
-package bot.tg.callback;
+package bot.tg.callback.handler;
 
+import bot.tg.callback.CallbackHandler;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;

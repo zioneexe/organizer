@@ -1,5 +1,6 @@
 package bot.tg.command;
 
+import bot.tg.command.impl.*;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;

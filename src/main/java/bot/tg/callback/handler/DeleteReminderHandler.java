@@ -1,4 +1,4 @@
-package bot.tg.callback;
+package bot.tg.callback.handler;
 
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;

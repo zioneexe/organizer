@@ -1,5 +1,6 @@
-package bot.tg.callback;
+package bot.tg.callback.handler;
 
+import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;

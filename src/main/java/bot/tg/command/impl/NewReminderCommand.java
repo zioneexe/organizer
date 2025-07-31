@@ -1,5 +1,6 @@
-package bot.tg.command;
+package bot.tg.command.impl;
 
+import bot.tg.command.BotCommand;
 import bot.tg.service.ReminderService;
 import org.telegram.telegrambots.meta.api.objects.Update;
 

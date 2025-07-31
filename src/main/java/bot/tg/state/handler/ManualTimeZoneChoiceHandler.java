@@ -1,34 +1,37 @@
-package bot.tg.command;
+package bot.tg.state.handler;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
+import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.MenuHelper;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import bot.tg.util.TimeZoneHelper;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-public class StartCommand implements BotCommand {
+import static bot.tg.constant.TimeZone.Response.MANUAL_CHOICE_MESSAGE;
+
+public class ManualTimeZoneChoiceHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
 
-    public StartCommand() {
+    public ManualTimeZoneChoiceHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
         this.userStateManager = ServiceProvider.getUserStateManager();
     }
 
     @Override
-    public void execute(Update update) {
+    public void handle(Update update) {
         long userId = update.getMessage().getFrom().getId();
-        long chatId = update.getMessage().getChatId();
 
-        SendMessage message = MenuHelper.formMenuMessage(new ChatContext(userId, chatId));
-        TelegramHelper.safeExecute(telegramClient, message);
+        InlineKeyboardMarkup timeZoneChoiceKeyboard = TimeZoneHelper.formTimeZoneChoiceKeyboard();
+        TelegramHelper.sendMessageWithMarkup(telegramClient, userId, MANUAL_CHOICE_MESSAGE, timeZoneChoiceKeyboard);
 
         userStateManager.setState(userId, UserState.IDLE);
     }
+
+
 }

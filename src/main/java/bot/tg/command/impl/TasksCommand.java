@@ -1,4 +1,4 @@
-package bot.tg.command;
+package bot.tg.command.impl;
 
 import bot.tg.command.BotCommand;
 import bot.tg.dto.ChatContext;
