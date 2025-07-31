@@ -15,7 +15,7 @@ public class TelegramClientProvider {
 
     public static TelegramClient getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Telegram client provider not initialized");
+            throw new IllegalStateException("Провайдер Telegram клієнта не ініціалізовано");
         }
         return instance;
     }
