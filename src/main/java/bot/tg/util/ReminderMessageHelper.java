@@ -71,6 +71,7 @@ public class ReminderMessageHelper {
                 String firedEmoji = isFired ? "✅" : "⏰";
                 String enabledEmoji = isEnabled ? " \uD83D\uDD15" : " \uD83D\uDD14";
                 String enabledCallbackData = isEnabled ? DISABLE_REMINDER : ENABLE_REMINDER;
+                String disabledMarkerString = isEnabled ? "" : " \uD83D\uDD15";
 
                 ZonedDateTime zonedDateTime = reminder.getDateTime()
                         .atZone(ZoneId.systemDefault())
@@ -80,7 +81,7 @@ public class ReminderMessageHelper {
                 answerBuilder.append(index)
                         .append(".")
                         .append("   `").append(escapeMarkdown(reminder.getText())).append("`   ")
-                        .append("\\[").append(time).append("] ").append(firedEmoji)
+                        .append("\\[").append(time).append("] ").append(firedEmoji).append(disabledMarkerString)
                         .append("\n");
 
                 actionButtons.add(InlineKeyboardButton.builder()
