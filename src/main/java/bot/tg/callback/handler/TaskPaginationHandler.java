@@ -1,5 +1,6 @@
 package bot.tg.callback;
 
+import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.Pageable;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
@@ -59,7 +60,7 @@ public class TaskPaginationHandler implements CallbackHandler {
                 ZoneId.of(userTimeZone);
 
         int neededPage = Integer.parseInt(parts[1]);
-        Pageable pageable = PaginationHelper.formPageableForUser(neededPage, userId, LocalDate.now(), userZoneId);
+        Pageable pageable = PaginationHelper.formTaskPageableForUser(neededPage, userId, LocalDate.now(), userZoneId);
         EditMessageText pageMessage = TasksResponseHelper.createTasksEditMessage(
                 userStateManager,
                 userRepository,

@@ -1,8 +1,7 @@
-package bot.tg.callback;
+package bot.tg.callback.handler;
 
+import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.Pageable;
-import bot.tg.dto.update.TaskUpdateDto;
-import bot.tg.model.TaskStatus;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
@@ -19,70 +18,45 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import static bot.tg.constant.Symbol.COLON_DELIMITER;
-import static bot.tg.constant.Task.Callback.COMPLETED_TASK;
-import static bot.tg.constant.Task.Callback.IN_PROGRESS_TASK;
-import static bot.tg.constant.Task.Response.TASK_COMPLETED;
-import static bot.tg.constant.Task.Response.TASK_IN_PROGRESS;
+import static bot.tg.constant.Task.Callback.BACK_TO_TASKS;
 
-public class TaskStatusHandler implements CallbackHandler {
+public class BackToTasksHandler implements CallbackHandler {
 
-    private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final TelegramClient telegramClient;
 
-    public TaskStatusHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
+    public BackToTasksHandler() {
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.userRepository = RepositoryProvider.getUserRepository();
         this.taskRepository = RepositoryProvider.getTaskRepository();
+        this.telegramClient = TelegramClientProvider.getInstance();
     }
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(IN_PROGRESS_TASK + COLON_DELIMITER) || data.startsWith(COMPLETED_TASK + COLON_DELIMITER);
+        return data.equals(BACK_TO_TASKS);
     }
 
     @Override
     public void handle(Update update) {
         long userId = update.getCallbackQuery().getFrom().getId();
-
-        String callbackQueryId = update.getCallbackQuery().getId();
-        String data = update.getCallbackQuery().getData();
-        String[] parts = data.split(COLON_DELIMITER);
-
-        String status = parts[0];
-        String taskId = parts[1];
-
-        if (!taskRepository.existsById(taskId)) {
-            return;
-        }
-
-        TaskStatus updatedStatus = TaskStatus.fromString(status);
-        TaskUpdateDto dto = TaskUpdateDto.builder()
-                .status(updatedStatus)
-                .build();
-
-        taskRepository.update(taskId, dto);
-
-        String answerText = updatedStatus == TaskStatus.COMPLETED ? TASK_COMPLETED : TASK_IN_PROGRESS;
-        TelegramHelper.sendCallbackAnswerWithMessageAlert(telegramClient, callbackQueryId, answerText);
-
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
         int currentPage = userStateManager.getCurrentTaskPage(userId);
-        Pageable pageable = PaginationHelper.formPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
+        Pageable pageable = PaginationHelper.formTaskPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
         EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(
                 userStateManager,
                 userRepository,
                 taskRepository,
                 pageable,
                 LocalDate.now(),
-                update);
+                update
+        );
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
 }

@@ -1,5 +1,6 @@
 package bot.tg.callback;
 
+import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
 import bot.tg.provider.RepositoryProvider;
@@ -7,6 +8,7 @@ import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
+import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.PaginationHelper;
 import bot.tg.util.TasksResponseHelper;
@@ -71,7 +73,7 @@ public class DeleteTaskHandler implements CallbackHandler {
                 ZoneId.of(userTimeZone);
 
         int currentPage = userStateManager.getCurrentTaskPage(userId);
-        Pageable pageable = PaginationHelper.formPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
+        Pageable pageable = PaginationHelper.formTaskPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
         SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
                 userStateManager,
                 userRepository,
@@ -81,5 +83,7 @@ public class DeleteTaskHandler implements CallbackHandler {
                 LocalDate.now()
         );
         TelegramHelper.safeExecute(telegramClient, tasksMessage);
+
+        userStateManager.setState(userId, UserState.IDLE);
     }
 }

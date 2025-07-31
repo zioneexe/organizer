@@ -1,32 +1,33 @@
-package bot.tg.callback;
+package bot.tg.state;
 
+import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
+import bot.tg.state.StateHandler;
+import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.PaginationHelper;
 import bot.tg.util.TasksResponseHelper;
 import bot.tg.util.TelegramHelper;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import static bot.tg.constant.Task.Callback.BACK_TO_TASKS;
-
-public class BackToTasksHandler implements CallbackHandler {
+public class TaskSelectionHandler implements StateHandler {
 
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final TelegramClient telegramClient;
 
-    public BackToTasksHandler() {
+    public TaskSelectionHandler() {
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.userRepository = RepositoryProvider.getUserRepository();
         this.taskRepository = RepositoryProvider.getTaskRepository();
@@ -34,28 +35,26 @@ public class BackToTasksHandler implements CallbackHandler {
     }
 
     @Override
-    public boolean supports(String data) {
-        return data.equals(BACK_TO_TASKS);
-    }
-
-    @Override
     public void handle(Update update) {
-        long userId = update.getCallbackQuery().getFrom().getId();
+        long userId = update.getMessage().getFrom().getId();
+        long chatId = update.getMessage().getChatId();
+
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        int currentPage = userStateManager.getCurrentTaskPage(userId);
-        Pageable pageable = PaginationHelper.formPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
-        EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(
+        Pageable pageable = PaginationHelper.formTaskPageableForUser(Pageable.FIRST, userId, LocalDate.now(), userZoneId);
+        SendMessage sendMessage = TasksResponseHelper.createTasksMessage(
                 userStateManager,
                 userRepository,
                 taskRepository,
                 pageable,
-                LocalDate.now(),
-                update
+                new ChatContext(userId, chatId),
+                LocalDate.now()
         );
-        TelegramHelper.safeExecute(telegramClient, editMessage);
+        TelegramHelper.safeExecute(telegramClient, sendMessage);
+
+        userStateManager.setState(userId, UserState.IDLE);
     }
 }
