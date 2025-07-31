@@ -1,5 +1,6 @@
 package bot.tg.model;
 
+import bot.tg.dto.Time;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,10 @@ public class User {
     @BsonProperty("is_google_connected")
     private Boolean isGoogleConnected;
 
-    @BsonProperty("morning_greetings_enabled")
-    private Boolean morningGreetingsEnabled;
+    @BsonProperty("greetings_enabled")
+    private Boolean greetingsEnabled;
+
+    @BsonProperty("preferred_greeting_time")
+    private Time preferredGreetingTime;
+
 }

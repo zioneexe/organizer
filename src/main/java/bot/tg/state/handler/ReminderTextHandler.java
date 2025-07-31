@@ -1,6 +1,7 @@
 package bot.tg.state;
 
 import bot.tg.dto.ChatContext;
+import bot.tg.dto.Pageable;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.mapper.ReminderMapper;
 import bot.tg.model.Reminder;
@@ -11,11 +12,17 @@ import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleCalendarService;
 import bot.tg.service.MessageService;
+import bot.tg.state.StateHandler;
+import bot.tg.state.UserState;
+import bot.tg.state.UserStateManager;
+import bot.tg.util.PaginationHelper;
 import bot.tg.util.ReminderResponseHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.time.ZoneId;
 
 import static bot.tg.constant.Reminder.Response.REMINDER_CREATED;
 
@@ -24,6 +31,7 @@ public class ReminderTextHandler implements StateHandler {
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final MessageService messageService;
+    private final GoogleCalendarService googleCalendarService;
     private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
 
@@ -31,6 +39,7 @@ public class ReminderTextHandler implements StateHandler {
         this.telegramClient = TelegramClientProvider.getInstance();
         this.userStateManager = ServiceProvider.getUserStateManager();
         this.messageService = ServiceProvider.getMessageService();
+        this.googleCalendarService = ServiceProvider.getGoogleCalendarService();
         this.userRepository = RepositoryProvider.getUserRepository();
         this.reminderRepository = RepositoryProvider.getReminderRepository();
     }
@@ -57,18 +66,19 @@ public class ReminderTextHandler implements StateHandler {
             dto.setText(text);
 
             Reminder reminder = ReminderMapper.fromDto(dto);
-            reminderRepository.create(reminder);
+            String reminderId = reminderRepository.create(reminder);
             messageService.scheduleReminder(reminder);
 
-            String replyText = REMINDER_CREATED;
-            String calendarLink;
+            StringBuilder replyTextBuilder = new StringBuilder(REMINDER_CREATED);
             boolean isConnected = userRepository.isGoogleConnected(userId);
             if (isConnected) {
-                calendarLink = GoogleCalendarService.createCalendarEvent(userId, dto);
-                if (!calendarLink.isBlank()) replyText += "\n\nПодія додана в Google Календар: " + calendarLink;
+                this.googleCalendarService.createCalendarEventAndReturnLink(userId, reminderId, dto)
+                        .ifPresent(calendarLink -> replyTextBuilder
+                                .append("\n\nПодія додана в Google Календар: ")
+                                .append(calendarLink));
             }
 
-            TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyText);
+            TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyTextBuilder.toString());
 
             SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
                     userRepository,

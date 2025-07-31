@@ -2,6 +2,7 @@ package bot.tg;
 
 import bot.tg.database.MongoConnectionManager;
 import bot.tg.dto.SupportedTimeZone;
+import bot.tg.dto.Time;
 import bot.tg.model.User;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
@@ -15,7 +16,7 @@ import bot.tg.util.StickerHelper;
 import bot.tg.util.TelegramHelper;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
-import org.telegram.telegrambots.meta.api.objects.Location;
+import org.telegram.telegrambots.meta.api.objects.location.Location;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -68,7 +69,7 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
 
     private void scheduleStartupJobs() {
         MessageService messageService = ServiceProvider.getMessageService();
-        messageService.scheduleGoodMorningToAll();
+        messageService.scheduleGreetingsToAll();
         messageService.scheduleUnfiredReminders();
     }
 
@@ -122,6 +123,8 @@ public class OrganizerBot implements LongPollingSingleThreadUpdateConsumer {
                             .username(username)
                             .timeZone(SupportedTimeZone.getDefault().getZoneId())
                             .isGoogleConnected(false)
+                            .greetingsEnabled(true)
+                            .preferredGreetingTime(Time.DEFAULT_REMINDER_TIME)
                             .build()
             );
         }

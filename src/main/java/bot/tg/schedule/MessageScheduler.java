@@ -1,5 +1,6 @@
 package bot.tg.schedule;
 
+import bot.tg.dto.Time;
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
 import org.quartz.*;
@@ -15,9 +16,6 @@ import java.util.TimeZone;
 
 public class MessageScheduler {
 
-    public static final int GOOD_MORNING_HOUR = 7;
-    public static final int GOOD_MORNING_MINUTE = 30;
-
     private final Scheduler scheduler;
 
     private static final Logger log = LoggerFactory.getLogger(MessageScheduler.class);
@@ -32,34 +30,36 @@ public class MessageScheduler {
         }
     }
 
-    public void unscheduleGoodMorningForUser(User user) {
+    public void cancelGreetingForUser(User user) {
         long userId = user.getUserId();
 
-        String jobId = "good-morning-" + userId;
-        JobKey jobKey = new JobKey(jobId + "-job", "good-morning");
+        String jobId = "greeting-" + userId;
+        JobKey jobKey = new JobKey(jobId + "-job", "greeting");
 
         try {
             scheduler.deleteJob(jobKey);
         } catch (SchedulerException e) {
-            throw new RuntimeException("Failed to unschedule good morning job for user " + userId, e);
+            throw new RuntimeException("Failed to unschedule greeting job for user " + userId, e);
         }
     }
 
-    public void scheduleGoodMorningForUser(User user) {
+    public void scheduleGreetingForUser(User user) {
         String zoneId = user.getTimeZone();
         if (zoneId == null || zoneId.isBlank()) {
             zoneId = TimeZone.getDefault().getID();
         }
 
-        String jobId = "good-morning-" + user.getUserId();
-        JobKey jobKey = new JobKey(jobId + "-job", "good-morning");
-        TriggerKey triggerKey = new TriggerKey(jobId + "-trigger", "good-morning");
+        Time time = user.getPreferredGreetingTime();
+
+        String jobId = "greeting-" + user.getUserId();
+        JobKey jobKey = new JobKey(jobId + "-job", "greeting");
+        TriggerKey triggerKey = new TriggerKey(jobId + "-trigger", "greeting");
 
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("userId", user.getUserId());
         dataMap.put("firstName", user.getFirstName());
 
-        JobDetail job = JobBuilder.newJob(GoodMorningJob.class)
+        JobDetail job = JobBuilder.newJob(GreetingJob.class)
                 .withIdentity(jobKey)
                 .usingJobData(dataMap)
                 .build();
@@ -67,7 +67,7 @@ public class MessageScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
                 .withSchedule(
-                        CronScheduleBuilder.dailyAtHourAndMinute(GOOD_MORNING_HOUR, GOOD_MORNING_MINUTE)
+                        CronScheduleBuilder.dailyAtHourAndMinute(time.getHour(), time.getMinute())
                                 .inTimeZone(TimeZone.getTimeZone(zoneId))
                 )
                 .build();
@@ -76,11 +76,11 @@ public class MessageScheduler {
             if (this.scheduler.checkExists(jobKey)) return;
             this.scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
-            throw new RuntimeException("Failed to schedule good morning job for user " + user.getUserId(), e);
+            throw new RuntimeException("Failed to schedule greeting job for user " + user.getUserId(), e);
         }
     }
 
-    public void schedule(Reminder reminder) {
+    public void scheduleReminder(Reminder reminder) {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("reminderId", reminder.getId().toHexString());
         dataMap.put("userId", reminder.getUserId());
@@ -121,7 +121,7 @@ public class MessageScheduler {
     }
 
 
-    public void cancel(Reminder reminder) {
+    public void cancelReminder(Reminder reminder) {
         String jobId = "reminder-job-" + reminder.getId().toHexString();
         try {
             this.scheduler.deleteJob(new JobKey(jobId, "reminders"));

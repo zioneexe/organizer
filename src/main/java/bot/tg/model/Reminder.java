@@ -33,4 +33,6 @@ public class Reminder {
     @BsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
+    @BsonProperty("google_calendar_event")
+    private GoogleCalendarEvent googleCalendarEvent;
 }

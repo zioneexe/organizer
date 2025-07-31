@@ -9,6 +9,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
@@ -45,9 +46,12 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
     }
 
     @Override
-    public TodoTask create(TodoTask dto) {
-        tasks.insertOne(dto);
-        return dto;
+    public String create(TodoTask dto) {
+        InsertOneResult result = tasks.insertOne(dto);
+
+        return result.getInsertedId() != null
+                ? result.getInsertedId().asObjectId().getValue().toHexString()
+                : null;
     }
 
     @Override

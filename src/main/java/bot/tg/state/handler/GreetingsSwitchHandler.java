@@ -45,7 +45,7 @@ public class MorningGreetingsSwitchHandler implements StateHandler {
             answer = "Ранкові нагадування вимкнено.";
         }
 
-        this.userRepository.markMorningGreetingsEnabled(userId, isEnabled);
+        this.userRepository.setGreetingsEnabled(userId, isEnabled);
         TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, userId, answer);
 
         userStateManager.setState(userId, UserState.IDLE);

@@ -1,5 +1,6 @@
 package bot.tg.repository;
 
+import bot.tg.dto.Time;
 import bot.tg.dto.update.UserUpdateDto;
 import bot.tg.model.User;
 import com.mongodb.client.MongoCollection;
@@ -7,6 +8,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -38,9 +40,12 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         );
     }
 
-    public User create(User dto) {
-        users.insertOne(dto);
-        return dto;
+    public String create(User dto) {
+        InsertOneResult result = users.insertOne(dto);
+
+        return result.getInsertedId() != null
+                ? result.getInsertedId().asObjectId().getValue().toHexString()
+                : null;
     }
 
     public User getById(Long id) {
@@ -76,10 +81,10 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         return user != null && user.getIsGoogleConnected();
     }
 
-    public boolean morningGreetingsEnabled(Long id) {
+    public boolean greetingsEnabled(Long id) {
         Bson filter = Filters.eq("user_id", id);
         User user = users.find(filter).first();
-        return user != null && user.getMorningGreetingsEnabled();
+        return user != null && user.getGreetingsEnabled();
     }
 
     public void setTimeZone(Long id, String timeZone) {
@@ -92,7 +97,22 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         users.updateOne(filter, update);
     }
 
-    public void markGoogleConnected(Long id, boolean isConnected) {
+    public Time getPreferredGreetingTime(Long id) {
+        User user = getById(id);
+        return user != null ? user.getPreferredGreetingTime() : null;
+    }
+
+    public void setPreferredGreetingTime(Long id, Time preferredGreetingTime) {
+        Bson filter = Filters.eq("user_id", id);
+        Bson update = Updates.combine(
+                Updates.set("preferred_greeting_time", preferredGreetingTime),
+                Updates.set("updated_at", LocalDateTime.now())
+        );
+
+        users.updateOne(filter, update);
+    }
+
+    public void setGoogleConnected(Long id, boolean isConnected) {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("is_google_connected", isConnected),
@@ -102,10 +122,10 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         users.updateOne(filter, update);
     }
 
-    public void markMorningGreetingsEnabled(Long id, boolean isEnabled) {
+    public void setGreetingsEnabled(Long id, boolean isEnabled) {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
-                Updates.set("morning_greetings_enabled", isEnabled),
+                Updates.set("greetings_enabled", isEnabled),
                 Updates.set("updated_at", LocalDateTime.now())
         );
 

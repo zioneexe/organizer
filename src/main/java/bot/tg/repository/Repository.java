@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface Repository<T, UpdateDto, I> {
 
-    T create(T dto);
+    String create(T dto);
 
     T getById(I id);
 

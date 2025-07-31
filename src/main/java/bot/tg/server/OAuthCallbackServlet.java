@@ -52,7 +52,7 @@ public class OAuthCallbackServlet extends HttpServlet {
                     userId,
                     "✅ Ви успішно авторизувалися! Тепер ваші завдання та нагадування синхронізуватимуться з Google Calendar."
             );
-            userRepository.markGoogleConnected(userId, true);
+            userRepository.setGoogleConnected(userId, true);
 
             resp.getWriter().write("✅ Авторизація успішна! Можете повертатися до Telegram.");
         } catch (Exception e) {
