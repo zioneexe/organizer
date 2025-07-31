@@ -36,7 +36,7 @@ public class MessageService {
         if (!isSchedulable(reminder, userTimeZone)) {
             return;
         }
-        messageScheduler.schedule(reminder);
+        messageScheduler.scheduleReminder(reminder);
     }
 
     public void scheduleUnfiredReminders() {
@@ -59,29 +59,35 @@ public class MessageService {
                     return schedulable;
                 })
                 .forEach(reminder -> {
-                    messageScheduler.schedule(reminder);
+                    messageScheduler.scheduleReminder(reminder);
                     log.info("Scheduled reminder with id={} for userId={}", reminder.getId(), reminder.getUserId());
                 });
     }
 
-    public void scheduleGoodMorningForUser(User user) {
-        messageScheduler.scheduleGoodMorningForUser(user);
+    public void cancelReminder(Reminder reminder) {
+        messageScheduler.cancelReminder(reminder);
     }
 
-    public void unscheduleGoodMorningForUser(User user) {
-        messageScheduler.unscheduleGoodMorningForUser(user);
+    public void scheduleGreetingForUser(User user) {
+        messageScheduler.scheduleGreetingForUser(user);
     }
 
-    public void scheduleGoodMorningToAll() {
+    public void cancelGreetingForUser(User user) {
+        messageScheduler.cancelGreetingForUser(user);
+    }
+
+    public void scheduleGreetingsToAll() {
         List<User> users = userRepository.getAll();
 
         for (User user : users) {
-            if (!user.getMorningGreetingsEnabled()) continue;
-            messageScheduler.scheduleGoodMorningForUser(user);
+            if (!user.getGreetingsEnabled()) continue;
+            messageScheduler.scheduleGreetingForUser(user);
         }
     }
 
     private boolean isSchedulable(Reminder reminder, String userTimeZone) {
+        if (!reminder.getEnabled()) return false;
+
         LocalDateTime localDateTime = reminder.getDateTime();
         Boolean fired = reminder.getFired();
 

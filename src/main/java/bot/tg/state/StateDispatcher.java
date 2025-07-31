@@ -10,7 +10,7 @@ public class StateDispatcher {
     private final Map<UserState, StateHandler> handlers = new HashMap<>() {{
         put(UserState.SETTINGS, new SettingsHandler());
         put(UserState.ADJUSTING_TIMEZONE, new TimeZoneAdjustmentHandler());
-        put(UserState.SWITCH_GOOD_MORNING, new MorningGreetingsSwitchHandler());
+        put(UserState.SWITCH_GREETING, new GreetingsSwitchHandler());
         put(UserState.GOOGLE_CONNECT, new GoogleConnectHandler());
         put(UserState.GOOGLE_DISCONNECT, new GoogleDisconnectHandler());
         put(UserState.AWAITING_TASK_SELECTION, new TaskSelectionHandler());

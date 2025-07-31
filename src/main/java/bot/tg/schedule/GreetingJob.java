@@ -10,18 +10,18 @@ import org.quartz.JobExecutionContext;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-public class GoodMorningJob implements Job {
+public class GreetingJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         JobDataMap data = context.getMergedJobDataMap();
         long userId = data.getLong("userId");
         String firstName = data.getString("firstName");
 
-        String morningMessage = "🌅 Доброго ранку, " + firstName +
+        String greetingMessage = "🌅 Доброго ранку, " + firstName +
                 "! \n Прокидайся і готуйся якнайкраще провести цей день :)";
 
         TelegramClient client = TelegramClientProvider.getInstance();
-        TelegramHelper.sendSimpleMessage(client, userId, morningMessage);
+        TelegramHelper.sendSimpleMessage(client, userId, greetingMessage);
 
         SendMessage menuMessage = MenuHelper.formMenuMessage(new ChatContext(userId, userId));
         TelegramHelper.safeExecute(client, menuMessage);

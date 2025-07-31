@@ -38,7 +38,6 @@ public class MenuHelper {
         long chatId = chatContext.getChatId();
         long userId = chatContext.getUserId();
         boolean isGoogleConnected = userRepository.isGoogleConnected(userId);
-        boolean morningGreetingsEnabled = userRepository.morningGreetingsEnabled(userId);
 
         return SendMessage.builder()
                 .chatId(chatId)
@@ -46,7 +45,7 @@ public class MenuHelper {
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(
                                 new KeyboardRow(new KeyboardButton(isGoogleConnected ? DISCONNECT_GOOGLE_CALENDAR : CONNECT_GOOGLE_CALENDAR)),
-                                new KeyboardRow(new KeyboardButton(morningGreetingsEnabled ? SWITCH_GOOD_MORNING_OFF : SWITCH_GOOD_MORNING_ON)),
+                                new KeyboardRow(new KeyboardButton(ADJUST_GREETINGS)),
                                 new KeyboardRow(new KeyboardButton(ADJUST_TIMEZONE))
                         ))
                         .resizeKeyboard(true)
