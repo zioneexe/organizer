@@ -50,19 +50,19 @@ public class EditTaskHandler implements CallbackHandler {
             InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
                     .keyboardRow(new InlineKeyboardRow(
                             InlineKeyboardButton.builder()
-                                    .text("Змінити назву")
+                                    .text("Назву")
                                     .callbackData(EDIT_NAME_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("Змінити опис")
+                                    .text("Опис")
                                     .callbackData(EDIT_DESCRIPTION_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("🗑 Видалити")
+                                    .text("Видалити")
                                     .callbackData(DELETE_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("❎ Скасувати")
+                                    .text("Скасувати")
                                     .callbackData(CANCEL_EDIT_TASK)
                                     .build()
                     ))
