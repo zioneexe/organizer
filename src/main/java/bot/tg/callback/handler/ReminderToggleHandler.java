@@ -3,13 +3,13 @@ package bot.tg.callback.handler;
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
+import bot.tg.model.Reminder;
 import bot.tg.provider.RepositoryProvider;
 import bot.tg.provider.ServiceProvider;
 import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.service.GoogleCalendarService;
-import bot.tg.state.UserState;
+import bot.tg.service.MessageService;
 import bot.tg.state.UserStateManager;
 import bot.tg.util.PaginationHelper;
 import bot.tg.util.ReminderResponseHelper;
@@ -20,28 +20,30 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.ZoneId;
 
-import static bot.tg.constant.Reminder.Callback.DELETE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.DISABLE_REMINDER;
+import static bot.tg.constant.Reminder.Callback.ENABLE_REMINDER;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
-public class DeleteReminderHandler implements CallbackHandler {
+public class ReminderToggleHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
-    private final GoogleCalendarService googleCalendarService;
+    private final MessageService messageService;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
 
-    public DeleteReminderHandler() {
+    public ReminderToggleHandler() {
         this.telegramClient = TelegramClientProvider.getInstance();
         this.userStateManager = ServiceProvider.getUserStateManager();
-        this.googleCalendarService = ServiceProvider.getGoogleCalendarService();
+        this.messageService = ServiceProvider.getMessageService();
         this.reminderRepository = RepositoryProvider.getReminderRepository();
         this.userRepository = RepositoryProvider.getUserRepository();
     }
 
     @Override
     public boolean supports(String data) {
-        return data.startsWith(DELETE_REMINDER + COLON_DELIMITER);
+        return data.startsWith(DISABLE_REMINDER + COLON_DELIMITER)
+                || data.startsWith(ENABLE_REMINDER + COLON_DELIMITER);
     }
 
     @Override
@@ -60,12 +62,18 @@ public class DeleteReminderHandler implements CallbackHandler {
         }
 
         String reminderId = parts[1];
-        this.googleCalendarService.deleteCalendarEvent(userId, reminderId);
-        boolean deleted = reminderRepository.deleteById(reminderId);
+        Reminder reminder = reminderRepository.getById(reminderId);
 
-        String response = deleted
-                ? "🗑 Нагадування видалено."
-                : "⚠️ Нагадування не знайдено.";
+        String response = "";
+        if (data.startsWith(DISABLE_REMINDER + COLON_DELIMITER)) {
+            reminderRepository.setEnabled(reminderId, false);
+            messageService.cancelReminder(reminder);
+            response = "\uD83D\uDD15 Нагадування вимкнено.";
+        } else if (data.startsWith(ENABLE_REMINDER + COLON_DELIMITER)) {
+            reminderRepository.setEnabled(reminderId, true);
+            messageService.scheduleReminder(reminder);
+            response = "\uD83D\uDD14 Нагадування увімкнено.";
+        }
 
         TelegramHelper.sendEditMessage(telegramClient, messageId, chatId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
@@ -85,7 +93,5 @@ public class DeleteReminderHandler implements CallbackHandler {
                 new ChatContext(userId, chatId)
         );
         TelegramHelper.safeExecute(telegramClient, remindersMessage);
-
-        userStateManager.setState(userId, UserState.IDLE);
     }
 }

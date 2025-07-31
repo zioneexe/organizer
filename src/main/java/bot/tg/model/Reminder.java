@@ -25,7 +25,9 @@ public class Reminder {
     @BsonProperty("date_time")
     private LocalDateTime dateTime;
 
-    private Boolean fired;
+    private Boolean fired = false;
+
+    private Boolean enabled = true;
 
     @BsonProperty("created_at")
     private LocalDateTime createdAt;

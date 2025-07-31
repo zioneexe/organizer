@@ -71,15 +71,23 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         return this.reminders.find(filter).into(new ArrayList<>());
     }
 
-    public List<Reminder> getUpcomingForUser(long userId) {
-        LocalDateTime now = LocalDateTime.now();
-        Bson filter = and(
-                eq("fired", false),
-                eq("user_id", userId),
-                gt("date_time", now)
+    public List<Reminder> getUpcomingForUserPaged(long userId, Pageable pageable, ZoneId userZoneId) {
+        LocalDateTime now = LocalDateTime.now(userZoneId);
+        ZonedDateTime zonedDateTime = now.atZone(userZoneId);
+        Date date = Date.from(zonedDateTime.toInstant());
+
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPage();
+        int skip = pageSize * (pageNumber - 1);
+
+        Bson sort = Sorts.ascending("date_time");
+        Bson filter = Filters.and(
+                Filters.eq("fired", false),
+                Filters.eq("user_id", userId),
+                Filters.gt("date_time", date)
         );
 
-        return reminders.find(filter).into(new ArrayList<>());
+        return this.reminders.find(filter).sort(sort).skip(skip).limit(pageSize).into(new ArrayList<>());
     }
 
     @Override

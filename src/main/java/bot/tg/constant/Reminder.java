@@ -22,10 +22,15 @@ public final class Reminder {
 
         public static final String NEW_REMINDER = "reminder_new";
         public static final String DATE_PICKER = "reminder_date_picker";
-        public static final String TIME_PICKER = "reminder_time_picker";
-        public static final String CHANGE_HOUR = "reminder_change_hour";
-        public static final String CHANGE_MINUTE = "reminder_change_minute";
+        public static final String PAGE_REMINDER = "reminder_page";
+        public static final String REMINDER_TIME_PICKER = "reminder_time_picker";
+        public static final String REMINDER_CHANGE_HOUR = "reminder_change_hour";
+        public static final String REMINDER_CHANGE_MINUTE = "reminder_change_minute";
+        public static final String REMINDER_CONFIRM = "reminder_confirm";
+        public static final String REMINDER_CANCEL = "reminder_cancel";
         public static final String DELETE_REMINDER = "reminder_delete";
+        public static final String ENABLE_REMINDER = "reminder_enable";
+        public static final String DISABLE_REMINDER = "reminder_disable";
 
     }
 }

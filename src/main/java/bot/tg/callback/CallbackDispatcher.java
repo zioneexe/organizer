@@ -24,6 +24,10 @@ public class CallbackDispatcher {
         register(new NewTaskHandler());
         register(new TaskPaginationHandler());
         register(new TimeZoneChoiceHandler());
+        register(new SkipDescriptionHandler());
+        register(new GreetingTimePickerHandler());
+        register(new ReminderToggleHandler());
+        register(new ReminderPaginationHandler());
     }
 
     public void register(CallbackHandler handler) {

@@ -17,6 +17,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.time.ZoneId;
+
 public class RemindersCommand implements BotCommand {
 
     private final TelegramClient telegramClient;
@@ -36,9 +38,17 @@ public class RemindersCommand implements BotCommand {
         long userId = update.getMessage().getFrom().getId();
         long chatId = update.getMessage().getChatId();
 
+        String userTimeZone = userRepository.getById(userId).getTimeZone();
+        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
+                ZoneId.systemDefault() :
+                ZoneId.of(userTimeZone);
+
+        Pageable pageable = PaginationHelper.formReminderPageableForUser(Pageable.FIRST, userId, userZoneId);
         SendMessage sendMessage = ReminderResponseHelper.createRemindersMessage(
+                userStateManager,
                 userRepository,
                 reminderRepository,
+                pageable,
                 new ChatContext(userId, chatId)
         );
         TelegramHelper.safeExecute(telegramClient, sendMessage);

@@ -21,6 +21,10 @@ public class StateDispatcher {
         put(UserState.AWAITING_REMINDER_TEXT, new ReminderTextHandler());
         put(UserState.AWAITING_LOCATION, new LocationReceiveHandler());
         put(UserState.TIMEZONE_MANUAL_CHOICE, new ManualTimeZoneChoiceHandler());
+        put(UserState.ADJUSTING_GREETINGS, new GreetingsAdjustmentHandler());
+        put(UserState.CHOOSING_GREETINGS_TIME, new GreetingsTimeChoiceHandler());
+        put(UserState.EDITING_TASK_NAME, new TaskEditingHandler());
+        put(UserState.EDITING_TASK_DESCRIPTION, new TaskEditingHandler());
     }};
 
     public void dispatch(UserState userState, Update update) {

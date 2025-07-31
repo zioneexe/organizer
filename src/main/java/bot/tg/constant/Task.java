@@ -28,5 +28,10 @@ public final class Task {
         public static final String DETAILS_TASK = "task_details";
         public static final String BACK_TO_TASKS = "task_back_to_list";
         public static final String DELETE_TASK = "task_delete";
+        public static final String SKIP_DESCRIPTION_TASK = "task_skip_description";
+
+        public static final String EDIT_NAME_TASK = "task_edit_name";
+        public static final String EDIT_DESCRIPTION_TASK = "task_edit_description";
+        public static final String CANCEL_EDIT_TASK = "task_cancel_edit";
     }
 }

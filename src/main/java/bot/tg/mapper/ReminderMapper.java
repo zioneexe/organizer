@@ -17,7 +17,9 @@ public class ReminderMapper {
                 dto.getText(),
                 systemDateTime,
                 false,
+                true,
                 dto.getCreatedAt(),
+                null,
                 null
         );
     }

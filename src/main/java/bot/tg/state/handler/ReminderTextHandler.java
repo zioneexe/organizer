@@ -80,9 +80,17 @@ public class ReminderTextHandler implements StateHandler {
 
             TelegramHelper.sendSimpleMessage(telegramClient, chatId, replyTextBuilder.toString());
 
+            String userTimeZone = userRepository.getById(userId).getTimeZone();
+            ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
+                    ZoneId.systemDefault() :
+                    ZoneId.of(userTimeZone);
+
+            Pageable pageable = PaginationHelper.formReminderPageableForUser(Pageable.FIRST, userId, userZoneId);
             SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
+                    userStateManager,
                     userRepository,
                     reminderRepository,
+                    pageable,
                     new ChatContext(userId, chatId)
             );
             TelegramHelper.safeExecute(telegramClient, remindersMessage);

@@ -50,8 +50,8 @@ public class ReminderDateHandler implements CallbackHandler {
         userStateManager.setState(userId, UserState.AWAITING_REMINDER_TIME);
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
-        EditMessageText editMessage = TimePickerResponseHelper.createTimePickerEditMessage(update, userTimeZone);
 
+        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(update, userTimeZone);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
