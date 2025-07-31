@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -59,6 +60,16 @@ public class TelegramHelper {
                 .messageId(messageId)
                 .chatId(chatId)
                 .text(message)
+                .build();
+        TelegramHelper.safeExecute(telegramClient, editMessage);
+    }
+
+    public static void sendEditMessageWithMarkup(TelegramClient telegramClient, int messageId, long chatId, String message, InlineKeyboardMarkup markup) {
+        EditMessageText editMessage = EditMessageText.builder()
+                .messageId(messageId)
+                .chatId(chatId)
+                .text(message)
+                .replyMarkup(markup)
                 .build();
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
