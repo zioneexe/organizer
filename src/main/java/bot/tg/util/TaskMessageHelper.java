@@ -49,10 +49,6 @@ public class TaskMessageHelper {
                 .text("🔙 Назад")
                 .callbackData(BACK_TO_TASKS)
                 .build());
-        actionButtonsRow.add(InlineKeyboardButton.builder()
-                .text("🗑")
-                .callbackData(DELETE_TASK + COLON_DELIMITER + task.getId())
-                .build());
 
         keyboardRows.add(actionButtonsRow);
 
