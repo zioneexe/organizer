@@ -8,7 +8,12 @@
         </encoder>
     </appender>
 
+    <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
+        <minimumEventLevel>WARN</minimumEventLevel>
+    </appender>
+
     <root level="DEBUG">
+        <appender-ref ref="SENTRY"/>
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

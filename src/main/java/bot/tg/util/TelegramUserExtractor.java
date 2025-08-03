@@ -1,5 +1,6 @@
 package bot.tg.util;
 
+import bot.tg.dto.TelegramUser;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -7,40 +8,38 @@ public class TelegramUserExtractor {
     private TelegramUserExtractor() {
     }
 
-    public static Long getUserId(Update update) {
-        User user = extractUser(update);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found in update: " + update);
-        }
+    public static TelegramUser extractTelegramUser(Update update) {
+        User user = getUserIfPossible(update);
+        return new TelegramUser(
+                user.getId(),
+                user.getUserName(),
+                user.getFirstName(),
+                user.getLastName()
+        );
+    }
 
-        return user.getId();
+    public static Long getUserId(Update update) {
+        return getUserIfPossible(update).getId();
     }
 
     public static String getFirstName(Update update) {
-        User user = extractUser(update);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found in update: " + update);
-        }
-
-        return user.getFirstName();
+        return getUserIfPossible(update).getFirstName();
     }
 
     public static String getLastName(Update update) {
-        User user = extractUser(update);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found in update: " + update);
-        }
-
-        return user.getLastName();
+        return getUserIfPossible(update).getLastName();
     }
 
     public static String getUsername(Update update) {
+        return getUserIfPossible(update).getUserName();
+    }
+
+    private static User getUserIfPossible(Update update) {
         User user = extractUser(update);
         if (user == null) {
             throw new IllegalArgumentException("User not found in update: " + update);
         }
-
-        return user.getUserName();
+        return user;
     }
 
     private static User extractUser(Update update) {

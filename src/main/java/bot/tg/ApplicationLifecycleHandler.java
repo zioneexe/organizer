@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AppLifecycleHandler implements CommandLineRunner {
+public class ApplicationLifecycleHandler implements CommandLineRunner {
 
     private final MessageService messageService;
 

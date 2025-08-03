@@ -1,10 +1,12 @@
 package bot.tg;
 
+import bot.tg.dto.TelegramUser;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.service.UserSessionService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.util.TelegramUserExtractor;
+import bot.tg.util.sentry.TelegramUserProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,79 +22,34 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     private final TelegramClient telegramClient;
+    private final TelegramUserProvider telegramUserProvider;
     private final UserSessionService userSessionService;
     private final Dispatcher dispatcher;
 
     @Override
     public void consume(Update update) {
-        Long userId = TelegramUserExtractor.getUserId(update);
-        UserSession userSession = userSessionService.getSession(update);
-        UserRequest userRequest = UserRequest.of(update, userSession);
+        TelegramUser telegramUser = TelegramUserExtractor.extractTelegramUser(update);
+        telegramUserProvider.setCurrentTelegramUser(telegramUser);
 
-        boolean dispatched = dispatcher.dispatch(userRequest);
+        try {
+            Long userId = TelegramUserExtractor.getUserId(update);
+            UserSession userSession = userSessionService.getSession(update);
+            UserRequest userRequest = UserRequest.of(update, userSession);
 
-        if (!dispatched) {
-            log.warn("The request from user {} was not dispatched", userId);
-            TelegramHelper.sendSimpleMessage(
-                    telegramClient,
-                    userId,
-                    "❓ Вибач, я не зрозумів, що ти мав на увазі.\nСпробуй /help."
-            );
-        }
+            boolean dispatched = dispatcher.dispatch(userRequest);
 
-     /*   if (update.hasCallbackQuery()) {
-            callbackDispatcher.dispatch(update);
-            return;
-        }
-
-        if (update.hasMessage() && update.getMessage().hasSticker()) {
-            respondWithSticker(update);
-        }
-
-        if (update.hasMessage() && (update.getMessage().hasText() || update.getMessage().hasLocation())) {
-            createUserIfNotExists(update);
-
-            String text = update.getMessage().getText();
-            if (text != null && text.startsWith(COMMAND_SYMBOL)) {
-                handleCommand(text, update);
-                return;
+            if (!dispatched) {
+                log.warn("The request from user {} was not dispatched", userId);
+                TelegramHelper.sendSimpleMessage(
+                        telegramClient,
+                        userId,
+                        "❓ Вибач, я не зрозумів, що ти мав на увазі.\nСпробуй /help."
+                );
             }
 
-            handleState(update);
-
-    }
-
-    private void respondWithSticker(Update update) {
-        SendSticker sendSticker = stickerService.sendSticker(update);
-        TelegramHelper.safeExecute(telegramClient, sendSticker);
-    }
-
-    private void handleCommand(String text, Update update) {
-        String command = text.split(SPACE_DELIMITER)[0];
-        commandRegistry.handleCommand(command, update);
-    }
-
-    private void handleState(Update update) {
-        long userId = update.getMessage().getFrom().getId();
-        String text = update.getMessage().getText();
-        Location location = update.getMessage().getLocation();
-
-        UserState userState = userStateManager.getState(userId);
-        if (userState == UserState.IDLE) {
-            if (text != null) {
-                UserState recognizedState = StateRecognizer.recognize(text);
-                userStateManager.setState(userId, recognizedState);
-            }
-
-            if (location != null) {
-                userStateManager.setState(userId, UserState.AWAITING_LOCATION);
-            }
-
-            userState = userStateManager.getState(userId);
+        } finally {
+            telegramUserProvider.clear();
         }
-
-        stateDispatcher.dispatch(userState, update);
-        */
     }
 
     @Override
