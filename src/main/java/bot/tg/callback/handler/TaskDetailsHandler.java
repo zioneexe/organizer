@@ -1,12 +1,12 @@
 package bot.tg.callback.handler;
 
 import bot.tg.callback.CallbackHandler;
+import bot.tg.helper.TaskMessageHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.model.TodoTask;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.TaskRepository;
-import bot.tg.util.TaskMessageHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -21,15 +21,12 @@ import java.util.Map;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.DETAILS_TASK;
 
+@Component
+@RequiredArgsConstructor
 public class TaskDetailsHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final TaskRepository taskRepository;
-
-    public TaskDetailsHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskRepository = RepositoryProvider.getTaskRepository();
-    }
 
     @Override
     public boolean supports(String data) {

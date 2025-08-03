@@ -3,17 +3,16 @@ package bot.tg.callback.handler;
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
+import bot.tg.helper.ReminderResponseHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.model.Reminder;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
+import bot.tg.service.PaginationService;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.PaginationHelper;
-import bot.tg.util.ReminderResponseHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -24,6 +23,8 @@ import static bot.tg.constant.Reminder.Callback.DISABLE_REMINDER;
 import static bot.tg.constant.Reminder.Callback.ENABLE_REMINDER;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
+@Component
+@RequiredArgsConstructor
 public class ReminderToggleHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
@@ -31,14 +32,7 @@ public class ReminderToggleHandler implements CallbackHandler {
     private final MessageService messageService;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
-
-    public ReminderToggleHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.messageService = ServiceProvider.getMessageService();
-        this.reminderRepository = RepositoryProvider.getReminderRepository();
-        this.userRepository = RepositoryProvider.getUserRepository();
-    }
+    private final PaginationService paginationService;
 
     @Override
     public boolean supports(String data) {
@@ -84,7 +78,7 @@ public class ReminderToggleHandler implements CallbackHandler {
                 ZoneId.of(userTimeZone);
 
         int currentPage = userStateManager.getCurrentReminderPage(userId);
-        Pageable pageable = PaginationHelper.formReminderPageableForUser(currentPage, userId, userZoneId);
+        Pageable pageable = paginationService.formReminderPageableForUser(currentPage, userId, userZoneId);
         SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
                 userStateManager,
                 userRepository,

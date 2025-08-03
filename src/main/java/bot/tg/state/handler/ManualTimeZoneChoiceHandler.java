@@ -1,26 +1,30 @@
 package bot.tg.state.handler;
 
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.TelegramHelper;
+import bot.tg.helper.TimeZoneHelper;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.TelegramHelper;
-import bot.tg.util.TimeZoneHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Set;
+
 import static bot.tg.constant.TimeZone.Response.MANUAL_CHOICE_MESSAGE;
 
+@Component
+@RequiredArgsConstructor
 public class ManualTimeZoneChoiceHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
 
-    public ManualTimeZoneChoiceHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.TIMEZONE_MANUAL_CHOICE);
     }
 
     @Override

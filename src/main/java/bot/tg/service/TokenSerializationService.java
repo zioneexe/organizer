@@ -3,19 +3,24 @@ package bot.tg.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.TokenResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-public class CredentialSerializer {
-    private static final ObjectMapper mapper = new ObjectMapper();
+@Component
+@RequiredArgsConstructor
+public class TokenSerializationService {
 
-    public static String serialize(TokenResponse tokenResponse) throws Exception {
-        return mapper.writeValueAsString(tokenResponse);
+    private final ObjectMapper objectMapper;
+
+    public String serialize(TokenResponse tokenResponse) throws Exception {
+        return objectMapper.writeValueAsString(tokenResponse);
     }
 
-    public static TokenResponse deserialize(String json) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> tokenMap = mapper.readValue(json, new TypeReference<>(){});
+    public TokenResponse deserialize(String json) throws Exception {
+        Map<String, Object> tokenMap = objectMapper.readValue(json, new TypeReference<>() {
+        });
 
         TokenResponse tokenResponse = new TokenResponse();
         tokenResponse.setAccessToken((String) tokenMap.get("access_token"));

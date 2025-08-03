@@ -1,29 +1,33 @@
-package bot.tg.server;
+package bot.tg.servlet;
 
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.MongoTokenStore;
 import bot.tg.repository.UserRepository;
-import bot.tg.service.CredentialSerializer;
 import bot.tg.service.GoogleClientService;
-import bot.tg.util.TelegramHelper;
+import bot.tg.service.TokenSerializationService;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.IOException;
 
+@Component
+@RequiredArgsConstructor
 public class OAuthCallbackServlet extends HttpServlet {
+
+    private final TelegramClient telegramClient;
+    private final UserRepository userRepository;
+    private final MongoTokenStore tokenStore;
+    private final GoogleClientService googleClientService;
+    private final TokenSerializationService tokenSerializationService;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        TelegramClient telegramClient = TelegramClientProvider.getInstance();
-        UserRepository userRepository = RepositoryProvider.getUserRepository();
-        MongoTokenStore tokenStore = RepositoryProvider.getTokenStore();
-
         String code = req.getParameter("code");
         String userIdString = req.getParameter("state");
 
@@ -37,13 +41,13 @@ public class OAuthCallbackServlet extends HttpServlet {
         }
 
         try {
-            Credential credential = GoogleClientService.exchangeCodeForTokens(code);
+            Credential credential = googleClientService.exchangeCodeForTokens(code);
             TokenResponse tokenResponse = new TokenResponse()
                     .setAccessToken(credential.getAccessToken())
                     .setRefreshToken(credential.getRefreshToken())
                     .setExpiresInSeconds(credential.getExpiresInSeconds());
 
-            String jsonTokens = CredentialSerializer.serialize(tokenResponse);
+            String jsonTokens = tokenSerializationService.serialize(tokenResponse);
             tokenStore.store(userIdString, jsonTokens);
 
             long userId = Long.parseLong(userIdString);

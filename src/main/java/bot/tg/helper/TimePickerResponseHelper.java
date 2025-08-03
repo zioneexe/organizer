@@ -1,10 +1,8 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.DateTime;
 import bot.tg.dto.Time;
 import bot.tg.dto.create.ReminderCreateDto;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
 import bot.tg.repository.UserRepository;
 import bot.tg.state.UserStateManager;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -30,8 +28,7 @@ public class TimePickerResponseHelper {
 
     private TimePickerResponseHelper() {}
 
-    public static SendMessage createGreetingTimePickerMessage(Update update) {
-        UserRepository userRepository = RepositoryProvider.getUserRepository();
+    public static SendMessage createGreetingTimePickerMessage(Update update, UserRepository userRepository) {
 
         long userId = 0;
         long chatId = 0;
@@ -55,8 +52,7 @@ public class TimePickerResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createGreetingTimePickerEditMessage(Update update) {
-        UserStateManager userStateManager = ServiceProvider.getUserStateManager();
+    public static EditMessageText createGreetingTimePickerEditMessage(Update update, UserStateManager userStateManager) {
 
         long userId = 0;
         long chatId = 0;
@@ -84,9 +80,7 @@ public class TimePickerResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createReminderTimePickerEditMessage(Update update, String userTimeZone) {
-        UserStateManager userStateManager = ServiceProvider.getUserStateManager();
-
+    public static EditMessageText createReminderTimePickerEditMessage(Update update, String userTimeZone, UserStateManager userStateManager) {
         long userId = update.getCallbackQuery().getFrom().getId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();

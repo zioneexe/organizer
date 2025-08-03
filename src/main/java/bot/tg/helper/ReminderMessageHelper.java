@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.Pageable;
 import bot.tg.model.Reminder;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static bot.tg.constant.Reminder.Callback.*;
 import static bot.tg.constant.Reminder.Response.REMINDER_CREATE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
-import static bot.tg.util.TextHelper.escapeMarkdown;
+import static bot.tg.helper.MarkupHelper.escapeMarkdown;
 
 public class ReminderMessageHelper {
 

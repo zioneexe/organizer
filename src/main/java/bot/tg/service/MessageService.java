@@ -2,12 +2,12 @@ package bot.tg.service;
 
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
-import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.schedule.MessageScheduler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.List;
@@ -16,19 +16,14 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class MessageService {
 
     private final MessageScheduler messageScheduler;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
-
-    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
-
-    public MessageService() {
-        this.reminderRepository = RepositoryProvider.getReminderRepository();
-        this.userRepository = RepositoryProvider.getUserRepository();
-        this.messageScheduler = new MessageScheduler();
-    }
 
     public void scheduleReminder(Reminder reminder) {
         String userTimeZone = userRepository.getById(reminder.getUserId()).getTimeZone();

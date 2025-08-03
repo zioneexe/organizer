@@ -1,6 +1,5 @@
 package bot.tg.service;
 
-import bot.tg.provider.RepositoryProvider;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
@@ -15,45 +14,55 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.auth.oauth2.TokenStore;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Collections;
 
+@Service
+@RequiredArgsConstructor
 public class GoogleClientService {
 
-    public static final String CLIENT_ID = System.getenv("GOOGLE_CLIENT_ID");
-    public static final String CLIENT_SECRET = System.getenv("GOOGLE_CLIENT_SECRET");
-    public static final String REDIRECT_URI = System.getenv("GOOGLE_REDIRECT_URI");
+    private final TokenSerializationService tokenSerializationService;
+    private final TokenStore tokenStore;
+    @Value("${GOOGLE_CLIENT_ID}")
+    public String clientId;
+    @Value("${GOOGLE_REDIRECT_URI}")
+    public String redirectUri;
 
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final NetHttpTransport HTTP_TRANSPORT = createHttpTransport();
 
     private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
     private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";
+    @Value("${GOOGLE_CLIENT_SECRET}")
+    private String clientSecret;
 
-    public static String getAuthorizationUrl(String telegramUserId) {
-        return new GoogleAuthorizationCodeRequestUrl(CLIENT_ID, REDIRECT_URI, Collections.singleton(CalendarScopes.CALENDAR_EVENTS))
+    public String getAuthorizationUrl(String telegramUserId) {
+        return new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR_EVENTS))
                 .setAccessType("offline")
                 .set("prompt", "consent")
                 .setState(telegramUserId)
                 .build();
     }
 
-    public static Credential getCredentialFromStoredTokens(String userId) throws Exception {
-        String json = RepositoryProvider.getTokenStore().load(userId);
+    public Credential getCredentialFromStoredTokens(String userId) throws Exception {
+        String json = tokenStore.load(userId);
         if (json == null) throw new IllegalStateException("❌ Користувач не авторизований");
 
-        TokenResponse tokenResponse = CredentialSerializer.deserialize(json);
+        TokenResponse tokenResponse = tokenSerializationService.deserialize(json);
         return new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                 .setTransport(HTTP_TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
-                .setClientAuthentication(new ClientParametersAuthentication(CLIENT_ID, CLIENT_SECRET))
+                .setClientAuthentication(new ClientParametersAuthentication(clientId, clientSecret))
                 .setTokenServerEncodedUrl(SERVER_TOKEN_URL)
                 .build()
                 .setFromTokenResponse(tokenResponse);
     }
 
-    public static Calendar getCalendarService(Credential credential) {
+    public Calendar getCalendarService(Credential credential) {
         return new Calendar.Builder(
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
@@ -61,35 +70,34 @@ public class GoogleClientService {
         ).setApplicationName("Organizer").build();
     }
 
-    public static Credential exchangeCodeForTokens(String code) throws Exception {
+    public Credential exchangeCodeForTokens(String code) throws Exception {
         var tokenResponse = new GoogleAuthorizationCodeTokenRequest(
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
-                CLIENT_ID,
-                CLIENT_SECRET,
+                clientId,
+                clientSecret,
                 code,
-                REDIRECT_URI)
+                redirectUri)
                 .execute();
 
         return new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                 .setTransport(HTTP_TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
-                .setClientAuthentication(new ClientParametersAuthentication(CLIENT_ID, CLIENT_SECRET))
+                .setClientAuthentication(new ClientParametersAuthentication(clientId, clientSecret))
                 .setTokenServerEncodedUrl(SERVER_TOKEN_URL)
                 .build()
                 .setFromTokenResponse(tokenResponse);
     }
 
-    public static void revokeRefreshTokenForUser(String userId) throws Exception {
-        TokenStore tokenStore = RepositoryProvider.getTokenStore();
+    public void revokeRefreshTokenForUser(String userId) throws Exception {
         String tokenString = tokenStore.load(userId);
-        TokenResponse tokenResponse = CredentialSerializer.deserialize(tokenString);
+        TokenResponse tokenResponse = tokenSerializationService.deserialize(tokenString);
 
         String refreshToken = tokenResponse.getRefreshToken();
         revokeToken(refreshToken);
     }
 
-    private static void revokeToken(String token) throws IOException {
+    private void revokeToken(String token) throws IOException {
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
 
         GenericUrl url = new GenericUrl(REVOKE_URL);

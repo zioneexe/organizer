@@ -3,10 +3,12 @@ package bot.tg.state;
 import bot.tg.dto.Time;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.dto.create.TaskCreateDto;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class UserStateManager {
 
     private final Map<Long, TaskCreateDto> taskDrafts = new ConcurrentHashMap<>();

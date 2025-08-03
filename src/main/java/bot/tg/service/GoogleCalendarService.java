@@ -6,7 +6,6 @@ import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.mapper.GoogleCalendarEventMapper;
 import bot.tg.model.GoogleCalendarEvent;
 import bot.tg.model.Reminder;
-import bot.tg.provider.RepositoryProvider;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import com.google.api.client.auth.oauth2.Credential;
@@ -14,6 +13,8 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Service
+@RequiredArgsConstructor
 public class GoogleCalendarService {
 
     private static final String REMINDERS_ID = "primary";
@@ -29,11 +32,9 @@ public class GoogleCalendarService {
     private static final String BOT_URL = System.getenv("BOT_URL");
 
     private final Map<Long, Calendar> userCalendars = new ConcurrentHashMap<>();
+    private final GoogleClientService googleClientService;
     private final ReminderRepository reminderRepository;
-
-    public GoogleCalendarService() {
-        this.reminderRepository = RepositoryProvider.getReminderRepository();
-    }
+    private final UserRepository userRepository;
 
     public Optional<String> createCalendarEventAndReturnLink(long userId, String reminderId, ReminderCreateDto reminder) {
         try {
@@ -78,7 +79,6 @@ public class GoogleCalendarService {
     private Event buildCalendarEvent(long userId, ReminderCreateDto reminder) {
         String defaultZone = SupportedTimeZone.getDefault().getZoneId();
 
-        UserRepository userRepository = RepositoryProvider.getUserRepository();
         String userTimeZone = userRepository.getById(userId).getTimeZone();
 
         Event event = new Event()
@@ -119,8 +119,8 @@ public class GoogleCalendarService {
 
     private Calendar getCalendarForUser(long userId) throws Exception {
         if (!userCalendars.containsKey(userId)) {
-            Credential credential = GoogleClientService.getCredentialFromStoredTokens(String.valueOf(userId));
-            Calendar calendar = GoogleClientService.getCalendarService(credential);
+            Credential credential = googleClientService.getCredentialFromStoredTokens(String.valueOf(userId));
+            Calendar calendar = googleClientService.getCalendarService(credential);
 
             userCalendars.put(userId, calendar);
         }

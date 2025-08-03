@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.SupportedTimeZone;
@@ -20,6 +20,9 @@ import static bot.tg.constant.TimeZone.Callback.TIMEZONE;
 import static bot.tg.constant.TimeZone.Response.TIMEZONE_CHOICE_MESSAGE;
 
 public class TimeZoneHelper {
+
+    private TimeZoneHelper() {
+    }
 
     public static SendMessage formAdjustTimeZoneMessage(ChatContext chatContext) {
         long chatId = chatContext.getChatId();

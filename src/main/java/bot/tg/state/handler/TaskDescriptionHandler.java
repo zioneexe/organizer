@@ -2,28 +2,31 @@ package bot.tg.state.handler;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.create.TaskCreateDto;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.mapper.TaskMapper;
 import bot.tg.model.TodoTask;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.service.TaskService;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Set;
+
+@Component
+@RequiredArgsConstructor
 public class TaskDescriptionHandler implements StateHandler {
 
     private final UserStateManager userStateManager;
     private final TelegramClient telegramClient;
     private final TaskService taskService;
 
-    public TaskDescriptionHandler() {
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.taskService = new TaskService();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.AWAITING_TASK_DESCRIPTION);
     }
 
     @Override

@@ -2,14 +2,19 @@ package bot.tg.command.impl;
 
 import bot.tg.command.BotCommand;
 import bot.tg.service.TaskService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+@Component
+@RequiredArgsConstructor
 public class NewTaskCommand implements BotCommand {
 
     private final TaskService taskService;
 
-    public NewTaskCommand() {
-        this.taskService = new TaskService();
+    @Override
+    public String getCommand() {
+        return "/newtask";
     }
 
     @Override

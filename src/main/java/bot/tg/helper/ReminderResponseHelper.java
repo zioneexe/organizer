@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;

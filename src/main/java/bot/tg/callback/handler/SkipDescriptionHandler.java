@@ -3,29 +3,25 @@ package bot.tg.callback.handler;
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.create.TaskCreateDto;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.mapper.TaskMapper;
 import bot.tg.model.TodoTask;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.service.TaskService;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.constant.Task.Callback.SKIP_DESCRIPTION_TASK;
 
+@Component
+@RequiredArgsConstructor
 public class SkipDescriptionHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final TaskService taskService;
-
-    public SkipDescriptionHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.taskService = new TaskService();
-    }
 
     @Override
     public boolean supports(String data) {

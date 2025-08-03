@@ -1,21 +1,24 @@
 package bot.tg.state.handler;
 
+import bot.tg.helper.TelegramHelper;
 import bot.tg.model.User;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.util.Set;
 
 import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_OFF;
 import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_ON;
 
+@Component
+@RequiredArgsConstructor
 public class GreetingsSwitchHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
@@ -23,11 +26,9 @@ public class GreetingsSwitchHandler implements StateHandler {
     private final UserRepository userRepository;
     private final MessageService messageService;
 
-    public GreetingsSwitchHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
-        this.messageService = ServiceProvider.getMessageService();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.SWITCH_GREETING);
     }
 
     @Override

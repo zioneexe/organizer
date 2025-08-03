@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.Pageable;
 import bot.tg.model.TaskStatus;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.*;
 import static bot.tg.constant.Task.Response.TASK_CREATE;
-import static bot.tg.util.TextHelper.escapeMarkdown;
+import static bot.tg.helper.MarkupHelper.escapeMarkdown;
 
 public class TaskMessageHelper {
 

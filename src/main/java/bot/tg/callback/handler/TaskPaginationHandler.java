@@ -2,15 +2,14 @@ package bot.tg.callback.handler;
 
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.Pageable;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.TasksResponseHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
+import bot.tg.service.PaginationService;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.PaginationHelper;
-import bot.tg.util.TasksResponseHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -22,19 +21,15 @@ import java.time.ZoneId;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.PAGE_TASK;
 
+@Component
+@RequiredArgsConstructor
 public class TaskPaginationHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
-
-    public TaskPaginationHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
-        this.taskRepository = RepositoryProvider.getTaskRepository();
-    }
+    private final PaginationService paginationService;
 
     @Override
     public boolean supports(String data) {
@@ -60,7 +55,7 @@ public class TaskPaginationHandler implements CallbackHandler {
                 ZoneId.of(userTimeZone);
 
         int neededPage = Integer.parseInt(parts[1]);
-        Pageable pageable = PaginationHelper.formTaskPageableForUser(neededPage, userId, LocalDate.now(), userZoneId);
+        Pageable pageable = paginationService.formTaskPageableForUser(neededPage, userId, LocalDate.now(), userZoneId);
         EditMessageText pageMessage = TasksResponseHelper.createTasksEditMessage(
                 userStateManager,
                 userRepository,

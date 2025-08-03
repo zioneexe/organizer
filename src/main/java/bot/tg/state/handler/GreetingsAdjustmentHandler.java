@@ -1,29 +1,31 @@
 package bot.tg.state.handler;
 
 import bot.tg.dto.ChatContext;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.GreetingsHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.GreetingsHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Set;
+
+@Component
+@RequiredArgsConstructor
 public class GreetingsAdjustmentHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
 
-    public GreetingsAdjustmentHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.ADJUSTING_GREETINGS);
     }
 
     @Override

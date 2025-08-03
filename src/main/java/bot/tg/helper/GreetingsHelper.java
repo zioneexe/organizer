@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.repository.UserRepository;
@@ -13,6 +13,9 @@ import static bot.tg.constant.Greetings.Button.*;
 import static bot.tg.constant.Greetings.GREETINGS_CHOICE_MESSAGE;
 
 public class GreetingsHelper {
+
+    private GreetingsHelper() {
+    }
 
     public static SendMessage formAdjustGreetingsMessage(UserRepository userRepository, ChatContext chatContext) {
         long chatId = chatContext.getChatId();

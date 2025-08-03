@@ -1,23 +1,20 @@
 package bot.tg.service;
 
+import bot.tg.helper.TelegramHelper;
 import bot.tg.model.User;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class BroadcastService {
 
     private final TelegramClient telegramClient;
     private final UserRepository userRepository;
-
-    public BroadcastService() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userRepository = RepositoryProvider.getUserRepository();
-    }
 
     public void broadcast(String text) {
         List<User> users = this.userRepository.getAll();

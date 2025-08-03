@@ -3,17 +3,16 @@ package bot.tg.callback.handler;
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.Time;
+import bot.tg.helper.MenuHelper;
+import bot.tg.helper.TelegramHelper;
+import bot.tg.helper.TimePickerResponseHelper;
 import bot.tg.model.User;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.MenuHelper;
-import bot.tg.util.TelegramHelper;
-import bot.tg.util.TimePickerResponseHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -23,19 +22,14 @@ import static bot.tg.constant.Greetings.Callback.*;
 import static bot.tg.constant.Greetings.Response.GREETING_TIME_SET;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
+@Component
+@RequiredArgsConstructor
 public class GreetingTimePickerHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final MessageService messageService;
     private final UserRepository userRepository;
-
-    public GreetingTimePickerHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.messageService = ServiceProvider.getMessageService();
-        this.userRepository = RepositoryProvider.getUserRepository();
-    }
 
     @Override
     public boolean supports(String data) {
@@ -92,14 +86,14 @@ public class GreetingTimePickerHandler implements CallbackHandler {
                 messageService.cancelGreetingForUser(user);
                 messageService.scheduleGreetingForUser(user);
 
-                ServiceProvider.getUserStateManager().setState(userId, UserState.IDLE);
+                userStateManager.setState(userId, UserState.IDLE);
                 TelegramHelper.sendSimpleMessage(telegramClient, chatId, GREETING_TIME_SET + time + ".");
                 TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
                 return;
             }
         }
 
-        EditMessageText editMessage = TimePickerResponseHelper.createGreetingTimePickerEditMessage(update);
+        EditMessageText editMessage = TimePickerResponseHelper.createGreetingTimePickerEditMessage(update, userStateManager);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }

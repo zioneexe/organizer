@@ -1,6 +1,7 @@
-package bot.tg.util;
+package bot.tg.service;
 
-import bot.tg.provider.TelegramClientProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.stickers.GetStickerSet;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -14,11 +15,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 import java.util.Random;
 
-public class StickerHelper {
+@Service
+@RequiredArgsConstructor
+public class StickerService {
 
-    public static SendSticker sendSticker(Update update) {
-        TelegramClient telegramClient = TelegramClientProvider.getInstance();
+    private final TelegramClient telegramClient;
 
+    public SendSticker sendSticker(Update update) {
         if (update.hasMessage() && update.getMessage().hasSticker()) {
             Message message = update.getMessage();
             String chatId = message.getChatId().toString();

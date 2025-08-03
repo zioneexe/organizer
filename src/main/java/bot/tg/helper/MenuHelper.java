@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.repository.UserRepository;
@@ -15,6 +15,9 @@ import static bot.tg.constant.ResponseMessage.START_MESSAGE;
 import static bot.tg.constant.SettingsActions.*;
 
 public class MenuHelper {
+
+    private MenuHelper() {
+    }
 
     public static SendMessage formMenuMessage(ChatContext chatContext) {
         long chatId = chatContext.getChatId();

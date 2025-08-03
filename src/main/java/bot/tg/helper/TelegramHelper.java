@@ -1,4 +1,4 @@
-package bot.tg.util;
+package bot.tg.helper;
 
 import bot.tg.dto.ChatContext;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;

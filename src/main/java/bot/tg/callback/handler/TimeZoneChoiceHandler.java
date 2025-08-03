@@ -3,11 +3,11 @@ package bot.tg.callback.handler;
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.SupportedTimeZone;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.MenuHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.UserRepository;
-import bot.tg.util.MenuHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -15,15 +15,12 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.TimeZone.Callback.TIMEZONE;
 
+@Component
+@RequiredArgsConstructor
 public class TimeZoneChoiceHandler implements CallbackHandler {
 
     private final UserRepository userRepository;
     private final TelegramClient telegramClient;
-
-    public TimeZoneChoiceHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userRepository = RepositoryProvider.getUserRepository();
-    }
 
     @Override
     public boolean supports(String data) {

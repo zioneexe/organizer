@@ -2,24 +2,26 @@ package bot.tg.command.impl;
 
 import bot.tg.command.BotCommand;
 import bot.tg.dto.ChatContext;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.MenuHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.MenuHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+@Component
+@RequiredArgsConstructor
 public class StartCommand implements BotCommand {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
 
-    public StartCommand() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
+    @Override
+    public String getCommand() {
+        return "/start";
     }
 
     @Override

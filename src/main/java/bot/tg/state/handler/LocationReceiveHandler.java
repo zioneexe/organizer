@@ -2,30 +2,33 @@ package bot.tg.state.handler;
 
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.SupportedTimeZone;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.MenuHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.TimeZoneService;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.MenuHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Set;
+
+@Component
+@RequiredArgsConstructor
 public class LocationReceiveHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
+    private final TimeZoneService timeZoneService;
 
-    public LocationReceiveHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.AWAITING_LOCATION);
     }
 
     @Override
@@ -34,7 +37,7 @@ public class LocationReceiveHandler implements StateHandler {
         double latitude = update.getMessage().getLocation().getLatitude();
         double longitude = update.getMessage().getLocation().getLongitude();
 
-        String zoneId = TimeZoneService.resolveZoneId(latitude, longitude);
+        String zoneId = timeZoneService.resolveZoneId(latitude, longitude);
         SupportedTimeZone timeZone = SupportedTimeZone.fromZoneId(zoneId);
 
         userRepository.setTimeZone(userId, zoneId);

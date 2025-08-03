@@ -6,10 +6,12 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.time.Instant;
 
+@Service
 public class TimeZoneService {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeZoneService.class);
@@ -19,7 +21,7 @@ public class TimeZoneService {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String API_KEY = System.getenv("GOOGLE_TIMEZONE_API_KEY");
 
-    public static String resolveZoneId(double latitude, double longitude) {
+    public String resolveZoneId(double latitude, double longitude) {
         try {
             logger.info("Визначення часової зони для координат: {}, {}", latitude, longitude);
 

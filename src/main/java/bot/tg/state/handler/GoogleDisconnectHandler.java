@@ -1,30 +1,32 @@
 package bot.tg.state.handler;
 
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleClientService;
 import bot.tg.state.StateHandler;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.TelegramHelper;
 import com.google.auth.oauth2.TokenStore;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Set;
+
+@Component
+@RequiredArgsConstructor
 public class GoogleDisconnectHandler implements StateHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TokenStore tokenStore;
+    private final GoogleClientService googleClientService;
 
-    public GoogleDisconnectHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
-        this.tokenStore = RepositoryProvider.getTokenStore();
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.GOOGLE_DISCONNECT);
     }
 
     @Override
@@ -32,7 +34,7 @@ public class GoogleDisconnectHandler implements StateHandler {
         long userId = update.getMessage().getFrom().getId();
 
         try {
-            GoogleClientService.revokeRefreshTokenForUser(String.valueOf(userId));
+            googleClientService.revokeRefreshTokenForUser(String.valueOf(userId));
             this.tokenStore.delete(String.valueOf(userId));
             userRepository.setGoogleConnected(userId, false);
 

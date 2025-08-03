@@ -1,38 +1,16 @@
 package bot.tg.callback;
 
-import bot.tg.callback.handler.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class CallbackDispatcher {
 
-    private final List<CallbackHandler> handlers = new ArrayList<>();
-
-    public CallbackDispatcher() {
-        register(new TaskStatusHandler());
-        register(new TaskDetailsHandler());
-        register(new ReminderDateHandler());
-        register(new EditTaskHandler());
-        register(new DeleteTaskHandler());
-        register(new DeleteReminderHandler());
-        register(new ReminderTimePickerHandler());
-        register(new BackToTasksHandler());
-        register(new IgnoreHandler());
-        register(new NewReminderHandler());
-        register(new NewTaskHandler());
-        register(new TaskPaginationHandler());
-        register(new TimeZoneChoiceHandler());
-        register(new SkipDescriptionHandler());
-        register(new GreetingTimePickerHandler());
-        register(new ReminderToggleHandler());
-        register(new ReminderPaginationHandler());
-    }
-
-    public void register(CallbackHandler handler) {
-        handlers.add(handler);
-    }
+    private final List<CallbackHandler> handlers;
 
     public void dispatch(Update update) {
         String data = update.getCallbackQuery().getData();

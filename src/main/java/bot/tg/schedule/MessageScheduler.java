@@ -7,6 +7,7 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.TimeZone;
 
+@Component
 public class MessageScheduler {
 
     private final Scheduler scheduler;

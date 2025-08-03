@@ -4,15 +4,14 @@ import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.ChatContext;
 import bot.tg.dto.DateTime;
 import bot.tg.dto.create.ReminderCreateDto;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.MenuHelper;
+import bot.tg.helper.TelegramHelper;
+import bot.tg.helper.TimePickerResponseHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.state.UserState;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.MenuHelper;
-import bot.tg.util.TelegramHelper;
-import bot.tg.util.TimePickerResponseHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -28,17 +27,13 @@ import static bot.tg.constant.Reminder.Response.REMINDER_TEXT;
 import static bot.tg.constant.ResponseMessage.INVALID_TIME;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
+@Component
+@RequiredArgsConstructor
 public class ReminderTimePickerHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
-
-    public ReminderTimePickerHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
-    }
 
     @Override
     public boolean supports(String data) {
@@ -58,7 +53,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
         if (parts.length < 2) return;
 
         String action = parts[1];
-        ReminderCreateDto dto = ServiceProvider.getUserStateManager().getReminderDraft(userId);
+        ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
         DateTime dateTime = dto.getDateTime();
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
@@ -118,7 +113,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
                     break;
                 }
 
-                ServiceProvider.getUserStateManager().setState(userId, UserState.AWAITING_REMINDER_TEXT);
+                userStateManager.setState(userId, UserState.AWAITING_REMINDER_TEXT);
                 TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, REMINDER_TEXT);
                 TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
                 return;
@@ -129,7 +124,7 @@ public class ReminderTimePickerHandler implements CallbackHandler {
             TelegramHelper.sendCallbackAnswerWithMessage(telegramClient, callbackQueryId, INVALID_TIME);
         }
 
-        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(update, userTimeZone);
+        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(update, userTimeZone, userStateManager);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }

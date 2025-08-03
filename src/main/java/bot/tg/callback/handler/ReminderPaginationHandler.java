@@ -2,15 +2,14 @@ package bot.tg.callback.handler;
 
 import bot.tg.callback.CallbackHandler;
 import bot.tg.dto.Pageable;
-import bot.tg.provider.RepositoryProvider;
-import bot.tg.provider.ServiceProvider;
-import bot.tg.provider.TelegramClientProvider;
+import bot.tg.helper.ReminderResponseHelper;
+import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
+import bot.tg.service.PaginationService;
 import bot.tg.state.UserStateManager;
-import bot.tg.util.PaginationHelper;
-import bot.tg.util.ReminderResponseHelper;
-import bot.tg.util.TelegramHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -21,19 +20,15 @@ import java.time.ZoneId;
 import static bot.tg.constant.Reminder.Callback.PAGE_REMINDER;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
+@Component
+@RequiredArgsConstructor
 public class ReminderPaginationHandler implements CallbackHandler {
 
     private final TelegramClient telegramClient;
     private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
-
-    public ReminderPaginationHandler() {
-        this.telegramClient = TelegramClientProvider.getInstance();
-        this.userStateManager = ServiceProvider.getUserStateManager();
-        this.userRepository = RepositoryProvider.getUserRepository();
-        this.reminderRepository = RepositoryProvider.getReminderRepository();
-    }
+    private final PaginationService paginationService;
 
     @Override
     public boolean supports(String data) {
@@ -59,7 +54,7 @@ public class ReminderPaginationHandler implements CallbackHandler {
                 ZoneId.of(userTimeZone);
 
         int neededPage = Integer.parseInt(parts[1]);
-        Pageable pageable = PaginationHelper.formReminderPageableForUser(neededPage, userId, userZoneId);
+        Pageable pageable = paginationService.formReminderPageableForUser(neededPage, userId, userZoneId);
         EditMessageText pageMessage = ReminderResponseHelper.createRemindersEditMessage(
                 userStateManager,
                 userRepository,

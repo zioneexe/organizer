@@ -1,8 +1,9 @@
-package bot.tg.util;
+package bot.tg.helper;
 
-public class TextHelper {
+public class MarkupHelper {
 
-    private TextHelper() {}
+    private MarkupHelper() {
+    }
 
     public static String escapeMarkdown(String text) {
         return text.replace("_", "\\_")
