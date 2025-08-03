@@ -1,6 +1,5 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.repository.UserRepository;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -17,14 +16,11 @@ public class GreetingsHelper {
     private GreetingsHelper() {
     }
 
-    public static SendMessage formAdjustGreetingsMessage(UserRepository userRepository, ChatContext chatContext) {
-        long chatId = chatContext.getChatId();
-        long userId = chatContext.getUserId();
-
+    public static SendMessage formAdjustGreetingsMessage(UserRepository userRepository, Long userId) {
         boolean greetingsEnabled = userRepository.greetingsEnabled(userId);
 
         return SendMessage.builder()
-                .chatId(String.valueOf(chatId))
+                .chatId(String.valueOf(userId))
                 .text(GREETINGS_CHOICE_MESSAGE)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(new KeyboardRow(

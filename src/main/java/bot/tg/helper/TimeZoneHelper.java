@@ -1,6 +1,5 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.dto.SupportedTimeZone;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -24,11 +23,9 @@ public class TimeZoneHelper {
     private TimeZoneHelper() {
     }
 
-    public static SendMessage formAdjustTimeZoneMessage(ChatContext chatContext) {
-        long chatId = chatContext.getChatId();
-
+    public static SendMessage formAdjustTimeZoneMessage(Long userId) {
         return SendMessage.builder()
-                .chatId(String.valueOf(chatId))
+                .chatId(String.valueOf(userId))
                 .text(TIMEZONE_CHOICE_MESSAGE)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(new KeyboardRow(

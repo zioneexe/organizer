@@ -1,0 +1,60 @@
+package bot.tg.handler.state.handler;
+
+import bot.tg.dto.TelegramContext;
+import bot.tg.handler.state.StateHandler;
+import bot.tg.helper.TelegramHelper;
+import bot.tg.model.User;
+import bot.tg.repository.UserRepository;
+import bot.tg.service.MessageService;
+import bot.tg.user.UserRequest;
+import bot.tg.user.UserState;
+import bot.tg.user.UserStateManager;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.util.Set;
+
+import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_OFF;
+import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_ON;
+
+@Component
+@RequiredArgsConstructor
+public class GreetingsSwitchHandler extends StateHandler {
+
+    private final TelegramClient telegramClient;
+    private final UserStateManager userStateManager;
+    private final UserRepository userRepository;
+    private final MessageService messageService;
+
+    @Override
+    public Set<UserState> getSupportedStates() {
+        return Set.of(UserState.SWITCH_GREETING);
+    }
+
+    @Override
+    public void handle(UserRequest request) {
+        TelegramContext context = request.getContext();
+        User user = this.userRepository.getById(context.userId);
+
+        if (context.text == null) {
+            return;
+        }
+
+        boolean isEnabled = true;
+        String answer = "Ранкові привітання ";
+        if (context.text.equals(SWITCH_GREETING_ON)) {
+            this.messageService.scheduleGreetingForUser(user);
+            answer += "увімкнено.";
+        } else if (context.text.equals(SWITCH_GREETING_OFF)) {
+            messageService.cancelGreetingForUser(user);
+            isEnabled = false;
+            answer += "вимкнено.";
+        }
+
+        this.userRepository.setGreetingsEnabled(context.userId, isEnabled);
+        TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, context.userId, answer);
+
+        userStateManager.setState(context.userId, UserState.IDLE);
+    }
+}

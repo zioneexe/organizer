@@ -1,47 +1,46 @@
 package bot.tg;
 
-import bot.tg.callback.CallbackDispatcher;
-import bot.tg.command.CommandRegistry;
-import bot.tg.dto.SupportedTimeZone;
-import bot.tg.dto.Time;
 import bot.tg.helper.TelegramHelper;
-import bot.tg.model.User;
-import bot.tg.repository.UserRepository;
-import bot.tg.service.MessageService;
-import bot.tg.service.StickerService;
-import bot.tg.state.StateDispatcher;
-import bot.tg.state.StateRecognizer;
-import bot.tg.state.UserState;
-import bot.tg.state.UserStateManager;
+import bot.tg.service.UserSessionService;
+import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
+import bot.tg.util.TelegramUserExtractor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.location.Location;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static bot.tg.constant.Symbol.COMMAND_SYMBOL;
-import static bot.tg.constant.Symbol.SPACE_DELIMITER;
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
-    private final CallbackDispatcher callbackDispatcher;
-    private final MessageService messageService;
-    private final UserRepository userRepository;
-    private final CommandRegistry commandRegistry;
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
-    private final StateDispatcher stateDispatcher;
-    private final StickerService stickerService;
+    private final UserSessionService userSessionService;
+    private final Dispatcher dispatcher;
 
     @Override
     public void consume(Update update) {
-        if (update.hasCallbackQuery()) {
+        Long userId = TelegramUserExtractor.getUserId(update);
+        UserSession userSession = userSessionService.getSession(update);
+        UserRequest userRequest = UserRequest.of(update, userSession);
+
+        boolean dispatched = dispatcher.dispatch(userRequest);
+
+        if (!dispatched) {
+            log.warn("The request from user {} was not dispatched", userId);
+            TelegramHelper.sendSimpleMessage(
+                    telegramClient,
+                    userId,
+                    "❓ Вибач, я не зрозумів, що ти мав на увазі.\nСпробуй /help."
+            );
+        }
+
+     /*   if (update.hasCallbackQuery()) {
             callbackDispatcher.dispatch(update);
             return;
         }
@@ -60,22 +59,7 @@ public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThre
             }
 
             handleState(update);
-        }
-    }
 
-    @Override
-    public String getBotToken() {
-        return System.getenv("TELEGRAM_BOT_API_KEY");
-    }
-
-    @Override
-    public LongPollingUpdateConsumer getUpdatesConsumer() {
-        return this;
-    }
-
-    private void scheduleStartupJobs() {
-        messageService.scheduleGreetingsToAll();
-        messageService.scheduleUnfiredReminders();
     }
 
     private void respondWithSticker(Update update) {
@@ -108,27 +92,16 @@ public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThre
         }
 
         stateDispatcher.dispatch(userState, update);
+        */
     }
 
-    private void createUserIfNotExists(Update update) {
-        String firstName = update.getMessage().getChat().getFirstName();
-        String lastName = update.getMessage().getChat().getLastName();
-        String username = update.getMessage().getChat().getUserName();
-        long userId = update.getMessage().getFrom().getId();
+    @Override
+    public String getBotToken() {
+        return System.getenv("TELEGRAM_BOT_API_KEY");
+    }
 
-        if (!userRepository.existsById(userId)) {
-            userRepository.create(
-                    User.builder()
-                            .userId(userId)
-                            .firstName(firstName)
-                            .lastName(lastName)
-                            .username(username)
-                            .timeZone(SupportedTimeZone.getDefault().getZoneId())
-                            .isGoogleConnected(false)
-                            .greetingsEnabled(true)
-                            .preferredGreetingTime(Time.DEFAULT_REMINDER_TIME)
-                            .build()
-            );
-        }
+    @Override
+    public LongPollingUpdateConsumer getUpdatesConsumer() {
+        return this;
     }
 }

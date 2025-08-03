@@ -1,13 +1,13 @@
 package bot.tg.helper;
 
 import bot.tg.dto.DateTime;
+import bot.tg.dto.TelegramContext;
 import bot.tg.dto.Time;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.repository.UserRepository;
-import bot.tg.state.UserStateManager;
+import bot.tg.user.UserStateManager;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -28,64 +28,35 @@ public class TimePickerResponseHelper {
 
     private TimePickerResponseHelper() {}
 
-    public static SendMessage createGreetingTimePickerMessage(Update update, UserRepository userRepository) {
-
-        long userId = 0;
-        long chatId = 0;
-        if (update.hasMessage()) {
-            userId = update.getMessage().getFrom().getId();
-            chatId = update.getMessage().getChatId();
-        } else if (update.hasCallbackQuery()) {
-            userId = update.getCallbackQuery().getFrom().getId();
-            chatId = update.getCallbackQuery().getMessage().getChatId();
-        }
-
-        Time userPreferredGreetingTime = userRepository.getPreferredGreetingTime(userId);
+    public static SendMessage createGreetingTimePickerMessage(TelegramContext context, UserRepository userRepository) {
+        Time userPreferredGreetingTime = userRepository.getPreferredGreetingTime(context.userId);
         InlineKeyboardMarkup keyboard = TimePickerResponseHelper.buildGreetingTimePickerKeyboard(
                 userPreferredGreetingTime.getHour(), userPreferredGreetingTime.getMinute()
         );
 
         return SendMessage.builder()
-                .chatId(chatId)
+                .chatId(context.userId)
                 .text(GREETING_TIME)
                 .replyMarkup(keyboard)
                 .build();
     }
 
-    public static EditMessageText createGreetingTimePickerEditMessage(Update update, UserStateManager userStateManager) {
-
-        long userId = 0;
-        long chatId = 0;
-        int messageId = 0;
-        if (update.hasMessage()) {
-            userId = update.getMessage().getFrom().getId();
-            chatId = update.getMessage().getChatId();
-            messageId = update.getMessage().getMessageId();
-        } else if (update.hasCallbackQuery()) {
-            userId = update.getCallbackQuery().getFrom().getId();
-            chatId = update.getCallbackQuery().getMessage().getChatId();
-            messageId = update.getCallbackQuery().getMessage().getMessageId();
-        }
-
-        Time userPreferredGreetingTime = userStateManager.getMorningGreetingTimeDraft(userId);
+    public static EditMessageText createGreetingTimePickerEditMessage(TelegramContext context, UserStateManager userStateManager) {
+        Time userPreferredGreetingTime = userStateManager.getMorningGreetingTimeDraft(context.userId);
         InlineKeyboardMarkup keyboard = TimePickerResponseHelper.buildGreetingTimePickerKeyboard(
                 userPreferredGreetingTime.getHour(), userPreferredGreetingTime.getMinute()
         );
 
         return EditMessageText.builder()
-                .chatId(chatId)
-                .messageId(messageId)
+                .chatId(context.userId)
+                .messageId(context.messageId)
                 .text(GREETING_TIME)
                 .replyMarkup(keyboard)
                 .build();
     }
 
-    public static EditMessageText createReminderTimePickerEditMessage(Update update, String userTimeZone, UserStateManager userStateManager) {
-        long userId = update.getCallbackQuery().getFrom().getId();
-        long chatId = update.getCallbackQuery().getMessage().getChatId();
-        int messageId = update.getCallbackQuery().getMessage().getMessageId();
-
-        ReminderCreateDto dto = userStateManager.getReminderDraft(userId);
+    public static EditMessageText createReminderTimePickerEditMessage(TelegramContext context, String userTimeZone, UserStateManager userStateManager) {
+        ReminderCreateDto dto = userStateManager.getReminderDraft(context.userId);
         DateTime dateTime = dto.getDateTime();
 
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of(userTimeZone));
@@ -100,8 +71,8 @@ public class TimePickerResponseHelper {
         );
 
         return EditMessageText.builder()
-                .chatId(chatId)
-                .messageId(messageId)
+                .chatId(context.userId)
+                .messageId(context.messageId)
                 .text(REMINDER_TIME)
                 .replyMarkup(keyboard)
                 .build();

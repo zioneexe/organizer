@@ -1,5 +1,6 @@
 package bot.tg.configuration;
 
+import bot.tg.validation.TaskAndReminderValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -21,5 +22,10 @@ public class AppConfig {
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
+    }
+
+    @Bean
+    public TaskAndReminderValidator validator() {
+        return new TaskAndReminderValidator();
     }
 }

@@ -1,13 +1,10 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -37,25 +34,7 @@ public class TelegramHelper {
         }
     }
 
-    public static ChatContext extractChatContext(Update update) {
-        if (update.hasMessage()) {
-            return new ChatContext(
-                    update.getMessage().getFrom().getId(),
-                    update.getMessage().getChatId()
-            );
-        }
-        if (update.hasCallbackQuery()) {
-            CallbackQuery query = update.getCallbackQuery();
-            return new ChatContext(
-                    query.getFrom().getId(),
-                    query.getMessage().getChatId()
-            );
-        }
-
-        return null;
-    }
-
-    public static void sendEditMessage(TelegramClient telegramClient, int messageId, long chatId, String message) {
+    public static void sendEditMessage(TelegramClient telegramClient, int messageId, Long chatId, String message) {
         EditMessageText editMessage = EditMessageText.builder()
                 .messageId(messageId)
                 .chatId(chatId)
@@ -64,7 +43,7 @@ public class TelegramHelper {
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
 
-    public static void sendEditMessageWithMarkup(TelegramClient telegramClient, int messageId, long chatId, String message, InlineKeyboardMarkup markup) {
+    public static void sendEditMessageWithMarkup(TelegramClient telegramClient, int messageId, Long chatId, String message, InlineKeyboardMarkup markup) {
         EditMessageText editMessage = EditMessageText.builder()
                 .messageId(messageId)
                 .chatId(chatId)
@@ -74,7 +53,7 @@ public class TelegramHelper {
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
 
-    public static void sendMessageWithKeyboardRemove(TelegramClient telegramClient, long userId, String message) {
+    public static void sendMessageWithKeyboardRemove(TelegramClient telegramClient, Long userId, String message) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(userId)
                 .text(message)
@@ -83,7 +62,7 @@ public class TelegramHelper {
         safeExecute(telegramClient, sendMessage);
     }
 
-    public static void sendMessageWithForceReply(TelegramClient telegramClient, long userId, String message) {
+    public static void sendMessageWithForceReply(TelegramClient telegramClient, Long userId, String message) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(userId)
                 .text(message)
@@ -92,7 +71,7 @@ public class TelegramHelper {
         safeExecute(telegramClient, sendMessage);
     }
 
-    public static void sendSimpleMessage(TelegramClient telegramClient, long userId, String message) {
+    public static void sendSimpleMessage(TelegramClient telegramClient, Long userId, String message) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(userId)
                 .text(message)
@@ -100,7 +79,7 @@ public class TelegramHelper {
         safeExecute(telegramClient, sendMessage);
     }
 
-    public static void sendMessageWithMarkup(TelegramClient telegramClient, long userId, String message, ReplyKeyboard markup) {
+    public static void sendMessageWithMarkup(TelegramClient telegramClient, Long userId, String message, ReplyKeyboard markup) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(userId)
                 .text(message)

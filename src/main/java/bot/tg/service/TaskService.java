@@ -1,18 +1,17 @@
 package bot.tg.service;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
+import bot.tg.dto.TelegramContext;
 import bot.tg.helper.TasksResponseHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.state.UserState;
-import bot.tg.state.UserStateManager;
+import bot.tg.user.UserState;
+import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
@@ -32,26 +31,18 @@ public class TaskService {
     private final UserRepository userRepository;
     private final PaginationService paginationService;
 
-    public void startTaskCreation(Update update) {
-        ChatContext chatContext = TelegramHelper.extractChatContext(update);
-        if (chatContext == null) return;
-        long chatId = chatContext.getChatId();
-        long userId = chatContext.getUserId();
+    public void startTaskCreation(TelegramContext context) {
+        TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, context.userId, ALRIGHT);
+        TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, TASK_TITLE);
 
-        TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, chatId, ALRIGHT);
-        TelegramHelper.sendMessageWithForceReply(telegramClient, chatId, TASK_TITLE);
-
-        userStateManager.createTaskDraft(userId);
-        userStateManager.setState(userId, UserState.AWAITING_TASK_TITLE);
+        userStateManager.createTaskDraft(context.userId);
+        userStateManager.setState(context.userId, UserState.AWAITING_TASK_TITLE);
     }
 
-    public void endTaskCreation(TodoTask task, ChatContext chatContext) {
+    public void endTaskCreation(TodoTask task, Long userId) {
         taskRepository.create(task);
 
-        long chatId = chatContext.getChatId();
-        long userId = chatContext.getUserId();
-
-        TelegramHelper.sendSimpleMessage(telegramClient, chatId, TASK_CREATED);
+        TelegramHelper.sendSimpleMessage(telegramClient, userId, TASK_CREATED);
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
@@ -65,7 +56,7 @@ public class TaskService {
                 userRepository,
                 taskRepository,
                 pageable,
-                chatContext,
+                userId,
                 LocalDate.now()
         );
         TelegramHelper.safeExecute(telegramClient, tasksMessage);

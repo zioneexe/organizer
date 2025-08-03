@@ -1,6 +1,5 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.repository.UserRepository;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -19,11 +18,10 @@ public class MenuHelper {
     private MenuHelper() {
     }
 
-    public static SendMessage formMenuMessage(ChatContext chatContext) {
-        long chatId = chatContext.getChatId();
+    public static SendMessage formMenuMessage(Long userId) {
 
         return SendMessage.builder()
-                .chatId(chatId)
+                .chatId(userId)
                 .text(START_MESSAGE)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(
@@ -37,13 +35,11 @@ public class MenuHelper {
                 .build();
     }
 
-    public static SendMessage formSettingsMenu(UserRepository userRepository, ChatContext chatContext) {
-        long chatId = chatContext.getChatId();
-        long userId = chatContext.getUserId();
+    public static SendMessage formSettingsMenu(UserRepository userRepository, Long userId) {
         boolean isGoogleConnected = userRepository.isGoogleConnected(userId);
 
         return SendMessage.builder()
-                .chatId(chatId)
+                .chatId(userId)
                 .text(SETTINGS_MESSAGE)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(

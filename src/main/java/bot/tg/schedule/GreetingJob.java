@@ -1,6 +1,5 @@
 package bot.tg.schedule;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class GreetingJob implements Job {
 
         TelegramHelper.sendSimpleMessage(client, userId, greetingMessage);
 
-        SendMessage menuMessage = MenuHelper.formMenuMessage(new ChatContext(userId, userId));
+        SendMessage menuMessage = MenuHelper.formMenuMessage(userId);
         TelegramHelper.safeExecute(client, menuMessage);
     }
 }

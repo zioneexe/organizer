@@ -1,6 +1,6 @@
 package bot.tg.configuration;
 
-import bot.tg.factory.AutowiringSpringBeanJobFactory;
+import bot.tg.configuration.factory.AutowiringSpringBeanJobFactory;
 import org.quartz.spi.JobFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

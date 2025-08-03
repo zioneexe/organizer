@@ -1,15 +1,14 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
+import bot.tg.dto.TelegramContext;
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.state.UserStateManager;
+import bot.tg.user.UserStateManager;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -27,11 +26,8 @@ public class TasksResponseHelper {
                                                  UserRepository userRepository,
                                                  TaskRepository taskRepository,
                                                  Pageable pageable,
-                                                 ChatContext chatContext,
+                                                 Long userId,
                                                  LocalDate chosenDate) {
-        long userId = chatContext.getUserId();
-        long chatId = chatContext.getChatId();
-
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
@@ -44,7 +40,7 @@ public class TasksResponseHelper {
         String answer = tasksMessage.getValue();
 
         return SendMessage.builder()
-                .chatId(chatId)
+                .chatId(userId)
                 .text(answer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
@@ -60,25 +56,21 @@ public class TasksResponseHelper {
                                                          TaskRepository taskRepository,
                                                          Pageable pageable,
                                                          LocalDate chosenDate,
-                                                         Update update) {
-        long userId = update.getCallbackQuery().getFrom().getId();
-        long chatId = update.getCallbackQuery().getMessage().getChatId();
-        int messageId = update.getCallbackQuery().getMessage().getMessageId();
-
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
+                                                         TelegramContext context) {
+        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentTaskPage(userId, pageable.getPage());
-        List<TodoTask> updatedTasks = taskRepository.getByUserForDayPaged(userId, pageable, chosenDate, userZoneId);
+        userStateManager.setCurrentTaskPage(context.userId, pageable.getPage());
+        List<TodoTask> updatedTasks = taskRepository.getByUserForDayPaged(context.userId, pageable, chosenDate, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> updatedTasksMessage = TaskMessageHelper.formTasksMessage(updatedTasks, pageable);
         List<List<InlineKeyboardButton>> keyboardRows = updatedTasksMessage.getKey();
         String editAnswer = updatedTasksMessage.getValue();
 
         return EditMessageText.builder()
-                .chatId(chatId)
-                .messageId(messageId)
+                .chatId(context.userId)
+                .messageId(context.messageId)
                 .text(editAnswer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()

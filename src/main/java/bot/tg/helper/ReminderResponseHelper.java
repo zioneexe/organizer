@@ -1,15 +1,14 @@
 package bot.tg.helper;
 
-import bot.tg.dto.ChatContext;
 import bot.tg.dto.Pageable;
+import bot.tg.dto.TelegramContext;
 import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.state.UserStateManager;
+import bot.tg.user.UserStateManager;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -33,10 +32,7 @@ public class ReminderResponseHelper {
                                                      UserRepository userRepository,
                                                      ReminderRepository reminderRepository,
                                                      Pageable pageable,
-                                                     ChatContext chatContext) {
-        long userId = chatContext.getChatId();
-        long chatId = chatContext.getChatId();
-
+                                                     Long userId) {
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
@@ -52,7 +48,7 @@ public class ReminderResponseHelper {
         String answer = remindersMessage.getValue();
 
         return SendMessage.builder()
-                .chatId(chatId)
+                .chatId(userId)
                 .text(answer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
@@ -67,18 +63,14 @@ public class ReminderResponseHelper {
                                                              UserRepository userRepository,
                                                              ReminderRepository reminderRepository,
                                                              Pageable pageable,
-                                                             Update update) {
-        long userId = update.getCallbackQuery().getFrom().getId();
-        long chatId = update.getCallbackQuery().getMessage().getChatId();
-        int messageId = update.getCallbackQuery().getMessage().getMessageId();
-
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
+                                                             TelegramContext context) {
+        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentReminderPage(userId, pageable.getPage());
-        List<Reminder> updatedReminders = reminderRepository.getUpcomingForUserPaged(userId, pageable, userZoneId);
+        userStateManager.setCurrentReminderPage(context.userId, pageable.getPage());
+        List<Reminder> updatedReminders = reminderRepository.getUpcomingForUserPaged(context.userId, pageable, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> updatedRemindersMessage = ReminderMessageHelper.formRemindersMessage(
                 updatedReminders, pageable, userZoneId
         );
@@ -87,8 +79,8 @@ public class ReminderResponseHelper {
         String editAnswer = updatedRemindersMessage.getValue();
 
         return EditMessageText.builder()
-                .chatId(chatId)
-                .messageId(messageId)
+                .chatId(context.userId)
+                .messageId(context.messageId)
                 .text(editAnswer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
@@ -99,7 +91,7 @@ public class ReminderResponseHelper {
                 .build();
     }
 
-    public static InlineKeyboardMarkup formDateChoiceKeyboard(UserRepository userRepository, long userId) {
+    public static InlineKeyboardMarkup formDateChoiceKeyboard(UserRepository userRepository, Long userId) {
         List<InlineKeyboardRow> rows = new ArrayList<>();
 
         String userTimeZone = userRepository.getById(userId).getTimeZone();
