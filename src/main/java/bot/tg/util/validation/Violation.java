@@ -1,4 +1,4 @@
-package bot.tg.validation;
+package bot.tg.util.validation;
 
 import lombok.Getter;
 

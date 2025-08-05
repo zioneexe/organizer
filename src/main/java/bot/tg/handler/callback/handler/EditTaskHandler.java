@@ -5,8 +5,8 @@ import bot.tg.handler.callback.CallbackHandler;
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -23,7 +23,6 @@ import static bot.tg.constant.Task.Callback.*;
 public class EditTaskHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
 
     @Override
     public boolean supports(String data) {
@@ -36,6 +35,7 @@ public class EditTaskHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -72,8 +72,8 @@ public class EditTaskHandler extends CallbackHandler {
         if (context.data.startsWith(EDIT_NAME_TASK + COLON_DELIMITER)) {
             String taskId = context.data.split(COLON_DELIMITER)[1];
 
-            userStateManager.setState(context.userId, UserState.EDITING_TASK_NAME);
-            userStateManager.setEditingTaskId(context.userId, taskId);
+            userSession.setState(UserState.EDITING_TASK_NAME);
+            userSession.setEditingTaskId(taskId);
 
             TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, "Введи нову назву.");
             return;
@@ -82,16 +82,16 @@ public class EditTaskHandler extends CallbackHandler {
         if (context.data.startsWith(EDIT_DESCRIPTION_TASK + COLON_DELIMITER)) {
             String taskId = context.data.split(COLON_DELIMITER)[1];
 
-            userStateManager.setState(context.userId, UserState.EDITING_TASK_DESCRIPTION);
-            userStateManager.setEditingTaskId(context.userId, taskId);
+            userSession.setState(UserState.EDITING_TASK_DESCRIPTION);
+            userSession.setEditingTaskId(taskId);
 
             TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, "Введи новий опис.");
             return;
         }
 
         if (context.data.equals(CANCEL_EDIT_TASK)) {
-            userStateManager.setState(context.userId, UserState.IDLE);
-            userStateManager.clearEditingTaskId(context.userId);
+            userSession.setIdleState();
+            userSession.clearEditingTaskId();
 
             TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, "Редагування скасовано.");
             SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);

@@ -10,8 +10,7 @@ import bot.tg.model.User;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,7 +26,6 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class GreetingTimePickerHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final MessageService messageService;
     private final UserRepository userRepository;
 
@@ -39,6 +37,7 @@ public class GreetingTimePickerHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -49,7 +48,7 @@ public class GreetingTimePickerHandler extends CallbackHandler {
 
         String action = parts[1];
 
-        Time time = userStateManager.getMorningGreetingTimeDraft(context.userId);
+        Time time = userSession.getMorningGreetingTimeDraft();
         switch (action) {
             case GREETING_CHANGE_HOUR -> {
                 int delta = Integer.parseInt(parts[2]);
@@ -73,7 +72,7 @@ public class GreetingTimePickerHandler extends CallbackHandler {
                 time.setTimeManuallyEdited(true);
             }
             case GREETING_CANCEL -> {
-                userStateManager.setState(context.userId, UserState.IDLE);
+                userSession.setIdleState();
                 TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, "Зміна часу скасована.");
                 SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
                 TelegramHelper.safeExecute(telegramClient, menuMessage);
@@ -85,14 +84,14 @@ public class GreetingTimePickerHandler extends CallbackHandler {
                 messageService.cancelGreetingForUser(user);
                 messageService.scheduleGreetingForUser(user);
 
-                userStateManager.setState(context.userId, UserState.IDLE);
+                userSession.setIdleState();
                 TelegramHelper.sendSimpleMessage(telegramClient, context.userId, GREETING_TIME_SET + time + ".");
                 TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
                 return;
             }
         }
 
-        EditMessageText editMessage = TimePickerResponseHelper.createGreetingTimePickerEditMessage(context, userStateManager);
+        EditMessageText editMessage = TimePickerResponseHelper.createGreetingTimePickerEditMessage(context, userSession);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
     }

@@ -9,8 +9,8 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.helper.TimePickerResponseHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -32,7 +32,6 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class ReminderTimePickerHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
 
     @Override
@@ -43,6 +42,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -52,7 +52,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
         if (parts.length < 2) return;
 
         String action = parts[1];
-        ReminderCreateDto dto = userStateManager.getReminderDraft(context.userId);
+        ReminderCreateDto dto = userSession.getReminderDraft();
         DateTime dateTime = dto.getDateTime();
 
         String userTimeZone = userRepository.getById(context.userId).getTimeZone();
@@ -96,7 +96,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
                 }
             }
             case REMINDER_CANCEL -> {
-                userStateManager.setState(context.userId, UserState.IDLE);
+                userSession.setIdleState();
                 TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.chatId, "Створення скасовано.");
                 SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
                 TelegramHelper.safeExecute(telegramClient, menuMessage);
@@ -112,7 +112,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
                     break;
                 }
 
-                userStateManager.setState(context.userId, UserState.AWAITING_REMINDER_TEXT);
+                userSession.setState(UserState.AWAITING_REMINDER_TEXT);
                 TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, REMINDER_TEXT);
                 TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
                 return;
@@ -123,7 +123,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
             TelegramHelper.sendCallbackAnswerWithMessage(telegramClient, context.callbackQueryId, INVALID_TIME);
         }
 
-        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(context, userTimeZone, userStateManager);
+        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(context, userTimeZone, userSession);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
     }

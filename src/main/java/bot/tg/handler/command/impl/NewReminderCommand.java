@@ -19,6 +19,6 @@ public class NewReminderCommand extends BotCommand {
 
     @Override
     public void handle(UserRequest request) {
-        this.reminderService.startReminderCreation(request.getContext());
+        this.reminderService.startReminderCreation(request);
     }
 }

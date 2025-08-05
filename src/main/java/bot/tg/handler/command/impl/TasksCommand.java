@@ -9,8 +9,7 @@ import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,7 +23,6 @@ import java.time.ZoneId;
 public class TasksCommand extends BotCommand {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final PaginationService paginationService;
@@ -37,6 +35,7 @@ public class TasksCommand extends BotCommand {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         String userTimeZone = userRepository.getById(context.userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
@@ -45,7 +44,7 @@ public class TasksCommand extends BotCommand {
 
         Pageable pageable = paginationService.formTaskPageableForUser(Pageable.FIRST, context.userId, LocalDate.now(), userZoneId);
         SendMessage sendMessage = TasksResponseHelper.createTasksMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 taskRepository,
                 pageable,
@@ -54,6 +53,6 @@ public class TasksCommand extends BotCommand {
         );
         TelegramHelper.safeExecute(telegramClient, sendMessage);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

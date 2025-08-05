@@ -56,7 +56,6 @@
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
             <version>8.18.0</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

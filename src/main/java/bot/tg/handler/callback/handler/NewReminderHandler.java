@@ -26,7 +26,7 @@ public class NewReminderHandler extends CallbackHandler {
     public void handle(UserRequest request) {
         String callbackQueryId = request.getUpdate().getCallbackQuery().getId();
 
-        this.reminderService.startReminderCreation(request.getContext());
+        this.reminderService.startReminderCreation(request);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
 }

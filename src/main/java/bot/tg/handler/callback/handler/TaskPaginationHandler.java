@@ -9,7 +9,7 @@ import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -26,7 +26,6 @@ import static bot.tg.constant.Task.Callback.PAGE_TASK;
 public class TaskPaginationHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final PaginationService paginationService;
@@ -39,6 +38,7 @@ public class TaskPaginationHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -58,7 +58,7 @@ public class TaskPaginationHandler extends CallbackHandler {
         int neededPage = Integer.parseInt(parts[1]);
         Pageable pageable = paginationService.formTaskPageableForUser(neededPage, context.userId, LocalDate.now(), userZoneId);
         EditMessageText pageMessage = TasksResponseHelper.createTasksEditMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 taskRepository,
                 pageable,

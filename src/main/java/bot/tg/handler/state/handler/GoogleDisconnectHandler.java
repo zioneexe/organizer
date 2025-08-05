@@ -6,8 +6,8 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleClientService;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import com.google.auth.oauth2.TokenStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,6 @@ import java.util.Set;
 public class GoogleDisconnectHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final TokenStore tokenStore;
     private final GoogleClientService googleClientService;
@@ -33,6 +32,7 @@ public class GoogleDisconnectHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         try {
             googleClientService.revokeRefreshTokenForUser(String.valueOf(context.userId));
@@ -52,6 +52,6 @@ public class GoogleDisconnectHandler extends StateHandler {
             );
         }
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

@@ -7,8 +7,8 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.helper.TimePickerResponseHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -25,7 +25,6 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class ReminderDateHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
 
     @Override
@@ -36,20 +35,21 @@ public class ReminderDateHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
         }
 
-        ReminderCreateDto dto = userStateManager.getReminderDraft(context.userId);
+        ReminderCreateDto dto = userSession.getReminderDraft();
         String dateString = context.data.split(COLON_DELIMITER)[1];
         LocalDate date = parseDate(dateString);
         dto.getDateTime().setDate(date);
-        userStateManager.setState(context.userId, UserState.AWAITING_REMINDER_TIME);
+        userSession.setState(UserState.AWAITING_REMINDER_TIME);
 
         String userTimeZone = userRepository.getById(context.userId).getTimeZone();
 
-        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(context, userTimeZone, userStateManager);
+        EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(context, userTimeZone, userSession);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
     }

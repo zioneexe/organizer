@@ -14,10 +14,10 @@ import bot.tg.service.GoogleCalendarService;
 import bot.tg.service.MessageService;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
-import bot.tg.validation.TaskAndReminderValidator;
-import bot.tg.validation.Violation;
+import bot.tg.util.validation.TaskAndReminderValidator;
+import bot.tg.util.validation.Violation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -34,7 +34,6 @@ import static bot.tg.constant.Reminder.Response.REMINDER_CREATED;
 public class ReminderTextHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final MessageService messageService;
     private final GoogleCalendarService googleCalendarService;
     private final UserRepository userRepository;
@@ -50,6 +49,7 @@ public class ReminderTextHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         List<Violation> violations = validator.validateTitle(context.text);
         if (!violations.isEmpty()) {
@@ -61,9 +61,9 @@ public class ReminderTextHandler extends StateHandler {
             return;
         }
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
 
-        ReminderCreateDto dto = userStateManager.getReminderDraft(context.userId);
+        ReminderCreateDto dto = userSession.getReminderDraft();
         dto.setText(context.text);
 
         Reminder reminder = ReminderMapper.fromDto(dto);
@@ -88,7 +88,7 @@ public class ReminderTextHandler extends StateHandler {
 
         Pageable pageable = paginationService.formReminderPageableForUser(Pageable.FIRST, context.userId, userZoneId);
         SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 reminderRepository,
                 pageable,

@@ -5,7 +5,7 @@ import bot.tg.dto.TelegramContext;
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -22,7 +22,7 @@ public class TasksResponseHelper {
 
     private TasksResponseHelper() {}
 
-    public static SendMessage createTasksMessage(UserStateManager userStateManager,
+    public static SendMessage createTasksMessage(UserSession userSession,
                                                  UserRepository userRepository,
                                                  TaskRepository taskRepository,
                                                  Pageable pageable,
@@ -33,7 +33,7 @@ public class TasksResponseHelper {
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentTaskPage(userId, 1);
+        userSession.setCurrentTaskPage(1);
         List<TodoTask> tasks = taskRepository.getByUserForDayPaged(userId, pageable, chosenDate, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> tasksMessage = TaskMessageHelper.formTasksMessage(tasks, pageable);
         List<List<InlineKeyboardButton>> keyboardRows = tasksMessage.getKey();
@@ -51,7 +51,7 @@ public class TasksResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createTasksEditMessage(UserStateManager userStateManager,
+    public static EditMessageText createTasksEditMessage(UserSession userSession,
                                                          UserRepository userRepository,
                                                          TaskRepository taskRepository,
                                                          Pageable pageable,
@@ -62,7 +62,7 @@ public class TasksResponseHelper {
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentTaskPage(context.userId, pageable.getPage());
+        userSession.setCurrentTaskPage(pageable.getPage());
         List<TodoTask> updatedTasks = taskRepository.getByUserForDayPaged(context.userId, pageable, chosenDate, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> updatedTasksMessage = TaskMessageHelper.formTasksMessage(updatedTasks, pageable);
         List<List<InlineKeyboardButton>> keyboardRows = updatedTasksMessage.getKey();

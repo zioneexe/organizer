@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.mongodb.client.model.Filters.eq;
-
 public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, String> {
 
     private static final String COLLECTION_NAME = "tasks";
@@ -46,17 +44,13 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
     }
 
     @Override
-    public String create(TodoTask dto) {
-        InsertOneResult result = tasks.insertOne(dto);
-
-        return result.getInsertedId() != null
-                ? result.getInsertedId().asObjectId().getValue().toHexString()
-                : null;
+    public boolean existsById(String id) {
+        return tasks.find(Filters.eq("_id", new ObjectId(id))).first() != null;
     }
 
     @Override
     public TodoTask getById(String id) {
-        return tasks.find(eq("_id", new ObjectId(id))).first();
+        return tasks.find(Filters.eq("_id", new ObjectId(id))).first();
     }
 
     public List<TodoTask> getByUserForDayPaged(long userId, Pageable pageable, LocalDate date, ZoneId userZoneId) {
@@ -78,11 +72,6 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
     }
 
     @Override
-    public boolean existsById(String id) {
-        return tasks.find(eq("_id", new ObjectId(id))).first() != null;
-    }
-
-    @Override
     public List<TodoTask> getAll() {
         List<TodoTask> tasks = new ArrayList<>();
         for (TodoTask task : this.tasks.find()) {
@@ -92,8 +81,17 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
     }
 
     @Override
+    public String create(TodoTask dto) {
+        InsertOneResult result = tasks.insertOne(dto);
+
+        return result.getInsertedId() != null
+                ? result.getInsertedId().asObjectId().getValue().toHexString()
+                : null;
+    }
+
+    @Override
     public TodoTask update(String id, TaskUpdateDto dto) {
-        Bson filter = eq("_id", new ObjectId(id));
+        Bson filter = Filters.eq("_id", new ObjectId(id));
 
         List<Bson> updates = new ArrayList<>();
 
@@ -119,7 +117,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
 
     @Override
     public boolean deleteById(String id) {
-        DeleteResult result = tasks.deleteOne(eq("_id", new ObjectId(id)));
+        DeleteResult result = tasks.deleteOne(Filters.eq("_id", new ObjectId(id)));
         return result.getDeletedCount() > 0;
     }
 }

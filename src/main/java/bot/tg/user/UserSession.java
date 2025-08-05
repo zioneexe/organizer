@@ -33,4 +33,28 @@ public class UserSession {
 
     @Builder.Default
     private Time morningGreetingTimeDraft = Time.DEFAULT_REMINDER_TIME;
+
+    public void clearEditingTaskId() {
+        this.editingTaskId = null;
+    }
+
+    public void clearReminderDraft() {
+        this.reminderDraft = null;
+    }
+
+    public void clearTaskDraft() {
+        this.taskDraft = null;
+    }
+
+    public void setIdleState() {
+        this.state = UserState.IDLE;
+    }
+
+    public void createTaskDraft() {
+        this.taskDraft = new TaskCreateDto(userId);
+    }
+
+    public void createReminderDraft() {
+        this.reminderDraft = new ReminderCreateDto(userId);
+    }
 }

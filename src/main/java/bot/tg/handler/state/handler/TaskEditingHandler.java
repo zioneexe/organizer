@@ -10,10 +10,10 @@ import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
-import bot.tg.validation.TaskAndReminderValidator;
-import bot.tg.validation.Violation;
+import bot.tg.util.validation.TaskAndReminderValidator;
+import bot.tg.util.validation.Violation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -30,7 +30,6 @@ import java.util.Set;
 public class TaskEditingHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final PaginationService paginationService;
@@ -47,11 +46,13 @@ public class TaskEditingHandler extends StateHandler {
         Update update = request.getUpdate();
         if (!update.hasMessage() || !update.getMessage().hasText()) return;
 
-        UserState state = userStateManager.getState(context.userId);
-        String taskId = userStateManager.getEditingTaskId(context.userId);
+        UserSession userSession = request.getUserSession();
+
+        UserState state = userSession.getState();
+        String taskId = userSession.getEditingTaskId();
         if (taskId == null) {
             TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "Помилка: завдання для редагування не знайдено.");
-            userStateManager.setState(context.userId, UserState.IDLE);
+            userSession.setState(UserState.IDLE);
             return;
         }
 
@@ -88,18 +89,18 @@ public class TaskEditingHandler extends StateHandler {
             }
         }
 
-        userStateManager.setState(context.userId, UserState.IDLE);
-        userStateManager.clearEditingTaskId(context.userId);
+        userSession.setState(UserState.IDLE);
+        userSession.clearEditingTaskId();
 
         String userTimeZone = userRepository.getById(context.userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        int currentPage = userStateManager.getCurrentTaskPage(context.userId);
+        int currentPage = userSession.getCurrentTaskPage();
         Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
         SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 taskRepository,
                 pageable,

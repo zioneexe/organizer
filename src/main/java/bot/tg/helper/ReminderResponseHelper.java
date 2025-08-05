@@ -5,7 +5,7 @@ import bot.tg.dto.TelegramContext;
 import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -28,7 +28,7 @@ public class ReminderResponseHelper {
 
     private ReminderResponseHelper() {}
 
-    public static SendMessage createRemindersMessage(UserStateManager userStateManager,
+    public static SendMessage createRemindersMessage(UserSession userSession,
                                                      UserRepository userRepository,
                                                      ReminderRepository reminderRepository,
                                                      Pageable pageable,
@@ -38,7 +38,7 @@ public class ReminderResponseHelper {
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentReminderPage(userId, 1);
+        userSession.setCurrentReminderPage(1);
         List<Reminder> reminders = reminderRepository.getUpcomingForUserPaged(userId, pageable, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> remindersMessage = ReminderMessageHelper.formRemindersMessage(
                 reminders, pageable, userZoneId
@@ -59,7 +59,7 @@ public class ReminderResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createRemindersEditMessage(UserStateManager userStateManager,
+    public static EditMessageText createRemindersEditMessage(UserSession userSession,
                                                              UserRepository userRepository,
                                                              ReminderRepository reminderRepository,
                                                              Pageable pageable,
@@ -69,7 +69,7 @@ public class ReminderResponseHelper {
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        userStateManager.setCurrentReminderPage(context.userId, pageable.getPage());
+        userSession.setCurrentReminderPage(pageable.getPage());
         List<Reminder> updatedReminders = reminderRepository.getUpcomingForUserPaged(context.userId, pageable, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> updatedRemindersMessage = ReminderMessageHelper.formRemindersMessage(
                 updatedReminders, pageable, userZoneId

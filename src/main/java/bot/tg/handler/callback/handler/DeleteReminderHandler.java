@@ -10,8 +10,7 @@ import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleCalendarService;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,7 +26,6 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class DeleteReminderHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final GoogleCalendarService googleCalendarService;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
@@ -41,6 +39,7 @@ public class DeleteReminderHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -68,10 +67,10 @@ public class DeleteReminderHandler extends CallbackHandler {
                 ZoneId.systemDefault() :
                 ZoneId.of(userTimeZone);
 
-        int currentPage = userStateManager.getCurrentReminderPage(context.userId);
+        int currentPage = userSession.getCurrentReminderPage();
         Pageable pageable = paginationService.formReminderPageableForUser(currentPage, context.userId, userZoneId);
         SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 reminderRepository,
                 pageable,
@@ -79,6 +78,6 @@ public class DeleteReminderHandler extends CallbackHandler {
         );
         TelegramHelper.safeExecute(telegramClient, remindersMessage);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

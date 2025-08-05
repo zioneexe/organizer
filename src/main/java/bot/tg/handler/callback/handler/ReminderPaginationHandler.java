@@ -9,7 +9,7 @@ import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -25,7 +25,6 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class ReminderPaginationHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
     private final PaginationService paginationService;
@@ -38,6 +37,7 @@ public class ReminderPaginationHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         if (context.data == null) {
             return;
@@ -57,7 +57,7 @@ public class ReminderPaginationHandler extends CallbackHandler {
         int neededPage = Integer.parseInt(parts[1]);
         Pageable pageable = paginationService.formReminderPageableForUser(neededPage, context.userId, userZoneId);
         EditMessageText pageMessage = ReminderResponseHelper.createRemindersEditMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 reminderRepository,
                 pageable,

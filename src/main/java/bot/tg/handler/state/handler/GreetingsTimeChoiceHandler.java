@@ -7,8 +7,8 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.helper.TimePickerResponseHelper;
 import bot.tg.repository.UserRepository;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,7 +21,6 @@ import java.util.Set;
 public class GreetingsTimeChoiceHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
 
     @Override
@@ -32,9 +31,10 @@ public class GreetingsTimeChoiceHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         Time currentPreferredTime = userRepository.getPreferredGreetingTime(context.userId);
-        this.userStateManager.setMorningGreetingTimeDraft(context.userId, currentPreferredTime);
+        userSession.setMorningGreetingTimeDraft(currentPreferredTime);
         SendMessage greetingTimePickerMessage = TimePickerResponseHelper.createGreetingTimePickerMessage(context, userRepository);
         TelegramHelper.safeExecute(telegramClient, greetingTimePickerMessage);
     }

@@ -5,8 +5,8 @@ import bot.tg.handler.state.StateHandler;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.helper.TimeZoneHelper;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -21,7 +21,6 @@ import static bot.tg.constant.TimeZone.Response.MANUAL_CHOICE_MESSAGE;
 public class ManualTimeZoneChoiceHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
 
     @Override
     public Set<UserState> getSupportedStates() {
@@ -31,10 +30,11 @@ public class ManualTimeZoneChoiceHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         InlineKeyboardMarkup timeZoneChoiceKeyboard = TimeZoneHelper.formTimeZoneChoiceKeyboard();
         TelegramHelper.sendMessageWithMarkup(telegramClient, context.userId, MANUAL_CHOICE_MESSAGE, timeZoneChoiceKeyboard);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

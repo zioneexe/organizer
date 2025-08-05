@@ -5,7 +5,7 @@ import bot.tg.dto.TelegramContext;
 import bot.tg.dto.Time;
 import bot.tg.dto.create.ReminderCreateDto;
 import bot.tg.repository.UserRepository;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -41,8 +41,8 @@ public class TimePickerResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createGreetingTimePickerEditMessage(TelegramContext context, UserStateManager userStateManager) {
-        Time userPreferredGreetingTime = userStateManager.getMorningGreetingTimeDraft(context.userId);
+    public static EditMessageText createGreetingTimePickerEditMessage(TelegramContext context, UserSession userSession) {
+        Time userPreferredGreetingTime = userSession.getMorningGreetingTimeDraft();
         InlineKeyboardMarkup keyboard = TimePickerResponseHelper.buildGreetingTimePickerKeyboard(
                 userPreferredGreetingTime.getHour(), userPreferredGreetingTime.getMinute()
         );
@@ -55,8 +55,8 @@ public class TimePickerResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createReminderTimePickerEditMessage(TelegramContext context, String userTimeZone, UserStateManager userStateManager) {
-        ReminderCreateDto dto = userStateManager.getReminderDraft(context.userId);
+    public static EditMessageText createReminderTimePickerEditMessage(TelegramContext context, String userTimeZone, UserSession userSession) {
+        ReminderCreateDto dto = userSession.getReminderDraft();
         DateTime dateTime = dto.getDateTime();
 
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of(userTimeZone));

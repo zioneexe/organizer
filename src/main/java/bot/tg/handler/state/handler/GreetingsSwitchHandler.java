@@ -7,8 +7,8 @@ import bot.tg.model.User;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.MessageService;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -23,7 +23,6 @@ import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_ON;
 public class GreetingsSwitchHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
     private final UserRepository userRepository;
     private final MessageService messageService;
 
@@ -35,7 +34,7 @@ public class GreetingsSwitchHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
-        User user = this.userRepository.getById(context.userId);
+        UserSession userSession = request.getUserSession();
 
         if (context.text == null) {
             return;
@@ -43,6 +42,8 @@ public class GreetingsSwitchHandler extends StateHandler {
 
         boolean isEnabled = true;
         String answer = "Ранкові привітання ";
+
+        User user = this.userRepository.getById(context.userId);
         if (context.text.equals(SWITCH_GREETING_ON)) {
             this.messageService.scheduleGreetingForUser(user);
             answer += "увімкнено.";
@@ -55,6 +56,6 @@ public class GreetingsSwitchHandler extends StateHandler {
         this.userRepository.setGreetingsEnabled(context.userId, isEnabled);
         TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, context.userId, answer);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

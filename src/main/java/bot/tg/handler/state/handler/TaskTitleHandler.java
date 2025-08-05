@@ -5,10 +5,10 @@ import bot.tg.dto.create.TaskCreateDto;
 import bot.tg.handler.state.StateHandler;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.user.UserRequest;
+import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
-import bot.tg.validation.TaskAndReminderValidator;
-import bot.tg.validation.Violation;
+import bot.tg.util.validation.TaskAndReminderValidator;
+import bot.tg.util.validation.Violation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -26,7 +26,6 @@ import static bot.tg.constant.Task.Response.TASK_DESCRIPTION;
 @RequiredArgsConstructor
 public class TaskTitleHandler extends StateHandler {
 
-    private final UserStateManager userStateManager;
     private final TelegramClient telegramClient;
     private final TaskAndReminderValidator validator;
 
@@ -38,6 +37,7 @@ public class TaskTitleHandler extends StateHandler {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         List<Violation> violations = validator.validateTitle(context.text);
         if (!violations.isEmpty()) {
@@ -49,9 +49,9 @@ public class TaskTitleHandler extends StateHandler {
             return;
         }
 
-        userStateManager.setState(context.userId, UserState.AWAITING_TASK_DESCRIPTION);
+        userSession.setState(UserState.AWAITING_TASK_DESCRIPTION);
 
-        TaskCreateDto dto = userStateManager.getTaskDraft(context.userId);
+        TaskCreateDto dto = userSession.getTaskDraft();
         dto.setTitle(context.text);
 
         List<InlineKeyboardRow> keyboard = List.of(new InlineKeyboardRow(

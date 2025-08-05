@@ -9,8 +9,7 @@ import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,7 +24,6 @@ public class RemindersCommand extends BotCommand {
     private final TelegramClient telegramClient;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
-    private final UserStateManager userStateManager;
     private final PaginationService paginationService;
 
     @Override
@@ -36,6 +34,7 @@ public class RemindersCommand extends BotCommand {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         String userTimeZone = userRepository.getById(context.userId).getTimeZone();
         ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
@@ -44,7 +43,7 @@ public class RemindersCommand extends BotCommand {
 
         Pageable pageable = paginationService.formReminderPageableForUser(Pageable.FIRST, context.userId, userZoneId);
         SendMessage sendMessage = ReminderResponseHelper.createRemindersMessage(
-                userStateManager,
+                userSession,
                 userRepository,
                 reminderRepository,
                 pageable,
@@ -52,6 +51,6 @@ public class RemindersCommand extends BotCommand {
         );
         TelegramHelper.safeExecute(telegramClient, sendMessage);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

@@ -5,8 +5,7 @@ import bot.tg.handler.command.BotCommand;
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserState;
-import bot.tg.user.UserStateManager;
+import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,7 +16,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class StartCommand extends BotCommand {
 
     private final TelegramClient telegramClient;
-    private final UserStateManager userStateManager;
 
     @Override
     public String getCommand() {
@@ -27,10 +25,11 @@ public class StartCommand extends BotCommand {
     @Override
     public void handle(UserRequest request) {
         TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         SendMessage message = MenuHelper.formMenuMessage(context.userId);
         TelegramHelper.safeExecute(telegramClient, message);
 
-        userStateManager.setState(context.userId, UserState.IDLE);
+        userSession.setIdleState();
     }
 }

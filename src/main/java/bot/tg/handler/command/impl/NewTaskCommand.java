@@ -19,6 +19,6 @@ public class NewTaskCommand extends BotCommand {
 
     @Override
     public void handle(UserRequest request) {
-        this.taskService.startTaskCreation(request.getContext());
+        this.taskService.startTaskCreation(request);
     }
 }

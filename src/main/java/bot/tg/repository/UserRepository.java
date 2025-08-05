@@ -28,51 +28,8 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         this.users = database.getCollection(COLLECTION_NAME, User.class);
     }
 
-    public void saveUserLocation(long userId, double latitude, double longitude) {
-        Document locationEntry = new Document()
-                .append("latitude", latitude)
-                .append("longitude", longitude)
-                .append("timestamp", Instant.now());
-
-        users.updateOne(
-                Filters.eq("user_id", userId),
-                Updates.push("location_history", locationEntry)
-        );
-    }
-
-    public String create(User dto) {
-        InsertOneResult result = users.insertOne(dto);
-
-        return result.getInsertedId() != null
-                ? result.getInsertedId().asObjectId().getValue().toHexString()
-                : null;
-    }
-
-    public User getById(Long id) {
-        return users.find(Filters.eq("user_id", id)).first();
-    }
-
-    public List<User> getByIds(Set<Long> userIds) {
-        return users.find(Filters.in("user_id", userIds)).into(new ArrayList<>());
-    }
-
     public boolean existsById(Long id) {
         return users.find(Filters.eq("user_id", id)).first() != null;
-    }
-
-    public List<User> getAll() {
-        List<User> users = new ArrayList<>();
-        for (User user : this.users.find()) {
-            users.add(user);
-        }
-        return users;
-    }
-
-    public User update(Long id, UserUpdateDto userUpdateDto) {
-        Bson filter = Filters.eq("user_id", id);
-        Bson update = Updates.set("username", userUpdateDto.getUsername());
-        users.updateOne(filter, update);
-        return getById(id);
     }
 
     public boolean isGoogleConnected(Long id) {
@@ -87,6 +44,42 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         return user != null && user.getGreetingsEnabled();
     }
 
+    public Time getPreferredGreetingTime(Long id) {
+        User user = getById(id);
+        return user != null ? user.getPreferredGreetingTime() : null;
+    }
+
+    public User getById(Long id) {
+        return users.find(Filters.eq("user_id", id)).first();
+    }
+
+    public List<User> getByIds(Set<Long> userIds) {
+        return users.find(Filters.in("user_id", userIds)).into(new ArrayList<>());
+    }
+
+    public List<User> getAll() {
+        List<User> users = new ArrayList<>();
+        for (User user : this.users.find()) {
+            users.add(user);
+        }
+        return users;
+    }
+
+    public String create(User dto) {
+        InsertOneResult result = users.insertOne(dto);
+
+        return result.getInsertedId() != null
+                ? result.getInsertedId().asObjectId().getValue().toHexString()
+                : null;
+    }
+
+    public User update(Long id, UserUpdateDto userUpdateDto) {
+        Bson filter = Filters.eq("user_id", id);
+        Bson update = Updates.set("username", userUpdateDto.getUsername());
+        users.updateOne(filter, update);
+        return getById(id);
+    }
+
     public void setTimeZone(Long id, String timeZone) {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
@@ -95,11 +88,6 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         );
 
         users.updateOne(filter, update);
-    }
-
-    public Time getPreferredGreetingTime(Long id) {
-        User user = getById(id);
-        return user != null ? user.getPreferredGreetingTime() : null;
     }
 
     public void setPreferredGreetingTime(Long id, Time preferredGreetingTime) {
@@ -130,6 +118,18 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         );
 
         users.updateOne(filter, update);
+    }
+
+    public void saveUserLocation(long userId, double latitude, double longitude) {
+        Document locationEntry = new Document()
+                .append("latitude", latitude)
+                .append("longitude", longitude)
+                .append("timestamp", Instant.now());
+
+        users.updateOne(
+                Filters.eq("user_id", userId),
+                Updates.push("location_history", locationEntry)
+        );
     }
 
     public boolean deleteById(Long id) {

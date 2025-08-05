@@ -33,32 +33,26 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         this.reminders = database.getCollection(COLLECTION_NAME, Reminder.class);
     }
 
+    public long countUpcomingByUser(long userId, ZoneId userZoneId) {
+        LocalDateTime now = LocalDateTime.now(userZoneId);
+
+        Bson filter = Filters.and(
+                Filters.eq("fired", false),
+                Filters.eq("user_id", userId),
+                Filters.gt("date_time", now)
+        );
+
+        return reminders.countDocuments(filter);
+    }
+
     @Override
-    public String create(Reminder dto) {
-        InsertOneResult result = reminders.insertOne(dto);
-
-        return result.getInsertedId() != null
-                ? result.getInsertedId().asObjectId().getValue().toHexString()
-                : null;
-    }
-
-    public void attachCalendarEvent(String id, GoogleCalendarEvent googleCalendarEvent) {
-        reminders.updateOne(
-                Filters.eq("_id", new ObjectId(id)),
-                Updates.set("google_calendar_event", googleCalendarEvent)
-        );
-    }
-
-    public void detachCalendarEvent(String id) {
-        reminders.updateOne(
-                Filters.eq("_id", new ObjectId(id)),
-                Updates.unset("google_calendar_event")
-        );
+    public boolean existsById(String id) {
+        return reminders.find(Filters.eq("_id", new ObjectId(id))).first() != null;
     }
 
     @Override
     public Reminder getById(String id) {
-        return reminders.find(eq("_id", new ObjectId(id))).first();
+        return reminders.find(Filters.eq("_id", new ObjectId(id))).first();
     }
 
     public List<Reminder> getUnfiredAfterNow() {
@@ -68,7 +62,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
                 Filters.gt("date_time", now)
         );
 
-        return this.reminders.find(filter).into(new ArrayList<>());
+        return reminders.find(filter).into(new ArrayList<>());
     }
 
     public List<Reminder> getUpcomingForUserPaged(long userId, Pageable pageable, ZoneId userZoneId) {
@@ -87,12 +81,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
                 Filters.gt("date_time", date)
         );
 
-        return this.reminders.find(filter).sort(sort).skip(skip).limit(pageSize).into(new ArrayList<>());
-    }
-
-    @Override
-    public boolean existsById(String id) {
-        return reminders.find(eq("_id", new ObjectId(id))).first() != null;
+        return reminders.find(filter).sort(sort).skip(skip).limit(pageSize).into(new ArrayList<>());
     }
 
     @Override
@@ -105,17 +94,20 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
     }
 
     @Override
-    public Reminder update(String id, ReminderUpdateDto dto) {
-        Bson filter = eq("_id", new ObjectId(id));
-        Bson update = Updates.set("time", dto.getTime());
-        reminders.updateOne(filter, update);
-        return getById(id);
+    public String create(Reminder dto) {
+        InsertOneResult result = reminders.insertOne(dto);
+
+        return result.getInsertedId() != null
+                ? result.getInsertedId().asObjectId().getValue().toHexString()
+                : null;
     }
 
     @Override
-    public boolean deleteById(String id) {
-        DeleteResult result = reminders.deleteOne(eq("_id", new ObjectId(id)));
-        return result.getDeletedCount() > 0;
+    public Reminder update(String id, ReminderUpdateDto dto) {
+        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson update = Updates.set("time", dto.getTime());
+        reminders.updateOne(filter, update);
+        return getById(id);
     }
 
     public void markAsFired(String id) {
@@ -138,15 +130,23 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         reminders.updateOne(filter, update);
     }
 
-    public long countUpcomingByUser(long userId, ZoneId userZoneId) {
-        LocalDateTime now = LocalDateTime.now(userZoneId);
-
-        Bson filter = Filters.and(
-                Filters.eq("fired", false),
-                Filters.eq("user_id", userId),
-                Filters.gt("date_time", now)
+    public void attachCalendarEvent(String id, GoogleCalendarEvent googleCalendarEvent) {
+        reminders.updateOne(
+                Filters.eq("_id", new ObjectId(id)),
+                Updates.set("google_calendar_event", googleCalendarEvent)
         );
+    }
 
-        return reminders.countDocuments(filter);
+    public void detachCalendarEvent(String id) {
+        reminders.updateOne(
+                Filters.eq("_id", new ObjectId(id)),
+                Updates.unset("google_calendar_event")
+        );
+    }
+
+    @Override
+    public boolean deleteById(String id) {
+        DeleteResult result = reminders.deleteOne(eq("_id", new ObjectId(id)));
+        return result.getDeletedCount() > 0;
     }
 }
