@@ -1,12 +1,12 @@
 package bot.tg.service;
 
+import bot.tg.dto.TelegramContext;
+import bot.tg.user.UserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.stickers.GetStickerSet;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.stickers.Sticker;
 import org.telegram.telegrambots.meta.api.objects.stickers.StickerSet;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,37 +21,38 @@ public class StickerService {
 
     private final TelegramClient telegramClient;
 
-    public SendSticker sendSticker(Update update) {
-        if (update.hasMessage() && update.getMessage().hasSticker()) {
-            Message message = update.getMessage();
-            String chatId = message.getChatId().toString();
-            Sticker receivedSticker = message.getSticker();
-            String stickerSetName = receivedSticker.getSetName();
+    public SendSticker sendSticker(UserRequest request) {
+        TelegramContext context = request.getContext();
 
-            if (stickerSetName == null) return null;
+        if (context.sticker == null) {
+            return null;
+        }
 
-            GetStickerSet getStickerSet = new GetStickerSet(stickerSetName);
+        String stickerSetName = context.sticker.getSetName();
 
-            try {
-                StickerSet stickerSet = telegramClient.execute(getStickerSet);
-                List<Sticker> stickers = stickerSet.getStickers();
+        if (stickerSetName == null) return null;
 
-                List<Sticker> otherStickers = stickers.stream()
-                        .filter(sticker -> !sticker.getFileId().equals(receivedSticker.getFileId()))
-                        .toList();
+        GetStickerSet getStickerSet = new GetStickerSet(stickerSetName);
 
-                if (!otherStickers.isEmpty()) {
-                    Sticker randomSticker = otherStickers.get(new Random().nextInt(otherStickers.size()));
+        try {
+            StickerSet stickerSet = telegramClient.execute(getStickerSet);
+            List<Sticker> stickers = stickerSet.getStickers();
 
-                    return SendSticker.builder()
-                            .chatId(chatId)
-                            .sticker(new InputFile(randomSticker.getFileId()))
-                            .build();
-                }
+            List<Sticker> otherStickers = stickers.stream()
+                    .filter(sticker -> !sticker.getFileId().equals(context.sticker.getFileId()))
+                    .toList();
 
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
+            if (!otherStickers.isEmpty()) {
+                Sticker randomSticker = otherStickers.get(new Random().nextInt(otherStickers.size()));
+
+                return SendSticker.builder()
+                        .chatId(context.userId)
+                        .sticker(new InputFile(randomSticker.getFileId()))
+                        .build();
             }
+
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
 
         return null;
