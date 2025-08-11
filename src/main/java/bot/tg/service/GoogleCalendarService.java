@@ -14,6 +14,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,13 +24,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GoogleCalendarService {
 
     private static final String REMINDERS_ID = "primary";
 
-    private static final String BOT_URL = System.getenv("BOT_URL");
+    private static final String EVENT_TITLE = "Telegram Reminder Bot";
+    private static final String EVENT_DESCRIPTION = "\uD83D\uDD14 Created by Organizer Telegram Bot";
+    private static final String EVENT_COLOR_ID = "4";
+
+    private final String botUrl;
 
     private final Map<Long, Calendar> userCalendars = new ConcurrentHashMap<>();
     private final GoogleClientService googleClientService;
@@ -50,7 +56,7 @@ public class GoogleCalendarService {
 
             return Optional.of(event.getHtmlLink());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error in creating calendar event: {}", e.getMessage());
         }
 
         return Optional.empty();
@@ -72,7 +78,7 @@ public class GoogleCalendarService {
 
             reminderRepository.detachCalendarEvent(reminderId);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error in deleting calendar event: {}", e.getMessage());
         }
     }
 
@@ -83,7 +89,7 @@ public class GoogleCalendarService {
 
         Event event = new Event()
                 .setSummary(reminder.getText())
-                .setDescription("\uD83D\uDD14 Created by Organizer Telegram Bot")
+                .setDescription(EVENT_DESCRIPTION)
                 .setTransparency("transparent");
 
         String startIso = DateTime.DateTimeMapper.toZonedDateTime(reminder.getDateTime())
@@ -98,12 +104,12 @@ public class GoogleCalendarService {
                 .setDateTime(new com.google.api.client.util.DateTime(endIso))
                 .setTimeZone(userTimeZone.isEmpty() ? defaultZone : userTimeZone);
 
-        event.setColorId("4");
+        event.setColorId(EVENT_COLOR_ID);
 
         event.setStart(start).setEnd(end);
         event.setSource(new Event.Source()
-                .setTitle("Telegram Reminder Bot")
-                .setUrl(BOT_URL)
+                .setTitle(EVENT_TITLE)
+                .setUrl(botUrl)
         );
 
         Event.Reminders reminders = new Event.Reminders()

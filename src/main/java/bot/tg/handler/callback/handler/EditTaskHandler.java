@@ -15,8 +15,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import static bot.tg.constant.ResponseMessage.EDITING_CANCELLED;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.*;
+import static bot.tg.constant.Task.Response.*;
 
 @Component
 @RequiredArgsConstructor
@@ -47,25 +49,25 @@ public class EditTaskHandler extends CallbackHandler {
             InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
                     .keyboardRow(new InlineKeyboardRow(
                             InlineKeyboardButton.builder()
-                                    .text("Назву")
+                                    .text(TASK_EDIT_TITLE_LABEL)
                                     .callbackData(EDIT_NAME_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("Опис")
+                                    .text(TASK_EDIT_DESCRIPTION_LABEL)
                                     .callbackData(EDIT_DESCRIPTION_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("Видалити")
+                                    .text(TASK_EDIT_DELETE_LABEL)
                                     .callbackData(DELETE_TASK + COLON_DELIMITER + taskId)
                                     .build(),
                             InlineKeyboardButton.builder()
-                                    .text("Скасувати")
+                                    .text(TASK_EDIT_CANCEL_LABEL)
                                     .callbackData(CANCEL_EDIT_TASK)
                                     .build()
                     ))
                     .build();
 
-            TelegramHelper.sendEditMessageWithMarkup(telegramClient, context.messageId, context.chatId, "Що хочеш змінити?", keyboard);
+            TelegramHelper.sendEditMessageWithMarkup(telegramClient, context.messageId, context.chatId, TASK_EDIT_QUESTION, keyboard);
             return;
         }
 
@@ -75,7 +77,7 @@ public class EditTaskHandler extends CallbackHandler {
             userSession.setState(UserState.EDITING_TASK_NAME);
             userSession.setEditingTaskId(taskId);
 
-            TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, "Введи нову назву.");
+            TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, TASK_EDIT_ENTER_NAME);
             return;
         }
 
@@ -85,7 +87,7 @@ public class EditTaskHandler extends CallbackHandler {
             userSession.setState(UserState.EDITING_TASK_DESCRIPTION);
             userSession.setEditingTaskId(taskId);
 
-            TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, "Введи новий опис.");
+            TelegramHelper.sendMessageWithForceReply(telegramClient, context.userId, TASK_EDIT_ENTER_DESCRIPTION);
             return;
         }
 
@@ -93,7 +95,7 @@ public class EditTaskHandler extends CallbackHandler {
             userSession.setIdleState();
             userSession.clearEditingTaskId();
 
-            TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, "Редагування скасовано.");
+            TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, EDITING_CANCELLED);
             SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
             TelegramHelper.safeExecute(telegramClient, menuMessage);
         }

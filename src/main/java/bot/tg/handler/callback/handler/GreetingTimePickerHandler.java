@@ -19,6 +19,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.constant.Greetings.Callback.*;
 import static bot.tg.constant.Greetings.Response.GREETING_TIME_SET;
+import static bot.tg.constant.ResponseMessage.TIME_CHANGE_CANCELLED;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 @Component
@@ -73,7 +74,7 @@ public class GreetingTimePickerHandler extends CallbackHandler {
             }
             case GREETING_CANCEL -> {
                 userSession.setIdleState();
-                TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, "Зміна часу скасована.");
+                TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, TIME_CHANGE_CANCELLED);
                 SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
                 TelegramHelper.safeExecute(telegramClient, menuMessage);
                 return;

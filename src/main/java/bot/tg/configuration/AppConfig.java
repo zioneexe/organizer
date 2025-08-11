@@ -1,6 +1,6 @@
 package bot.tg.configuration;
 
-import bot.tg.util.validation.TaskAndReminderValidator;
+import bot.tg.util.validation.impl.TaskAndReminderValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -14,8 +14,23 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class AppConfig {
 
     @Bean
+    public String botUrl(@Value("${BOT_URL}") String botUrl) {
+        return botUrl;
+    }
+
+    @Bean
+    public String apiKey(@Value("${TELEGRAM_BOT_API_KEY}") String apiKey) {
+        return apiKey;
+    }
+
+    @Bean
+    public String googleTimeZoneApiKey(@Value("${GOOGLE_TIMEZONE_API_KEY}") String googleTimeZoneApiKey) {
+        return googleTimeZoneApiKey;
+    }
+
+    @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public TelegramClient telegramClient(@Value("${TELEGRAM_BOT_API_KEY}") String apiKey) {
+    public TelegramClient telegramClient(String apiKey) {
         return new OkHttpTelegramClient(apiKey);
     }
 

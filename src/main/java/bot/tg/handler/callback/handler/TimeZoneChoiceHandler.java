@@ -12,8 +12,11 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_TIMEZONE_CHANGE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.TimeZone.Callback.TIMEZONE;
+import static bot.tg.constant.TimeZone.Response.TIMEZONE_CHANGE;
+import static bot.tg.constant.TimeZone.Response.UNSUPPORTED_TIMEZONE;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class TimeZoneChoiceHandler extends CallbackHandler {
 
         String[] parts = context.data.split(COLON_DELIMITER);
         if (parts.length < 2) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "❌ Некоректний запит на зміну часового поясу.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, INCORRECT_REQUEST_TIMEZONE_CHANGE);
             return;
         }
 
@@ -50,13 +53,13 @@ public class TimeZoneChoiceHandler extends CallbackHandler {
             TelegramHelper.sendSimpleMessage(
                     telegramClient,
                     context.userId,
-                    "✅ Твій часовий пояс змінено на:\n" + timeZone.getDisplayName()
+                    TIMEZONE_CHANGE + timeZone.getDisplayName()
             );
 
             SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
             TelegramHelper.safeExecute(telegramClient, menuMessage);
         } catch (IllegalArgumentException e) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "⛔ Непідтримуваний часовий пояс");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, UNSUPPORTED_TIMEZONE);
         }
 
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);

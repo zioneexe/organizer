@@ -13,6 +13,9 @@ public final class TimeZone {
 
         public static final String MANUAL_CHOICE_MESSAGE = "Який часовий пояс?";
 
+        public static final String UNSUPPORTED_TIMEZONE = "⛔ Непідтримуваний часовий пояс";
+        public static final String TIMEZONE_CHANGE = "✅ Твій часовий пояс змінено на:\n";
+
     }
 
     public static final class Button {

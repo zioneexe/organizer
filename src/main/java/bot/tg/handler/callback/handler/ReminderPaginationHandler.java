@@ -8,6 +8,7 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.ZoneId;
 
 import static bot.tg.constant.Reminder.Callback.PAGE_REMINDER;
+import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_PAGE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 @Component
@@ -28,6 +30,7 @@ public class ReminderPaginationHandler extends CallbackHandler {
     private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
     private final PaginationService paginationService;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public boolean supports(String data) {
@@ -45,7 +48,7 @@ public class ReminderPaginationHandler extends CallbackHandler {
 
         String[] parts = context.data.split(COLON_DELIMITER);
         if (parts.length < 2) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "❌ Некоректний запит на зміну сторінки.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, INCORRECT_REQUEST_PAGE);
             return;
         }
 
@@ -58,7 +61,7 @@ public class ReminderPaginationHandler extends CallbackHandler {
         Pageable pageable = paginationService.formReminderPageableForUser(neededPage, context.userId, userZoneId);
         EditMessageText pageMessage = ReminderResponseHelper.createRemindersEditMessage(
                 userSession,
-                userRepository,
+                timeZoneService,
                 reminderRepository,
                 pageable,
                 context

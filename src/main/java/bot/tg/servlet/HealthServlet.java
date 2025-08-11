@@ -10,10 +10,12 @@ import java.io.IOException;
 @Component
 public class HealthServlet extends HttpServlet {
 
+    private static final String HEALTHY = "OK";
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/plain");
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write("OK");
+        resp.getWriter().write(HEALTHY);
     }
 }

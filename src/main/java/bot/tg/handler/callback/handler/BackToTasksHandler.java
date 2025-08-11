@@ -8,6 +8,7 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class BackToTasksHandler extends CallbackHandler {
 
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final TimeZoneService timeZoneService;
     private final TelegramClient telegramClient;
     private final PaginationService paginationService;
 
@@ -39,10 +41,7 @@ public class BackToTasksHandler extends CallbackHandler {
         TelegramContext context = request.getContext();
         UserSession userSession = request.getUserSession();
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
 
         int currentPage = userSession.getCurrentTaskPage();
         Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);

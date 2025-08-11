@@ -36,7 +36,7 @@ public class GoogleDisconnectHandler extends StateHandler {
 
         try {
             googleClientService.revokeRefreshTokenForUser(String.valueOf(context.userId));
-            this.tokenStore.delete(String.valueOf(context.userId));
+            tokenStore.delete(String.valueOf(context.userId));
             userRepository.setGoogleConnected(context.userId, false);
 
             TelegramHelper.sendSimpleMessage(

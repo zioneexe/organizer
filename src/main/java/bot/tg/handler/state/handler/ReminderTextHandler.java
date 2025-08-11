@@ -13,11 +13,12 @@ import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleCalendarService;
 import bot.tg.service.MessageService;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
-import bot.tg.util.validation.TaskAndReminderValidator;
 import bot.tg.util.validation.Violation;
+import bot.tg.util.validation.impl.TaskAndReminderValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -40,6 +41,7 @@ public class ReminderTextHandler extends StateHandler {
     private final ReminderRepository reminderRepository;
     private final PaginationService paginationService;
     private final TaskAndReminderValidator validator;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public Set<UserState> getSupportedStates() {
@@ -89,7 +91,7 @@ public class ReminderTextHandler extends StateHandler {
         Pageable pageable = paginationService.formReminderPageableForUser(Pageable.FIRST, context.userId, userZoneId);
         SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
                 userSession,
-                userRepository,
+                timeZoneService,
                 reminderRepository,
                 pageable,
                 context.userId

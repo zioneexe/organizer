@@ -17,6 +17,8 @@ public class BroadcastServlet extends HttpServlet {
 
     private final BroadcastService broadcastService;
 
+    private static final String SUCCESSFUL_BROADCAST = "Розсилку проведено успішно.";
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setCharacterEncoding("UTF-8");
@@ -29,6 +31,6 @@ public class BroadcastServlet extends HttpServlet {
         broadcastService.broadcast(text);
 
         resp.setStatus(200);
-        resp.getWriter().write("Розсилку проведено успішно.");
+        resp.getWriter().write(SUCCESSFUL_BROADCAST);
     }
 }

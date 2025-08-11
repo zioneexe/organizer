@@ -16,9 +16,15 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.IOException;
 
+import static bot.tg.constant.ResponseMessage.ERROR;
+
 @Component
 @RequiredArgsConstructor
 public class OAuthCallbackServlet extends HttpServlet {
+
+    private static final String MISSING_PARAMS = "Немає обов'язкових параметрів: коду або стану.";
+    private static final String GOOGLE_CONNECT_SUCCESS = "✅ Ви успішно авторизувалися! Тепер ваші завдання та нагадування синхронізуватимуться з Google Calendar.";
+    private static final String GOOGLE_CONNECT_SUCCESS_REDIRECT = "✅ Авторизація успішна! Можете повертатися до Telegram.";
 
     private final TelegramClient telegramClient;
     private final UserRepository userRepository;
@@ -36,7 +42,7 @@ public class OAuthCallbackServlet extends HttpServlet {
 
         if (code == null || userIdString == null) {
             resp.setStatus(400);
-            resp.getWriter().write("Немає обов'язкових параметрів: коду або стану.");
+            resp.getWriter().write(MISSING_PARAMS);
             return;
         }
 
@@ -54,14 +60,14 @@ public class OAuthCallbackServlet extends HttpServlet {
             TelegramHelper.sendMessageWithKeyboardRemove(
                     telegramClient,
                     userId,
-                    "✅ Ви успішно авторизувалися! Тепер ваші завдання та нагадування синхронізуватимуться з Google Calendar."
+                    GOOGLE_CONNECT_SUCCESS
             );
             userRepository.setGoogleConnected(userId, true);
 
-            resp.getWriter().write("✅ Авторизація успішна! Можете повертатися до Telegram.");
+            resp.getWriter().write(GOOGLE_CONNECT_SUCCESS_REDIRECT);
         } catch (Exception e) {
             resp.setStatus(500);
-            resp.getWriter().write("❌ Помилка: " + e.getMessage());
+            resp.getWriter().write(ERROR + e.getMessage());
         }
     }
 }

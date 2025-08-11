@@ -30,6 +30,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final PaginationService paginationService;
+    private final TimeZoneService timeZoneService;
 
     public void startTaskCreation(UserRequest request) {
         TelegramContext context = request.getContext();
@@ -50,10 +51,7 @@ public class TaskService {
 
         TelegramHelper.sendSimpleMessage(telegramClient, userId, TASK_CREATED);
 
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(userId);
 
         int currentPage = userSession.getCurrentTaskPage();
         Pageable pageable = paginationService.formTaskPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);

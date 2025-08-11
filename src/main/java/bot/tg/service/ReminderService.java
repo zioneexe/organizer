@@ -2,7 +2,6 @@ package bot.tg.service;
 
 import bot.tg.dto.TelegramContext;
 import bot.tg.helper.TelegramHelper;
-import bot.tg.repository.UserRepository;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
@@ -19,7 +18,7 @@ import static bot.tg.helper.ReminderResponseHelper.formDateChoiceKeyboard;
 public class ReminderService {
 
     private final TelegramClient telegramClient;
-    private final UserRepository userRepository;
+    private final TimeZoneService timeZoneService;
 
     public void startReminderCreation(UserRequest userRequest) {
         TelegramContext context = userRequest.getContext();
@@ -28,7 +27,7 @@ public class ReminderService {
         TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, context.userId, ALRIGHT);
         TelegramHelper.sendMessageWithMarkup(
                 telegramClient, context.userId, REMINDER_DATE,
-                formDateChoiceKeyboard(userRepository, context.userId)
+                formDateChoiceKeyboard(timeZoneService, context.userId)
         );
 
 

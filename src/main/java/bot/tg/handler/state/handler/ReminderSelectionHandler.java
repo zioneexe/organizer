@@ -8,6 +8,7 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
@@ -27,6 +28,7 @@ public class ReminderSelectionHandler extends StateHandler {
     private final UserRepository userRepository;
     private final TelegramClient telegramClient;
     private final PaginationService paginationService;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public Set<UserState> getSupportedStates() {
@@ -46,7 +48,7 @@ public class ReminderSelectionHandler extends StateHandler {
         Pageable pageable = paginationService.formReminderPageableForUser(Pageable.FIRST, context.userId, userZoneId);
         SendMessage sendMessage = ReminderResponseHelper.createRemindersMessage(
                 userSession,
-                userRepository,
+                timeZoneService,
                 reminderRepository,
                 pageable,
                 context.userId

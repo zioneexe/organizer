@@ -1,6 +1,5 @@
 package bot.tg;
 
-import bot.tg.dto.TelegramContext;
 import bot.tg.dto.TelegramUser;
 import bot.tg.handler.state.StateRecognizer;
 import bot.tg.helper.TelegramHelper;
@@ -8,11 +7,11 @@ import bot.tg.service.UserSessionService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
+import bot.tg.util.RequestChecker;
 import bot.tg.util.TelegramUserExtractor;
 import bot.tg.util.sentry.TelegramUserProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
@@ -20,13 +19,14 @@ import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateC
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import static bot.tg.constant.ResponseMessage.UNKNOWN_COMMAND;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
-    @Value("${TELEGRAM_BOT_API_KEY}")
-    private String botToken;
+    private final String apiKey;
 
     private final TelegramClient telegramClient;
     private final TelegramUserProvider telegramUserProvider;
@@ -51,7 +51,7 @@ public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThre
                 TelegramHelper.sendSimpleMessage(
                         telegramClient,
                         userId,
-                        "❓ Вибач, я не зрозумів, що ти мав на увазі.\nСпробуй /help."
+                        UNKNOWN_COMMAND
                 );
             }
 
@@ -61,25 +61,24 @@ public class OrganizerBot implements SpringLongPollingBot, LongPollingSingleThre
     }
 
     private void recognizeAndSetState(UserRequest request) {
-        TelegramContext context = request.getContext();
         UserSession userSession = request.getUserSession();
-
         UserState userState = userSession.getState();
-        if (userState == UserState.IDLE) {
-            if (context.text != null) {
-                UserState recognizedState = StateRecognizer.recognize(context.text);
-                userSession.setState(recognizedState);
-            }
 
-            if (context.location != null) {
-                userSession.setState(UserState.AWAITING_LOCATION);
-            }
+        if (RequestChecker.isLocation(request) && userState.equals(UserState.ADJUSTING_TIMEZONE)) {
+            userSession.setState(UserState.AWAITING_LOCATION);
         }
+
+        if (!RequestChecker.isTextMessage(request) || !userState.equals(UserState.IDLE)) {
+            return;
+        }
+
+        UserState recognizedState = StateRecognizer.recognize(request);
+        userSession.setState(recognizedState);
     }
 
     @Override
     public String getBotToken() {
-        return botToken;
+        return apiKey;
     }
 
     @Override
