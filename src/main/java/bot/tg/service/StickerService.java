@@ -3,6 +3,7 @@ package bot.tg.service;
 import bot.tg.dto.TelegramContext;
 import bot.tg.user.UserRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.stickers.GetStickerSet;
@@ -15,6 +16,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StickerService {
@@ -52,7 +54,7 @@ public class StickerService {
             }
 
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Failed to retrieve stickers: {}", e.getMessage());
         }
 
         return null;

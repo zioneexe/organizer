@@ -2,8 +2,6 @@ package bot.tg.dto;
 
 import lombok.Getter;
 
-import java.time.ZoneId;
-
 @Getter
 public enum SupportedTimeZone {
     KYIV_OLD("Europe/Kiev", "🇺🇦 Київ"),
@@ -20,10 +18,6 @@ public enum SupportedTimeZone {
     SupportedTimeZone(String zoneId, String displayName) {
         this.zoneId = zoneId;
         this.displayName = displayName;
-    }
-
-    public ZoneId toZoneId() {
-        return ZoneId.of(zoneId);
     }
 
     public static SupportedTimeZone fromZoneId(String zoneId) {

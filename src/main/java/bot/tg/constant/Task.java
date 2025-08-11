@@ -14,6 +14,19 @@ public final class Task {
         public static final String TASK_CREATED = "Вітаю, завдання створено!";
         public static final String TASK_COMPLETED = "Завдання виконано. Вітаю!";
         public static final String TASK_IN_PROGRESS = "Що ж.. Працюй далі :)";
+        public static final String TASK_DELETED = "🗑 Завдання видалено.";
+        public static final String TASK_NOT_FOUND = "⚠️ Завдання не знайдено.";
+        public static final String TASK_NO_DESCRIPTION = "Без опису";
+        public static final String TASK_NO_DESCRIPTION_RESPONSE = "Окей, без опису 👍";
+        public static final String TASK_EDIT_QUESTION = "Що хочеш змінити?";
+        public static final String TASK_EDIT_ENTER_NAME = "Введи нову назву.";
+        public static final String TASK_EDIT_ENTER_DESCRIPTION = "Введи новий опис.";
+
+
+        public static final String TASK_EDIT_TITLE_LABEL = "Назву";
+        public static final String TASK_EDIT_DESCRIPTION_LABEL = "Опис";
+        public static final String TASK_EDIT_DELETE_LABEL = "Видалити";
+        public static final String TASK_EDIT_CANCEL_LABEL = "Скасувати";
     }
 
     public static final class Callback {

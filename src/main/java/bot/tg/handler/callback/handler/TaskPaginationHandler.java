@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_PAGE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.PAGE_TASK;
 
@@ -46,7 +47,7 @@ public class TaskPaginationHandler extends CallbackHandler {
 
         String[] parts = context.data.split(COLON_DELIMITER);
         if (parts.length < 2) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "❌ Некоректний запит на зміну сторінки.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, INCORRECT_REQUEST_PAGE);
             return;
         }
 

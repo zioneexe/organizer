@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import static bot.tg.constant.Task.Callback.SKIP_DESCRIPTION_TASK;
+import static bot.tg.constant.Task.Response.TASK_NO_DESCRIPTION_RESPONSE;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class SkipDescriptionHandler extends CallbackHandler {
         TelegramContext context = request.getContext();
         UserSession userSession = request.getUserSession();
 
-        TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "Окей, без опису 👍");
+        TelegramHelper.sendSimpleMessage(telegramClient, context.userId, TASK_NO_DESCRIPTION_RESPONSE);
 
         TaskCreateDto dto = userSession.getTaskDraft();
         dto.setDescription(null);

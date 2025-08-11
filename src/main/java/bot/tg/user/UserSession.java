@@ -17,10 +17,10 @@ public class UserSession {
     private UserState state = UserState.IDLE;
 
     @Builder.Default
-    private int currentTaskPage = 1;
+    private Integer currentTaskPage = 1;
 
     @Builder.Default
-    private int currentReminderPage = 1;
+    private Integer currentReminderPage = 1;
 
     @Builder.Default
     private TaskCreateDto taskDraft = null;
@@ -36,14 +36,6 @@ public class UserSession {
 
     public void clearEditingTaskId() {
         this.editingTaskId = null;
-    }
-
-    public void clearReminderDraft() {
-        this.reminderDraft = null;
-    }
-
-    public void clearTaskDraft() {
-        this.taskDraft = null;
     }
 
     public void setIdleState() {

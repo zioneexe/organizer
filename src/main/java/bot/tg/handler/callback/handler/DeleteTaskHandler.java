@@ -18,8 +18,11 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_DELETE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.DELETE_TASK;
+import static bot.tg.constant.Task.Response.TASK_DELETED;
+import static bot.tg.constant.Task.Response.TASK_NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -46,16 +49,14 @@ public class DeleteTaskHandler extends CallbackHandler {
 
         String[] parts = context.data.split(COLON_DELIMITER);
         if (parts.length < 2) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "❌ Некоректний запит на видалення.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, INCORRECT_REQUEST_DELETE);
             return;
         }
 
         String taskId = parts[1];
         boolean deleted = taskRepository.deleteById(taskId);
 
-        String response = deleted
-                ? "🗑 Завдання видалено."
-                : "⚠️ Завдання не знайдено.";
+        String response = deleted ? TASK_DELETED : TASK_NOT_FOUND;
 
         TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);

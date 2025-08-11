@@ -10,6 +10,7 @@ import bot.tg.model.TaskStatus;
 import bot.tg.repository.TaskRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class TaskStatusHandler extends CallbackHandler {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final PaginationService paginationService;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public boolean supports(String data) {
@@ -68,10 +70,7 @@ public class TaskStatusHandler extends CallbackHandler {
         String answerText = updatedStatus == TaskStatus.COMPLETED ? TASK_COMPLETED : TASK_IN_PROGRESS;
         TelegramHelper.sendCallbackAnswerWithMessageAlert(telegramClient, context.callbackQueryId, answerText);
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
 
         int currentPage = userSession.getCurrentTaskPage();
         Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);

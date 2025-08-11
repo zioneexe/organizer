@@ -25,8 +25,7 @@ public class NewTaskHandler extends CallbackHandler {
     @Override
     public void handle(UserRequest request) {
         String callbackQueryId = request.getUpdate().getCallbackQuery().getId();
-
-        this.taskService.startTaskCreation(request);
+        taskService.startTaskCreation(request);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, callbackQueryId);
     }
 }

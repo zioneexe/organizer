@@ -3,10 +3,9 @@ package bot.tg.schedule;
 import bot.tg.dto.Time;
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -15,20 +14,19 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.TimeZone;
 
+@Slf4j
 @Component
 public class MessageScheduler {
 
     private final Scheduler scheduler;
 
-    private static final Logger log = LoggerFactory.getLogger(MessageScheduler.class);
-
     public MessageScheduler() {
         try {
             SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            this.scheduler = schedulerFactory.getScheduler();
-            this.scheduler.start();
+            scheduler = schedulerFactory.getScheduler();
+            scheduler.start();
         } catch (SchedulerException e) {
-            throw new RuntimeException("Не вдалося розпочати роботу Quartz", e);
+            throw new RuntimeException("Failed to start Quartz scheduler", e);
         }
     }
 
@@ -75,8 +73,8 @@ public class MessageScheduler {
                 .build();
 
         try {
-            if (this.scheduler.checkExists(jobKey)) return;
-            this.scheduler.scheduleJob(job, trigger);
+            if (scheduler.checkExists(jobKey)) return;
+            scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to schedule greeting job for user " + user.getUserId(), e);
         }
@@ -109,12 +107,12 @@ public class MessageScheduler {
                 .build();
 
         try {
-            if (this.scheduler.checkExists(jobKey)) {
+            if (scheduler.checkExists(jobKey)) {
                 log.info("Job already exists for reminder id={}", reminder.getId());
                 return;
             }
 
-            this.scheduler.scheduleJob(job, trigger);
+            scheduler.scheduleJob(job, trigger);
             log.info("Scheduled job for reminder id={} successfully.", reminder.getId());
         } catch (SchedulerException e) {
             log.error("Failed to schedule reminder id={}: {}", reminder.getId(), e.getMessage());
@@ -126,9 +124,9 @@ public class MessageScheduler {
     public void cancelReminder(Reminder reminder) {
         String jobId = "reminder-job-" + reminder.getId().toHexString();
         try {
-            this.scheduler.deleteJob(new JobKey(jobId, "reminders"));
+            scheduler.deleteJob(new JobKey(jobId, "reminders"));
         } catch (SchedulerException e) {
-            e.printStackTrace();
+            log.error("Failed to cancel reminder id={}: {}", jobId, e.getMessage());
         }
     }
 }

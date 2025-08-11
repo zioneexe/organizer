@@ -9,6 +9,7 @@ import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import bot.tg.service.GoogleCalendarService;
 import bot.tg.service.PaginationService;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.ZoneId;
 
 import static bot.tg.constant.Reminder.Callback.DELETE_REMINDER;
+import static bot.tg.constant.Reminder.Response.REMINDER_DELETED;
+import static bot.tg.constant.Reminder.Response.REMINDER_NOT_FOUND;
+import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_DELETE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 @Component
@@ -30,6 +34,7 @@ public class DeleteReminderHandler extends CallbackHandler {
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
     private final PaginationService paginationService;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public boolean supports(String data) {
@@ -47,7 +52,7 @@ public class DeleteReminderHandler extends CallbackHandler {
 
         String[] parts = context.data.split(COLON_DELIMITER);
         if (parts.length < 2) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "❌ Некоректний запит на видалення.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, INCORRECT_REQUEST_DELETE);
             return;
         }
 
@@ -55,9 +60,7 @@ public class DeleteReminderHandler extends CallbackHandler {
         this.googleCalendarService.deleteCalendarEvent(context.userId, reminderId);
         boolean deleted = reminderRepository.deleteById(reminderId);
 
-        String response = deleted
-                ? "🗑 Нагадування видалено."
-                : "⚠️ Нагадування не знайдено.";
+        String response = deleted ? REMINDER_DELETED : REMINDER_NOT_FOUND;
 
         TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
@@ -71,7 +74,7 @@ public class DeleteReminderHandler extends CallbackHandler {
         Pageable pageable = paginationService.formReminderPageableForUser(currentPage, context.userId, userZoneId);
         SendMessage remindersMessage = ReminderResponseHelper.createRemindersMessage(
                 userSession,
-                userRepository,
+                timeZoneService,
                 reminderRepository,
                 pageable,
                 context.userId

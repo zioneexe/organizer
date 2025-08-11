@@ -4,7 +4,7 @@ import bot.tg.dto.Pageable;
 import bot.tg.dto.TelegramContext;
 import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
-import bot.tg.repository.UserRepository;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -29,14 +29,11 @@ public class ReminderResponseHelper {
     private ReminderResponseHelper() {}
 
     public static SendMessage createRemindersMessage(UserSession userSession,
-                                                     UserRepository userRepository,
+                                                     TimeZoneService timeZoneService,
                                                      ReminderRepository reminderRepository,
                                                      Pageable pageable,
                                                      Long userId) {
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(userId);
 
         userSession.setCurrentReminderPage(1);
         List<Reminder> reminders = reminderRepository.getUpcomingForUserPaged(userId, pageable, userZoneId);
@@ -60,14 +57,11 @@ public class ReminderResponseHelper {
     }
 
     public static EditMessageText createRemindersEditMessage(UserSession userSession,
-                                                             UserRepository userRepository,
+                                                             TimeZoneService timeZoneService,
                                                              ReminderRepository reminderRepository,
                                                              Pageable pageable,
                                                              TelegramContext context) {
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
 
         userSession.setCurrentReminderPage(pageable.getPage());
         List<Reminder> updatedReminders = reminderRepository.getUpcomingForUserPaged(context.userId, pageable, userZoneId);
@@ -91,13 +85,10 @@ public class ReminderResponseHelper {
                 .build();
     }
 
-    public static InlineKeyboardMarkup formDateChoiceKeyboard(UserRepository userRepository, Long userId) {
+    public static InlineKeyboardMarkup formDateChoiceKeyboard(TimeZoneService timeZoneService, Long userId) {
         List<InlineKeyboardRow> rows = new ArrayList<>();
 
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(userId);
 
         for (int i = 0; i < 8; i++) {
             LocalDate date = LocalDate.now(userZoneId).plusDays(i);

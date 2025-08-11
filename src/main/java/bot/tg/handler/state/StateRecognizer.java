@@ -1,5 +1,7 @@
 package bot.tg.handler.state;
 
+import bot.tg.dto.TelegramContext;
+import bot.tg.user.UserRequest;
 import bot.tg.user.UserState;
 
 import static bot.tg.constant.Greetings.Button.*;
@@ -9,8 +11,9 @@ import static bot.tg.constant.TimeZone.Button.CHOOSE_TIMEZONE_MANUALLY;
 
 public class StateRecognizer {
 
-    public static UserState recognize(String text) {
-        return switch (text) {
+    public static UserState recognize(UserRequest request) {
+        TelegramContext context = request.getContext();
+        return switch (context.text) {
             case TASK_SELECTION -> UserState.AWAITING_TASK_SELECTION;
             case REMINDER_SELECTION -> UserState.AWAITING_REMINDER_SELECTION;
             case SETTINGS -> UserState.SETTINGS;

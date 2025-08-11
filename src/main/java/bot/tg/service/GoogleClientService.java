@@ -25,18 +25,20 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class GoogleClientService {
 
-    private final TokenSerializationService tokenSerializationService;
-    private final TokenStore tokenStore;
     @Value("${GOOGLE_CLIENT_ID}")
     public String clientId;
+    private static final String UNAUTHORIZED_USER = "❌ Користувач не авторизований";
     @Value("${GOOGLE_REDIRECT_URI}")
     public String redirectUri;
+    private static final String APPLICATION_NAME = "Organizer";
+    private final TokenSerializationService tokenSerializationService;
 
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final NetHttpTransport HTTP_TRANSPORT = createHttpTransport();
 
     private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
     private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";
+    private final TokenStore tokenStore;
     @Value("${GOOGLE_CLIENT_SECRET}")
     private String clientSecret;
 
@@ -50,7 +52,7 @@ public class GoogleClientService {
 
     public Credential getCredentialFromStoredTokens(String userId) throws Exception {
         String json = tokenStore.load(userId);
-        if (json == null) throw new IllegalStateException("❌ Користувач не авторизований");
+        if (json == null) throw new IllegalStateException(UNAUTHORIZED_USER);
 
         TokenResponse tokenResponse = tokenSerializationService.deserialize(json);
         return new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
@@ -67,7 +69,7 @@ public class GoogleClientService {
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
                 credential
-        ).setApplicationName("Organizer").build();
+        ).setApplicationName(APPLICATION_NAME).build();
     }
 
     public Credential exchangeCodeForTokens(String code) throws Exception {

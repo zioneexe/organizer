@@ -24,6 +24,7 @@ import java.time.ZonedDateTime;
 
 import static bot.tg.constant.Reminder.Callback.*;
 import static bot.tg.constant.Reminder.Response.REMINDER_TEXT;
+import static bot.tg.constant.ResponseMessage.CREATION_CANCELLED;
 import static bot.tg.constant.ResponseMessage.INVALID_TIME;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
@@ -97,7 +98,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
             }
             case REMINDER_CANCEL -> {
                 userSession.setIdleState();
-                TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.chatId, "Створення скасовано.");
+                TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.chatId, CREATION_CANCELLED);
                 SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);
                 TelegramHelper.safeExecute(telegramClient, menuMessage);
                 return;

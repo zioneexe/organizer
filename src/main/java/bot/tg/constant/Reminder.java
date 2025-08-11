@@ -13,7 +13,10 @@ public final class Reminder {
         public static final String REMINDER_TIME = "⌛ Оберемо час для нагадування. ";
         public static final String REMINDER_TEXT = "Для чого нагадування? ✨";
         public static final String REMINDER_CREATED = "Вітаю, нагадування створено!";
-
+        public static final String REMINDER_DELETED = "🗑 Нагадування видалено.";
+        public static final String REMINDER_NOT_FOUND = "⚠️ Нагадування не знайдено.";
+        public static final String REMINDER_ON = "\uD83D\uDD14 Нагадування увімкнено.";
+        public static final String REMINDER_OFF = "\uD83D\uDD15 Нагадування вимкнено.";
     }
 
     public static final class Callback {

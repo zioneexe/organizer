@@ -1,5 +1,6 @@
 package bot.tg.helper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,6 +15,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.Serializable;
 
+@Slf4j
 public class TelegramHelper {
 
     private TelegramHelper() {}
@@ -22,7 +24,7 @@ public class TelegramHelper {
         try {
             telegramClient.execute(method);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Failed to execute telegram API method: {}", e.getMessage());
         }
     }
 
@@ -30,7 +32,7 @@ public class TelegramHelper {
         try {
             telegramClient.execute(stickerMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Failed to execute telegram API sticker method: {}", e.getMessage());
         }
     }
 
