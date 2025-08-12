@@ -28,9 +28,9 @@ public class TimeZoneService {
     public String resolveZoneId(double latitude, double longitude) {
         try {
             log.info("Determining time zone for coordinates: {}, {}", latitude, longitude);
-
             long timestamp = Instant.now().getEpochSecond();
             GenericUrl url = new GenericUrl(TIMEZONE_API_URL);
+
             url.put("location", latitude + "," + longitude);
             url.put("timestamp", timestamp);
             url.put("key", googleTimeZoneApiKey);

@@ -1,9 +1,8 @@
 package bot.tg.schedule;
 
 import bot.tg.helper.TelegramHelper;
-import bot.tg.model.User;
 import bot.tg.repository.ReminderRepository;
-import bot.tg.repository.UserRepository;
+import bot.tg.service.TimeZoneService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -19,9 +18,9 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 public class ReminderJob implements Job {
 
-    private final ReminderRepository reminderRepository;
-    private final UserRepository userRepository;
     private final TelegramClient telegramClient;
+    private final TimeZoneService timeZoneService;
+    private final ReminderRepository reminderRepository;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext)  {
@@ -31,8 +30,7 @@ public class ReminderJob implements Job {
         long userId = data.getLong("userId");
         String text = data.getString("text");
 
-        User user = userRepository.getById(userId);
-        ZoneId userTimeZone = user != null && user.getTimeZone() != null ? ZoneId.of(user.getTimeZone()) : ZoneId.systemDefault();
+        ZoneId userTimeZone = timeZoneService.getUserZoneId(userId);
 
         reminderRepository.markAsFired(reminderId);
 

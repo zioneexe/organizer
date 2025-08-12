@@ -1,22 +1,15 @@
 package bot.tg.handler.callback.handler;
 
-import bot.tg.dto.Pageable;
 import bot.tg.dto.TelegramContext;
 import bot.tg.handler.callback.CallbackHandler;
-import bot.tg.helper.TasksResponseHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.TaskRepository;
-import bot.tg.repository.UserRepository;
-import bot.tg.service.PaginationService;
+import bot.tg.service.TaskService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_DELETE;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
@@ -29,9 +22,8 @@ import static bot.tg.constant.Task.Response.TASK_NOT_FOUND;
 public class DeleteTaskHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserRepository userRepository;
     private final TaskRepository taskRepository;
-    private final PaginationService paginationService;
+    private final TaskService taskService;
 
     @Override
     public boolean supports(String data) {
@@ -61,22 +53,7 @@ public class DeleteTaskHandler extends CallbackHandler {
         TelegramHelper.sendEditMessage(telegramClient, context.messageId, context.userId, response);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
-
-        int currentPage = userSession.getCurrentTaskPage();
-        Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
-        SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
-                userSession,
-                userRepository,
-                taskRepository,
-                pageable,
-                context.userId,
-                LocalDate.now()
-        );
-        TelegramHelper.safeExecute(telegramClient, tasksMessage);
+        taskService.sendTasksCurrentPage(request);
 
         userSession.setIdleState();
     }

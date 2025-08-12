@@ -15,6 +15,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Set;
 
+import static bot.tg.constant.Google.DISCONNECTING_GOOGLE_ERROR;
+import static bot.tg.constant.Google.DISCONNECTING_GOOGLE_SUCCESS;
+
 @Component
 @RequiredArgsConstructor
 public class GoogleDisconnectHandler extends StateHandler {
@@ -42,13 +45,13 @@ public class GoogleDisconnectHandler extends StateHandler {
             TelegramHelper.sendSimpleMessage(
                     telegramClient,
                     context.userId,
-                    "Вітаю, ви успішно від'єднали Google Calendar!"
+                    DISCONNECTING_GOOGLE_SUCCESS
             );
         } catch (Exception e) {
             TelegramHelper.sendSimpleMessage(
                     telegramClient,
                     context.userId,
-                    "Лишенько.. Сталася помилка при від'єднанні."
+                    DISCONNECTING_GOOGLE_ERROR
             );
         }
 

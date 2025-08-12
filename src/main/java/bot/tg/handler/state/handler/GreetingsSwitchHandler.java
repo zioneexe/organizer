@@ -17,6 +17,8 @@ import java.util.Set;
 
 import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_OFF;
 import static bot.tg.constant.Greetings.Button.SWITCH_GREETING_ON;
+import static bot.tg.constant.Greetings.Response.SWITCHED_GREETING_OFF;
+import static bot.tg.constant.Greetings.Response.SWITCHED_GREETING_ON;
 
 @Component
 @RequiredArgsConstructor
@@ -41,19 +43,19 @@ public class GreetingsSwitchHandler extends StateHandler {
         }
 
         boolean isEnabled = true;
-        String answer = "Ранкові привітання ";
 
-        User user = this.userRepository.getById(context.userId);
+        String answer = "";
+        User user = userRepository.getById(context.userId);
         if (context.text.equals(SWITCH_GREETING_ON)) {
-            this.messageService.scheduleGreetingForUser(user);
-            answer += "увімкнено.";
+            messageService.scheduleGreetingForUser(user);
+            answer = SWITCHED_GREETING_ON;
         } else if (context.text.equals(SWITCH_GREETING_OFF)) {
             messageService.cancelGreetingForUser(user);
             isEnabled = false;
-            answer += "вимкнено.";
+            answer = SWITCHED_GREETING_OFF;
         }
 
-        this.userRepository.setGreetingsEnabled(context.userId, isEnabled);
+        userRepository.setGreetingsEnabled(context.userId, isEnabled);
         TelegramHelper.sendMessageWithKeyboardRemove(telegramClient, context.userId, answer);
 
         userSession.setIdleState();

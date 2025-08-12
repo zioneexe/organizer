@@ -1,22 +1,14 @@
 package bot.tg.handler.callback.handler;
 
-import bot.tg.dto.Pageable;
 import bot.tg.dto.TelegramContext;
 import bot.tg.handler.callback.CallbackHandler;
-import bot.tg.helper.ReminderResponseHelper;
 import bot.tg.helper.TelegramHelper;
-import bot.tg.repository.ReminderRepository;
-import bot.tg.repository.UserRepository;
-import bot.tg.service.PaginationService;
-import bot.tg.service.TimeZoneService;
+import bot.tg.service.ReminderService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.time.ZoneId;
 
 import static bot.tg.constant.Reminder.Callback.PAGE_REMINDER;
 import static bot.tg.constant.ResponseMessage.INCORRECT_REQUEST_PAGE;
@@ -27,10 +19,7 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class ReminderPaginationHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserRepository userRepository;
-    private final ReminderRepository reminderRepository;
-    private final PaginationService paginationService;
-    private final TimeZoneService timeZoneService;
+    private final ReminderService reminderService;
 
     @Override
     public boolean supports(String data) {
@@ -52,21 +41,10 @@ public class ReminderPaginationHandler extends CallbackHandler {
             return;
         }
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
-
         int neededPage = Integer.parseInt(parts[1]);
-        Pageable pageable = paginationService.formReminderPageableForUser(neededPage, context.userId, userZoneId);
-        EditMessageText pageMessage = ReminderResponseHelper.createRemindersEditMessage(
-                userSession,
-                timeZoneService,
-                reminderRepository,
-                pageable,
-                context
-        );
-        TelegramHelper.safeExecute(telegramClient, pageMessage);
+        reminderService.sendRemindersPageEdit(request, neededPage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);
+
+        userSession.setIdleState();
     }
 }

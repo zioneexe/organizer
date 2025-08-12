@@ -11,10 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,13 +20,10 @@ public class MessageService {
     private final MessageScheduler messageScheduler;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
+    private final TimeZoneService timeZoneService;
 
     public void scheduleReminder(Reminder reminder) {
-        String userTimeZone = userRepository.getById(reminder.getUserId()).getTimeZone();
-
-        if (!isSchedulable(reminder, userTimeZone)) {
-            return;
-        }
+        if (!isSchedulable(reminder)) return;
         messageScheduler.scheduleReminder(reminder);
     }
 
@@ -38,19 +31,10 @@ public class MessageService {
         List<Reminder> reminders = reminderRepository.getUnfiredAfterNow();
         log.info("Found {} unfired reminders to schedule.", reminders.size());
 
-        Set<Long> userIds = reminders.stream()
-                .map(Reminder::getUserId)
-                .collect(Collectors.toSet());
-
-        Map<Long, User> usersById = userRepository.getByIds(userIds).stream()
-                .collect(Collectors.toMap(User::getUserId, Function.identity()));
-
         reminders.stream()
                 .filter(reminder -> {
-                    User user = usersById.get(reminder.getUserId());
-                    String userTimeZone = user != null && user.getTimeZone() != null ? user.getTimeZone() : "";
-                    boolean schedulable = isSchedulable(reminder, userTimeZone);
-                    log.info("Reminder id={} for userId={} with timezone='{}' schedulable={}", reminder.getId(), reminder.getUserId(), userTimeZone, schedulable);
+                    boolean schedulable = isSchedulable(reminder);
+                    log.info("Reminder id={} for userId={} schedulable={}", reminder.getId(), reminder.getUserId(), schedulable);
                     return schedulable;
                 })
                 .forEach(reminder -> {
@@ -80,7 +64,7 @@ public class MessageService {
         }
     }
 
-    private boolean isSchedulable(Reminder reminder, String userTimeZone) {
+    private boolean isSchedulable(Reminder reminder) {
         if (!reminder.getEnabled()) return false;
 
         LocalDateTime localDateTime = reminder.getDateTime();
@@ -91,12 +75,9 @@ public class MessageService {
             return false;
         }
 
-        ZoneId zoneId = userTimeZone != null && !userTimeZone.isBlank()
-                ? ZoneId.of(userTimeZone)
-                : ZoneId.systemDefault();
-
+        ZoneId userZoneId = timeZoneService.getUserZoneId(reminder.getUserId());
         ZonedDateTime systemZonedDateTime = localDateTime.atZone(ZoneOffset.systemDefault());
-        ZonedDateTime userZonedDateTime = systemZonedDateTime.withZoneSameInstant(zoneId);
+        ZonedDateTime userZonedDateTime = systemZonedDateTime.withZoneSameInstant(userZoneId);
         Instant reminderInstant = userZonedDateTime.toInstant();
         Instant nowInstant = Instant.now();
 

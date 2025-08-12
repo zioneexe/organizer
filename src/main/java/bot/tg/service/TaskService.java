@@ -13,6 +13,7 @@ import bot.tg.user.UserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
@@ -31,6 +32,74 @@ public class TaskService {
     private final UserRepository userRepository;
     private final PaginationService paginationService;
     private final TimeZoneService timeZoneService;
+
+    public void sendTasksFirstPage(UserRequest request) {
+        TelegramContext context = request.getContext();
+
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
+        Pageable pageable = paginationService.formTaskPageableForUser(Pageable.FIRST, context.userId, LocalDate.now(), userZoneId);
+        SendMessage sendMessage = TasksResponseHelper.createTasksMessage(
+                request,
+                timeZoneService,
+                taskRepository,
+                pageable,
+                LocalDate.now()
+        );
+        TelegramHelper.safeExecute(telegramClient, sendMessage);
+    }
+
+    public void sendTasksCurrentPage(UserRequest request) {
+        TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
+
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
+        int currentPage = userSession.getCurrentTaskPage();
+        Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
+        SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
+                request,
+                timeZoneService,
+                taskRepository,
+                pageable,
+                LocalDate.now()
+        );
+        TelegramHelper.safeExecute(telegramClient, tasksMessage);
+    }
+
+    public void sendTasksPageEdit(UserRequest request) {
+        TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
+
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
+        int currentPage = userSession.getCurrentTaskPage();
+        Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
+        EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(
+                request,
+                timeZoneService,
+                taskRepository,
+                pageable,
+                LocalDate.now()
+        );
+        TelegramHelper.safeExecute(telegramClient, editMessage);
+    }
+
+    public void sendTasksPageEdit(UserRequest request, int neededPage) {
+        TelegramContext context = request.getContext();
+
+        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
+        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
+                ZoneId.systemDefault() :
+                ZoneId.of(userTimeZone);
+
+        Pageable pageable = paginationService.formTaskPageableForUser(neededPage, context.userId, LocalDate.now(), userZoneId);
+        EditMessageText pageMessage = TasksResponseHelper.createTasksEditMessage(
+                request,
+                timeZoneService,
+                taskRepository,
+                pageable,
+                LocalDate.now()
+        );
+        TelegramHelper.safeExecute(telegramClient, pageMessage);
+    }
 
     public void startTaskCreation(UserRequest request) {
         TelegramContext context = request.getContext();
@@ -56,11 +125,10 @@ public class TaskService {
         int currentPage = userSession.getCurrentTaskPage();
         Pageable pageable = paginationService.formTaskPageableForUser(currentPage, userId, LocalDate.now(), userZoneId);
         SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
-                userSession,
-                userRepository,
+                request,
+                timeZoneService,
                 taskRepository,
                 pageable,
-                userId,
                 LocalDate.now()
         );
         TelegramHelper.safeExecute(telegramClient, tasksMessage);

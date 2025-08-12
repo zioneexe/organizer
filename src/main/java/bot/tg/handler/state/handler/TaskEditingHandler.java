@@ -1,14 +1,11 @@
 package bot.tg.handler.state.handler;
 
-import bot.tg.dto.Pageable;
 import bot.tg.dto.TelegramContext;
 import bot.tg.dto.update.TaskUpdateDto;
 import bot.tg.handler.state.StateHandler;
-import bot.tg.helper.TasksResponseHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.TaskRepository;
-import bot.tg.repository.UserRepository;
-import bot.tg.service.PaginationService;
+import bot.tg.service.TaskService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
@@ -16,14 +13,13 @@ import bot.tg.util.validation.Violation;
 import bot.tg.util.validation.impl.TaskAndReminderValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
+
+import static bot.tg.constant.Task.Response.*;
 
 @Component
 @RequiredArgsConstructor
@@ -31,9 +27,8 @@ public class TaskEditingHandler extends StateHandler {
 
     private final TelegramClient telegramClient;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
-    private final PaginationService paginationService;
     private final TaskAndReminderValidator validator;
+    private final TaskService taskService;
 
     @Override
     public Set<UserState> getSupportedStates() {
@@ -51,7 +46,7 @@ public class TaskEditingHandler extends StateHandler {
         UserState state = userSession.getState();
         String taskId = userSession.getEditingTaskId();
         if (taskId == null) {
-            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "Помилка: завдання для редагування не знайдено.");
+            TelegramHelper.sendSimpleMessage(telegramClient, context.userId, TASK_UPDATE_NOT_FOUND);
             userSession.setState(UserState.IDLE);
             return;
         }
@@ -69,7 +64,7 @@ public class TaskEditingHandler extends StateHandler {
                 }
                 TaskUpdateDto dto = TaskUpdateDto.builder().title(context.text).build();
                 taskRepository.update(taskId, dto);
-                TelegramHelper.sendSimpleMessage(telegramClient, context.userId, "Назву оновлено ✅");
+                TelegramHelper.sendSimpleMessage(telegramClient, context.userId, TASK_UPDATE_LABEL_SUCCESS);
             }
 
             case EDITING_TASK_DESCRIPTION -> {
@@ -85,28 +80,13 @@ public class TaskEditingHandler extends StateHandler {
 
                 TaskUpdateDto dto = TaskUpdateDto.builder().description(context.text).build();
                 taskRepository.update(taskId, dto);
-                TelegramHelper.sendSimpleMessage(telegramClient, context.chatId, "Опис оновлено ✅");
+                TelegramHelper.sendSimpleMessage(telegramClient, context.chatId, TASK_UPDATE_DESCRIPTION_SUCCESS);
             }
         }
 
         userSession.setState(UserState.IDLE);
         userSession.clearEditingTaskId();
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
-
-        int currentPage = userSession.getCurrentTaskPage();
-        Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
-        SendMessage tasksMessage = TasksResponseHelper.createTasksMessage(
-                userSession,
-                userRepository,
-                taskRepository,
-                pageable,
-                context.userId,
-                LocalDate.now()
-        );
-        TelegramHelper.safeExecute(telegramClient, tasksMessage);
+        taskService.sendTasksCurrentPage(request);
     }
 }

@@ -17,6 +17,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Set;
 
+import static bot.tg.constant.TimeZone.Response.TIMEZONE_DETECTED_AUTOMATICALLY;
+
 @Component
 @RequiredArgsConstructor
 public class LocationReceiveHandler extends StateHandler {
@@ -51,7 +53,7 @@ public class LocationReceiveHandler extends StateHandler {
         TelegramHelper.sendSimpleMessage(
                 telegramClient,
                 context.userId,
-                "✅ Твій часовий пояс визначено автоматично: " + timeZone.getDisplayName()
+                TIMEZONE_DETECTED_AUTOMATICALLY + timeZone.getDisplayName()
         );
 
         SendMessage menuMessage = MenuHelper.formMenuMessage(context.userId);

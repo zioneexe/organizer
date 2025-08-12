@@ -22,6 +22,9 @@ public final class Greetings {
 
         public static final String GREETING_TIME = "⌛ Оберемо час для привітання. ";
         public static final String GREETING_TIME_SET = "✨ Вітаю, встановлено новий час для привітань: ";
+
+        public static final String SWITCHED_GREETING_ON = "Ранкові привітання увімкнено.";
+        public static final String SWITCHED_GREETING_OFF = "Ранкові привітання вимкнено.";
         private Response() {
         }
 

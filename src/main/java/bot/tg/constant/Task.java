@@ -22,11 +22,15 @@ public final class Task {
         public static final String TASK_EDIT_ENTER_NAME = "Введи нову назву.";
         public static final String TASK_EDIT_ENTER_DESCRIPTION = "Введи новий опис.";
 
-
         public static final String TASK_EDIT_TITLE_LABEL = "Назву";
         public static final String TASK_EDIT_DESCRIPTION_LABEL = "Опис";
         public static final String TASK_EDIT_DELETE_LABEL = "Видалити";
         public static final String TASK_EDIT_CANCEL_LABEL = "Скасувати";
+
+
+        public static final String TASK_UPDATE_NOT_FOUND = "Помилка: завдання для редагування не знайдено.";
+        public static final String TASK_UPDATE_LABEL_SUCCESS = "Назву оновлено ✅";
+        public static final String TASK_UPDATE_DESCRIPTION_SUCCESS = "Опис оновлено ✅";
     }
 
     public static final class Callback {
