@@ -15,6 +15,7 @@ public final class TimeZone {
 
         public static final String UNSUPPORTED_TIMEZONE = "⛔ Непідтримуваний часовий пояс";
         public static final String TIMEZONE_CHANGE = "✅ Твій часовий пояс змінено на:\n";
+        public static final String TIMEZONE_DETECTED_AUTOMATICALLY = "✅ Твій часовий пояс визначено автоматично: ";
 
     }
 

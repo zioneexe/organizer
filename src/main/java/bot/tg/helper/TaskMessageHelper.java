@@ -3,7 +3,9 @@ package bot.tg.helper;
 import bot.tg.dto.Pageable;
 import bot.tg.model.TaskStatus;
 import bot.tg.model.TodoTask;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 import static bot.tg.constant.Task.Callback.*;
-import static bot.tg.constant.Task.Response.TASK_CREATE;
+import static bot.tg.constant.Task.Response.*;
 import static bot.tg.helper.MarkupHelper.escapeMarkdown;
 
 public class TaskMessageHelper {
@@ -58,7 +60,7 @@ public class TaskMessageHelper {
     public static Map.Entry<List<List<InlineKeyboardButton>>, String> formTasksMessage(List<TodoTask> tasks, Pageable pageable) {
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
         if (tasks.isEmpty()) {
-            keyboardRows.add(List.of(formNewTaskButton()));
+            keyboardRows.add(List.of(formTaskEditingKeyboard()));
             return Map.entry(keyboardRows, "📝 Завдань на сьогодні поки немає.");
         }
 
@@ -122,10 +124,34 @@ public class TaskMessageHelper {
         return Map.entry(keyboardRows, answerBuilder.toString());
     }
 
-    public static InlineKeyboardButton formNewTaskButton() {
+    public static InlineKeyboardButton formTaskEditingKeyboard() {
         return InlineKeyboardButton.builder()
                 .text(TASK_CREATE)
                 .callbackData(NEW_TASK)
+                .build();
+    }
+
+
+    public static InlineKeyboardMarkup formTaskEditingKeyboard(String taskId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboardRow(new InlineKeyboardRow(
+                        InlineKeyboardButton.builder()
+                                .text(TASK_EDIT_TITLE_LABEL)
+                                .callbackData(EDIT_NAME_TASK + COLON_DELIMITER + taskId)
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text(TASK_EDIT_DESCRIPTION_LABEL)
+                                .callbackData(EDIT_DESCRIPTION_TASK + COLON_DELIMITER + taskId)
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text(TASK_EDIT_DELETE_LABEL)
+                                .callbackData(DELETE_TASK + COLON_DELIMITER + taskId)
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text(TASK_EDIT_CANCEL_LABEL)
+                                .callbackData(CANCEL_EDIT_TASK)
+                                .build()
+                ))
                 .build();
     }
 

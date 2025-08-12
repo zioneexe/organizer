@@ -3,6 +3,7 @@ package bot.tg.repository;
 import bot.tg.dto.Pageable;
 import bot.tg.dto.update.TaskUpdateDto;
 import bot.tg.model.TodoTask;
+import bot.tg.util.Utc;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -14,7 +15,6 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,7 +30,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         this.tasks = database.getCollection(COLLECTION_NAME, TodoTask.class);
     }
 
-    public long countByUserForDay(long userId, LocalDate date, ZoneId userZoneId) {
+    public long countByUserForDay(Long userId, LocalDate date, ZoneId userZoneId) {
         Date start = Date.from(date.atStartOfDay(userZoneId).toInstant());
         Date end = Date.from(date.plusDays(1).atStartOfDay(userZoneId).toInstant());
 
@@ -53,7 +53,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         return tasks.find(Filters.eq("_id", new ObjectId(id))).first();
     }
 
-    public List<TodoTask> getByUserForDayPaged(long userId, Pageable pageable, LocalDate date, ZoneId userZoneId) {
+    public List<TodoTask> getByUserForDayPaged(Long userId, Pageable pageable, LocalDate date, ZoneId userZoneId) {
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPage();
         int skip = pageSize * (pageNumber - 1);
@@ -108,7 +108,7 @@ public class TaskRepository implements Repository<TodoTask, TaskUpdateDto, Strin
         }
 
         if (!updates.isEmpty()) {
-            updates.add(Updates.set("updated_at", LocalDateTime.now()));
+            updates.add(Updates.set("updated_at", Utc.now()));
             tasks.updateOne(filter, Updates.combine(updates));
         }
 

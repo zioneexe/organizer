@@ -4,6 +4,7 @@ import bot.tg.dto.DateTime;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Data
 public class ReminderCreateDto {
@@ -19,6 +20,6 @@ public class ReminderCreateDto {
     public ReminderCreateDto(Long userId) {
         this.userId = userId;
         this.dateTime = new DateTime();
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 }

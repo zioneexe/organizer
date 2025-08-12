@@ -56,7 +56,7 @@ public class OAuthCallbackServlet extends HttpServlet {
             String jsonTokens = tokenSerializationService.serialize(tokenResponse);
             tokenStore.store(userIdString, jsonTokens);
 
-            long userId = Long.parseLong(userIdString);
+            Long userId = Long.parseLong(userIdString);
             TelegramHelper.sendMessageWithKeyboardRemove(
                     telegramClient,
                     userId,

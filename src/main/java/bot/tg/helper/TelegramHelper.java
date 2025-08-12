@@ -36,7 +36,7 @@ public class TelegramHelper {
         }
     }
 
-    public static void sendEditMessage(TelegramClient telegramClient, int messageId, Long chatId, String message) {
+    public static void sendEditMessage(TelegramClient telegramClient, Integer messageId, Long chatId, String message) {
         EditMessageText editMessage = EditMessageText.builder()
                 .messageId(messageId)
                 .chatId(chatId)
@@ -45,7 +45,7 @@ public class TelegramHelper {
         TelegramHelper.safeExecute(telegramClient, editMessage);
     }
 
-    public static void sendEditMessageWithMarkup(TelegramClient telegramClient, int messageId, Long chatId, String message, InlineKeyboardMarkup markup) {
+    public static void sendEditMessageWithMarkup(TelegramClient telegramClient, Integer messageId, Long chatId, String message, InlineKeyboardMarkup markup) {
         EditMessageText editMessage = EditMessageText.builder()
                 .messageId(messageId)
                 .chatId(chatId)

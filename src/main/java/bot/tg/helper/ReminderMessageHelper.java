@@ -4,10 +4,7 @@ import bot.tg.dto.Pageable;
 import bot.tg.model.Reminder;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +35,7 @@ public class ReminderMessageHelper {
         int currentPage = pageable.getPage();
         int totalPages = pageable.getTotalPages();
 
-        ZonedDateTime currentZonedDateTime = LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(userZoneId);
+        ZonedDateTime currentZonedDateTime = ZonedDateTime.now(userZoneId);
         DateTimeFormatter currentDateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM uuuu, HH:mm z");
 
         StringBuilder answerBuilder = new StringBuilder("*Поточний час: ");
@@ -47,7 +44,7 @@ public class ReminderMessageHelper {
         Map<LocalDate, List<Reminder>> grouped = reminders.stream()
                 .sorted(Comparator.comparing(Reminder::getDateTime))
                 .collect(Collectors.groupingBy(reminder -> reminder.getDateTime()
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(ZoneOffset.UTC)
                         .withZoneSameInstant(userZoneId)
                         .toLocalDate(),
                         LinkedHashMap::new, Collectors.toList())
@@ -74,7 +71,7 @@ public class ReminderMessageHelper {
                 String disabledMarkerString = isEnabled ? "" : " \uD83D\uDD15";
 
                 ZonedDateTime zonedDateTime = reminder.getDateTime()
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(ZoneOffset.UTC)
                         .withZoneSameInstant(userZoneId);
                 String time = zonedDateTime.format(timeFormatter);
 

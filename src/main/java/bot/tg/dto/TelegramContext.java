@@ -8,9 +8,9 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.stickers.Sticker;
 
 public class TelegramContext {
-    public final long userId;
-    public final long chatId;
-    public final int messageId;
+    public final Long userId;
+    public final Long chatId;
+    public final Integer messageId;
     public final String text;
 
     public final String data;
@@ -42,7 +42,7 @@ public class TelegramContext {
             this.location = null;
             this.sticker = null;
         } else {
-            throw new IllegalArgumentException("Тип оновлення не підтримується: " + update);
+            throw new IllegalArgumentException("Update type is not supported: " + update);
         }
     }
 }

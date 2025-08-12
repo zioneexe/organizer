@@ -4,6 +4,7 @@ import bot.tg.dto.Pageable;
 import bot.tg.dto.update.ReminderUpdateDto;
 import bot.tg.model.GoogleCalendarEvent;
 import bot.tg.model.Reminder;
+import bot.tg.util.Utc;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -33,13 +34,15 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         this.reminders = database.getCollection(COLLECTION_NAME, Reminder.class);
     }
 
-    public long countUpcomingByUser(long userId, ZoneId userZoneId) {
+    public long countUpcomingByUser(Long userId, ZoneId userZoneId) {
         LocalDateTime now = LocalDateTime.now(userZoneId);
+        ZonedDateTime zonedDateTime = now.atZone(userZoneId);
+        Date dateNow = Date.from(zonedDateTime.toInstant());
 
         Bson filter = Filters.and(
                 Filters.eq("fired", false),
                 Filters.eq("user_id", userId),
-                Filters.gt("date_time", now)
+                Filters.gt("date_time", dateNow)
         );
 
         return reminders.countDocuments(filter);
@@ -56,19 +59,18 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
     }
 
     public List<Reminder> getUnfiredAfterNow() {
-        LocalDateTime now = LocalDateTime.now();
         Bson filter = Filters.and(
                 Filters.eq("fired", false),
-                Filters.gt("date_time", now)
+                Filters.gt("date_time", Utc.now())
         );
 
         return reminders.find(filter).into(new ArrayList<>());
     }
 
-    public List<Reminder> getUpcomingForUserPaged(long userId, Pageable pageable, ZoneId userZoneId) {
+    public List<Reminder> getUpcomingForUserPaged(Long userId, Pageable pageable, ZoneId userZoneId) {
         LocalDateTime now = LocalDateTime.now(userZoneId);
         ZonedDateTime zonedDateTime = now.atZone(userZoneId);
-        Date date = Date.from(zonedDateTime.toInstant());
+        Date dateNow = Date.from(zonedDateTime.toInstant());
 
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPage();
@@ -78,7 +80,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         Bson filter = Filters.and(
                 Filters.eq("fired", false),
                 Filters.eq("user_id", userId),
-                Filters.gt("date_time", date)
+                Filters.gt("date_time", dateNow)
         );
 
         return reminders.find(filter).sort(sort).skip(skip).limit(pageSize).into(new ArrayList<>());
@@ -105,8 +107,12 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
     @Override
     public Reminder update(String id, ReminderUpdateDto dto) {
         Bson filter = Filters.eq("_id", new ObjectId(id));
-        Bson update = Updates.set("time", dto.getTime());
+        Bson update = Updates.combine(
+                Updates.set("time", dto.getTime()),
+                Updates.set("updated_at", Utc.now())
+        );
         reminders.updateOne(filter, update);
+
         return getById(id);
     }
 
@@ -114,7 +120,7 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         Bson filter = Filters.eq("_id", new ObjectId(id));
         Bson update = Updates.combine(
                 Updates.set("fired", true),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         this.reminders.updateOne(filter, update);
@@ -124,29 +130,35 @@ public class ReminderRepository implements Repository<Reminder, ReminderUpdateDt
         Bson filter = Filters.eq("_id", new ObjectId(id));
         Bson update = Updates.combine(
                 Updates.set("enabled", isEnabled),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         reminders.updateOne(filter, update);
     }
 
     public void attachCalendarEvent(String id, GoogleCalendarEvent googleCalendarEvent) {
-        reminders.updateOne(
-                Filters.eq("_id", new ObjectId(id)),
-                Updates.set("google_calendar_event", googleCalendarEvent)
+        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson update = Updates.combine(
+                Updates.set("google_calendar_event", googleCalendarEvent),
+                Updates.set("updated_at", Utc.now())
         );
+
+        reminders.updateOne(filter, update);
     }
 
     public void detachCalendarEvent(String id) {
-        reminders.updateOne(
-                Filters.eq("_id", new ObjectId(id)),
-                Updates.unset("google_calendar_event")
+        Bson filter = Filters.eq("_id", new ObjectId(id));
+        Bson update = Updates.combine(
+                Updates.unset("google_calendar_event"),
+                Updates.set("updated_at", Utc.now())
         );
+
+        reminders.updateOne(filter, update);
     }
 
     @Override
     public boolean deleteById(String id) {
-        DeleteResult result = reminders.deleteOne(eq("_id", new ObjectId(id)));
+        DeleteResult result = reminders.deleteOne(Filters.eq("_id", new ObjectId(id)));
         return result.getDeletedCount() > 0;
     }
 }

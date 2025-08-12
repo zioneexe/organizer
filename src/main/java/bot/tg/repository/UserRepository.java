@@ -3,6 +3,7 @@ package bot.tg.repository;
 import bot.tg.dto.Time;
 import bot.tg.dto.update.UserUpdateDto;
 import bot.tg.model.User;
+import bot.tg.util.Utc;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -29,18 +30,16 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
     }
 
     public boolean existsById(Long id) {
-        return users.find(Filters.eq("user_id", id)).first() != null;
+        return getById(id) != null;
     }
 
     public boolean isGoogleConnected(Long id) {
-        Bson filter = Filters.eq("user_id", id);
-        User user = users.find(filter).first();
+        User user = getById(id);
         return user != null && user.getIsGoogleConnected();
     }
 
     public boolean greetingsEnabled(Long id) {
-        Bson filter = Filters.eq("user_id", id);
-        User user = users.find(filter).first();
+        User user = getById(id);
         return user != null && user.getGreetingsEnabled();
     }
 
@@ -51,10 +50,6 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
     public User getById(Long id) {
         return users.find(Filters.eq("user_id", id)).first();
-    }
-
-    public List<User> getByIds(Set<Long> userIds) {
-        return users.find(Filters.in("user_id", userIds)).into(new ArrayList<>());
     }
 
     public List<User> getAll() {
@@ -75,8 +70,12 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
     public User update(Long id, UserUpdateDto userUpdateDto) {
         Bson filter = Filters.eq("user_id", id);
-        Bson update = Updates.set("username", userUpdateDto.getUsername());
+        Bson update = Updates.combine(
+                Updates.set("username", userUpdateDto.getUsername()),
+                Updates.set("updated_at", Utc.now())
+        );
         users.updateOne(filter, update);
+
         return getById(id);
     }
 
@@ -84,7 +83,7 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("time_zone", timeZone),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         users.updateOne(filter, update);
@@ -94,7 +93,7 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("preferred_greeting_time", preferredGreetingTime),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         users.updateOne(filter, update);
@@ -104,7 +103,7 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("is_google_connected", isConnected),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         users.updateOne(filter, update);
@@ -114,22 +113,21 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         Bson filter = Filters.eq("user_id", id);
         Bson update = Updates.combine(
                 Updates.set("greetings_enabled", isEnabled),
-                Updates.set("updated_at", LocalDateTime.now())
+                Updates.set("updated_at", Utc.now())
         );
 
         users.updateOne(filter, update);
     }
 
-    public void saveUserLocation(long userId, double latitude, double longitude) {
+    public void saveUserLocation(Long userId, double latitude, double longitude) {
+        Bson filter = Filters.eq("user_id", userId);
         Document locationEntry = new Document()
                 .append("latitude", latitude)
                 .append("longitude", longitude)
                 .append("timestamp", Instant.now());
+        Bson update = Updates.push("location_history", locationEntry);
 
-        users.updateOne(
-                Filters.eq("user_id", userId),
-                Updates.push("location_history", locationEntry)
-        );
+        users.updateOne(filter, update);
     }
 
     public boolean deleteById(Long id) {

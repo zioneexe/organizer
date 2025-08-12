@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class ReminderMapper {
 
     public static Reminder fromDto(ReminderCreateDto dto) {
-        LocalDateTime systemDateTime = DateTime.DateTimeMapper.toSystemLocalDateTime(dto.getDateTime());
+        LocalDateTime systemDateTime = DateTime.DateTimeMapper.toUTCLocalDateTime(dto.getDateTime());
 
         return new Reminder(
                 null,

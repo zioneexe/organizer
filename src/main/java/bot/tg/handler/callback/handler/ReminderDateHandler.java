@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 
 import static bot.tg.constant.Reminder.Callback.DATE_PICKER;
@@ -47,8 +48,7 @@ public class ReminderDateHandler extends CallbackHandler {
         dto.getDateTime().setDate(date);
         userSession.setState(UserState.AWAITING_REMINDER_TIME);
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-
+        ZoneId userTimeZone = ZoneId.of(userRepository.getById(context.userId).getTimeZone());
         EditMessageText editMessage = TimePickerResponseHelper.createReminderTimePickerEditMessage(context, userTimeZone, userSession);
         TelegramHelper.safeExecute(telegramClient, editMessage);
         TelegramHelper.sendSimpleCallbackAnswer(telegramClient, context.callbackQueryId);

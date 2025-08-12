@@ -4,7 +4,8 @@ import bot.tg.dto.Pageable;
 import bot.tg.dto.TelegramContext;
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
-import bot.tg.repository.UserRepository;
+import bot.tg.service.TimeZoneService;
+import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -22,25 +23,23 @@ public class TasksResponseHelper {
 
     private TasksResponseHelper() {}
 
-    public static SendMessage createTasksMessage(UserSession userSession,
-                                                 UserRepository userRepository,
+    public static SendMessage createTasksMessage(UserRequest request,
+                                                 TimeZoneService timeZoneService,
                                                  TaskRepository taskRepository,
                                                  Pageable pageable,
-                                                 Long userId,
                                                  LocalDate chosenDate) {
-        String userTimeZone = userRepository.getById(userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+        TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
 
         userSession.setCurrentTaskPage(1);
-        List<TodoTask> tasks = taskRepository.getByUserForDayPaged(userId, pageable, chosenDate, userZoneId);
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
+        List<TodoTask> tasks = taskRepository.getByUserForDayPaged(context.userId, pageable, chosenDate, userZoneId);
         Map.Entry<List<List<InlineKeyboardButton>>, String> tasksMessage = TaskMessageHelper.formTasksMessage(tasks, pageable);
         List<List<InlineKeyboardButton>> keyboardRows = tasksMessage.getKey();
         String answer = tasksMessage.getValue();
 
         return SendMessage.builder()
-                .chatId(userId)
+                .chatId(context.userId)
                 .text(answer)
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardRows.isEmpty() ? List.of() : keyboardRows.stream()
@@ -51,16 +50,15 @@ public class TasksResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createTasksEditMessage(UserSession userSession,
-                                                         UserRepository userRepository,
+    public static EditMessageText createTasksEditMessage(UserRequest request,
+                                                         TimeZoneService timeZoneService,
                                                          TaskRepository taskRepository,
                                                          Pageable pageable,
-                                                         LocalDate chosenDate,
-                                                         TelegramContext context) {
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId userZoneId = userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+                                                         LocalDate chosenDate) {
+        TelegramContext context = request.getContext();
+        UserSession userSession = request.getUserSession();
+
+        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
 
         userSession.setCurrentTaskPage(pageable.getPage());
         List<TodoTask> updatedTasks = taskRepository.getByUserForDayPaged(context.userId, pageable, chosenDate, userZoneId);

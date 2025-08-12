@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 @Slf4j
 @Service
@@ -28,9 +29,9 @@ public class TimeZoneService {
     public String resolveZoneId(double latitude, double longitude) {
         try {
             log.info("Determining time zone for coordinates: {}, {}", latitude, longitude);
-
-            long timestamp = Instant.now().getEpochSecond();
+            Long timestamp = Instant.now().getEpochSecond();
             GenericUrl url = new GenericUrl(TIMEZONE_API_URL);
+
             url.put("location", latitude + "," + longitude);
             url.put("timestamp", timestamp);
             url.put("key", googleTimeZoneApiKey);
@@ -63,7 +64,6 @@ public class TimeZoneService {
     public ZoneId getUserZoneId(Long userId) {
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         return userTimeZone == null || userTimeZone.isBlank() ?
-                ZoneId.systemDefault() :
-                ZoneId.of(userTimeZone);
+                ZoneOffset.UTC : ZoneId.of(userTimeZone);
     }
 }

@@ -2,10 +2,12 @@ package bot.tg.schedule;
 
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -13,12 +15,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.text.MessageFormat;
 
 @Component
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class GreetingJob implements Job {
 
-    private final TelegramClient client;
-
     private static final String GREETING_TEMPLATE = "🌅 Доброго ранку, {0}!\n Прокидайся і готуйся якнайкраще провести цей день :)";
+
+    @Autowired
+    private TelegramClient client;
 
     @Override
     public void execute(JobExecutionContext context) {

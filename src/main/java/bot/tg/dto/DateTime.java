@@ -2,10 +2,7 @@ package bot.tg.dto;
 
 import lombok.Data;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 
 @Data
 public class DateTime {
@@ -29,9 +26,9 @@ public class DateTime {
             return localDateTime.atZone(ZoneId.of(dateTime.getTimeZone()));
         }
 
-        public static LocalDateTime toSystemLocalDateTime(DateTime dateTime) {
+        public static LocalDateTime toUTCLocalDateTime(DateTime dateTime) {
             ZonedDateTime zonedDateTime = toZonedDateTime(dateTime);
-            return zonedDateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+            return zonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
         }
     }
 }

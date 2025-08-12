@@ -17,6 +17,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Set;
 
+import static bot.tg.constant.Google.GOOGLE_AUTHORIZE;
+import static bot.tg.constant.Google.GOOGLE_CONNECT_BUTTON;
+
 @Component
 @RequiredArgsConstructor
 public class GoogleConnectHandler extends StateHandler {
@@ -39,7 +42,7 @@ public class GoogleConnectHandler extends StateHandler {
         InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         InlineKeyboardButton.builder()
-                                .text("🔗 Авторизуватися в Google")
+                                .text(GOOGLE_AUTHORIZE)
                                 .url(url)
                                 .build()
                 ))
@@ -47,7 +50,7 @@ public class GoogleConnectHandler extends StateHandler {
 
         SendMessage message = SendMessage.builder()
                 .chatId(context.userId)
-                .text("Щоб підключити Google Календар, натисніть кнопку нижче:")
+                .text(GOOGLE_CONNECT_BUTTON)
                 .replyMarkup(keyboard)
                 .build();
 

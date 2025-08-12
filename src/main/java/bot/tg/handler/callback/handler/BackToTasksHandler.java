@@ -1,23 +1,10 @@
 package bot.tg.handler.callback.handler;
 
-import bot.tg.dto.Pageable;
-import bot.tg.dto.TelegramContext;
 import bot.tg.handler.callback.CallbackHandler;
-import bot.tg.helper.TasksResponseHelper;
-import bot.tg.helper.TelegramHelper;
-import bot.tg.repository.TaskRepository;
-import bot.tg.repository.UserRepository;
-import bot.tg.service.PaginationService;
-import bot.tg.service.TimeZoneService;
+import bot.tg.service.TaskService;
 import bot.tg.user.UserRequest;
-import bot.tg.user.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static bot.tg.constant.Task.Callback.BACK_TO_TASKS;
 
@@ -25,11 +12,7 @@ import static bot.tg.constant.Task.Callback.BACK_TO_TASKS;
 @RequiredArgsConstructor
 public class BackToTasksHandler extends CallbackHandler {
 
-    private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
-    private final TimeZoneService timeZoneService;
-    private final TelegramClient telegramClient;
-    private final PaginationService paginationService;
+    private final TaskService taskService;
 
     @Override
     public boolean supports(String data) {
@@ -38,21 +21,7 @@ public class BackToTasksHandler extends CallbackHandler {
 
     @Override
     public void handle(UserRequest request) {
-        TelegramContext context = request.getContext();
-        UserSession userSession = request.getUserSession();
-
-        ZoneId userZoneId = timeZoneService.getUserZoneId(context.userId);
-
-        int currentPage = userSession.getCurrentTaskPage();
-        Pageable pageable = paginationService.formTaskPageableForUser(currentPage, context.userId, LocalDate.now(), userZoneId);
-        EditMessageText editMessage = TasksResponseHelper.createTasksEditMessage(
-                userSession,
-                userRepository,
-                taskRepository,
-                pageable,
-                LocalDate.now(),
-                context
-        );
-        TelegramHelper.safeExecute(telegramClient, editMessage);
+        taskService.sendTasksPageEdit(request);
+        request.getUserSession().setIdleState();
     }
 }

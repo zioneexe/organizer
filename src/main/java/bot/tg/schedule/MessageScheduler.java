@@ -3,11 +3,10 @@ package bot.tg.schedule;
 import bot.tg.dto.Time;
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -16,19 +15,10 @@ import java.util.TimeZone;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class MessageScheduler {
 
     private final Scheduler scheduler;
-
-    public MessageScheduler() {
-        try {
-            SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            scheduler = schedulerFactory.getScheduler();
-            scheduler.start();
-        } catch (SchedulerException e) {
-            throw new RuntimeException("Failed to start Quartz scheduler", e);
-        }
-    }
 
     public void cancelGreetingForUser(User user) {
         long userId = user.getUserId();
@@ -95,9 +85,16 @@ public class MessageScheduler {
                 .usingJobData(dataMap)
                 .build();
 
-        LocalDateTime systemDateTime = reminder.getDateTime();
-        Instant instant = systemDateTime.atZone(ZoneOffset.systemDefault()).toInstant();
-        Date triggerTime = Date.from(instant);
+        LocalDateTime utcDateTime = reminder.getDateTime();
+
+        Instant reminderInstant = utcDateTime.atZone(ZoneOffset.UTC).toInstant();
+        Instant nowInstant = Instant.now();
+
+        if (!reminderInstant.isAfter(nowInstant)) {
+            reminderInstant = nowInstant.plusSeconds(10);
+        }
+
+        Date triggerTime = Date.from(reminderInstant);
 
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(triggerKey)
@@ -119,7 +116,6 @@ public class MessageScheduler {
             throw new RuntimeException("Failed to schedule reminder: " + jobId, e);
         }
     }
-
 
     public void cancelReminder(Reminder reminder) {
         String jobId = "reminder-job-" + reminder.getId().toHexString();

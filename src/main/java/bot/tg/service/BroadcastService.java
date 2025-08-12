@@ -4,11 +4,13 @@ import bot.tg.helper.TelegramHelper;
 import bot.tg.model.User;
 import bot.tg.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BroadcastService {
@@ -23,5 +25,7 @@ public class BroadcastService {
             long userId = user.getUserId();
             TelegramHelper.sendSimpleMessage(telegramClient, userId, text);
         }
+
+        log.info("Sent broadcast message for users {}", users.stream().map(User::getUserId).toArray());
     }
 }

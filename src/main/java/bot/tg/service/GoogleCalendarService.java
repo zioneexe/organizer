@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class GoogleCalendarService {
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
 
-    public Optional<String> createCalendarEventAndReturnLink(long userId, String reminderId, ReminderCreateDto reminder) {
+    public Optional<String> createCalendarEventAndReturnLink(Long userId, String reminderId, ReminderCreateDto reminder) {
         try {
             Event event = buildCalendarEvent(userId, reminder);
             Calendar calendar = getCalendarForUser(userId);
@@ -51,7 +52,7 @@ public class GoogleCalendarService {
                     .execute();
 
             GoogleCalendarEvent googleCalendarEvent = GoogleCalendarEventMapper.fromDto(event);
-            googleCalendarEvent.setAttachedAt(LocalDateTime.now());
+            googleCalendarEvent.setAttachedAt(LocalDateTime.now(ZoneOffset.UTC));
             reminderRepository.attachCalendarEvent(reminderId, googleCalendarEvent);
 
             return Optional.of(event.getHtmlLink());
@@ -62,7 +63,7 @@ public class GoogleCalendarService {
         return Optional.empty();
     }
 
-    public void deleteCalendarEvent(long userId, String reminderId) {
+    public void deleteCalendarEvent(Long userId, String reminderId) {
         try {
             Calendar calendar = getCalendarForUser(userId);
 
@@ -123,7 +124,7 @@ public class GoogleCalendarService {
         return event;
     }
 
-    private Calendar getCalendarForUser(long userId) throws Exception {
+    private Calendar getCalendarForUser(Long userId) throws Exception {
         if (!userCalendars.containsKey(userId)) {
             Credential credential = googleClientService.getCredentialFromStoredTokens(String.valueOf(userId));
             Calendar calendar = googleClientService.getCalendarService(credential);

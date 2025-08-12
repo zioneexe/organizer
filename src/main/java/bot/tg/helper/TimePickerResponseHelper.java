@@ -55,15 +55,15 @@ public class TimePickerResponseHelper {
                 .build();
     }
 
-    public static EditMessageText createReminderTimePickerEditMessage(TelegramContext context, String userTimeZone, UserSession userSession) {
+    public static EditMessageText createReminderTimePickerEditMessage(TelegramContext context, ZoneId userTimeZone, UserSession userSession) {
         ReminderCreateDto dto = userSession.getReminderDraft();
         DateTime dateTime = dto.getDateTime();
 
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of(userTimeZone));
+        ZonedDateTime now = ZonedDateTime.now(userTimeZone);
         if (!dateTime.isTimeManuallyEdited() || now.isAfter(DateTime.DateTimeMapper.toZonedDateTime(dateTime))) {
             dateTime.setHour(now.getHour());
             dateTime.setMinute(now.getMinute());
-            dateTime.setTimeZone(userTimeZone);
+            dateTime.setTimeZone(userTimeZone.toString());
         }
 
         InlineKeyboardMarkup keyboard = TimePickerResponseHelper.buildReminderTimePickerKeyboard(

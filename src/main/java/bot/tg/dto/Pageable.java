@@ -11,14 +11,14 @@ public class Pageable {
 
     public static int FIRST = 1;
 
-    public static Pageable of(int pageNumber, int pageSize, int total) {
-        return new Pageable(pageNumber, pageSize, total);
-    }
-
     private int page;
 
     private int pageSize;
 
     private int totalPages;
+
+    public static Pageable of(int pageNumber, int pageSize, int total) {
+        return new Pageable(pageNumber, pageSize, total);
+    }
 
 }

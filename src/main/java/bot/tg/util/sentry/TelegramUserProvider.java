@@ -27,11 +27,11 @@ public class TelegramUserProvider implements SentryUserProvider {
         if (telegramUser == null) return null;
 
         User sentryUser = new User();
-        sentryUser.setId(String.valueOf(telegramUser.userId()));
-        sentryUser.setUsername(telegramUser.username());
+        sentryUser.setId(String.valueOf(telegramUser.getUserId()));
+        sentryUser.setUsername(telegramUser.getUsername());
         sentryUser.setUnknown(Map.of(
-                "first_name", telegramUser.firstName(),
-                "last_name", telegramUser.lastName()
+                "first_name", telegramUser.getFirstName(),
+                "last_name", telegramUser.getLastName()
         ));
 
         return sentryUser;

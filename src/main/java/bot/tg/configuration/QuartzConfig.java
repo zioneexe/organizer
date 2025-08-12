@@ -1,6 +1,8 @@
 package bot.tg.configuration;
 
 import bot.tg.configuration.factory.AutowiringSpringBeanJobFactory;
+import bot.tg.schedule.DebugJobListener;
+import org.quartz.Scheduler;
 import org.quartz.spi.JobFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -22,5 +24,13 @@ public class QuartzConfig {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setJobFactory(jobFactory);
         return schedulerFactory;
+    }
+
+    @Bean
+    public Scheduler scheduler(SchedulerFactoryBean factory) throws Exception {
+        Scheduler scheduler = factory.getScheduler();
+        scheduler.getListenerManager().addJobListener(new DebugJobListener());
+        scheduler.start();
+        return scheduler;
     }
 }

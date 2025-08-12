@@ -7,7 +7,7 @@ import bot.tg.handler.callback.CallbackHandler;
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.helper.TimePickerResponseHelper;
-import bot.tg.repository.UserRepository;
+import bot.tg.service.TimeZoneService;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
 import bot.tg.user.UserState;
@@ -33,7 +33,7 @@ import static bot.tg.constant.Symbol.COLON_DELIMITER;
 public class ReminderTimePickerHandler extends CallbackHandler {
 
     private final TelegramClient telegramClient;
-    private final UserRepository userRepository;
+    private final TimeZoneService timeZoneService;
 
     @Override
     public boolean supports(String data) {
@@ -56,14 +56,11 @@ public class ReminderTimePickerHandler extends CallbackHandler {
         ReminderCreateDto dto = userSession.getReminderDraft();
         DateTime dateTime = dto.getDateTime();
 
-        String userTimeZone = userRepository.getById(context.userId).getTimeZone();
-        ZoneId zoneId = userTimeZone != null && !userTimeZone.isBlank() ?
-                ZoneId.of(userTimeZone) :
-                ZoneId.systemDefault();
+        ZoneId userTimeZone = timeZoneService.getUserZoneId(context.userId);
 
-        boolean isToday = dateTime.getDate().isEqual(LocalDate.now(zoneId));
-        int currentHour = LocalTime.now(zoneId).getHour();
-        int currentMinute = LocalTime.now(zoneId).getMinute();
+        boolean isToday = dateTime.getDate().isEqual(LocalDate.now(userTimeZone));
+        int currentHour = LocalTime.now(userTimeZone).getHour();
+        int currentMinute = LocalTime.now(userTimeZone).getMinute();
 
         boolean isValidAction = true;
         switch (action) {
@@ -104,7 +101,7 @@ public class ReminderTimePickerHandler extends CallbackHandler {
                 return;
             }
             case REMINDER_CONFIRM -> {
-                ZonedDateTime now = ZonedDateTime.now(zoneId).withSecond(0).withNano(0);
+                ZonedDateTime now = ZonedDateTime.now(userTimeZone).withSecond(0).withNano(0);
                 ZonedDateTime currentlySetTime = DateTime.DateTimeMapper.toZonedDateTime(dateTime)
                         .withSecond(0).withNano(0);
 
