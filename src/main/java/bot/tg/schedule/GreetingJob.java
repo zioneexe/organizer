@@ -3,7 +3,6 @@ package bot.tg.schedule;
 import bot.tg.helper.MenuHelper;
 import bot.tg.helper.TelegramHelper;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;

@@ -48,13 +48,16 @@ public class GoogleCalendarService {
 
     public Optional<String> createCalendarEventAndReturnLink(Long userId, String reminderId, ReminderCreateDto reminder) {
         try {
+            log.debug("Creating calendar event for userId={}, reminderId={}", userId, reminderId);
             Event event = buildCalendarEvent(userId, reminder);
             Calendar calendar = getCalendarForUser(userId);
             String calendarId = getUserCalendarId(userId, calendar);
+            log.debug("Using calendarId={} for userId={}", calendarId, userId);
 
             event = calendar.events()
                     .insert(calendarId, event)
                     .execute();
+            log.info("Created event with id={} for userId={}", event.getId(), userId);
 
             GoogleCalendarEvent googleCalendarEvent = GoogleCalendarEventMapper.fromDto(event);
             googleCalendarEvent.setAttachedAt(LocalDateTime.now(ZoneOffset.UTC));
@@ -75,6 +78,7 @@ public class GoogleCalendarService {
 
             Reminder reminder = reminderRepository.getById(reminderId);
             if (reminder == null || reminder.getGoogleCalendarEvent() == null) {
+                log.warn("No reminder or GoogleCalendarEvent found for reminderId={} userId={}", reminderId, userId);
                 return;
             }
 
@@ -82,11 +86,37 @@ public class GoogleCalendarService {
             calendar.events()
                     .delete(calendarId, eventId)
                     .execute();
+            log.info("Deleted event with id={} for userId={}", eventId, userId);
 
             reminderRepository.detachCalendarEvent(reminderId);
         } catch (Exception e) {
             log.error("Error in deleting calendar event: {}", e.getMessage());
         }
+    }
+
+    private String getUserCalendarId(Long userId, Calendar calendarService) throws IOException {
+        String existingCalendarId = userRepository.getCalendarId(userId);
+        if (existingCalendarId != null && !existingCalendarId.isBlank() && !existingCalendarId.equals(DEFAULT_CALENDAR_ID)) {
+            log.debug("Found existing calendarId={} for userId={}", existingCalendarId, userId);
+            return existingCalendarId;
+        }
+
+        String userTimeZone = timeZoneService.getUserZoneId(userId).getId();
+        log.info("Creating new calendar for userId={} with timeZone={}", userId, userTimeZone);
+
+        com.google.api.services.calendar.model.Calendar newCalendar =
+                new com.google.api.services.calendar.model.Calendar()
+                        .setSummary(BOT_TITLE)
+                        .setTimeZone(userTimeZone);
+
+        String newCalendarId = calendarService.calendars()
+                .insert(newCalendar)
+                .execute()
+                .getId();
+        log.info("Created new calendar with id={} for userId={}", newCalendarId, userId);
+
+        userRepository.saveCalendarId(userId, newCalendarId);
+        return newCalendarId;
     }
 
     private Event buildCalendarEvent(long userId, ReminderCreateDto reminder) {
@@ -139,28 +169,6 @@ public class GoogleCalendarService {
         }
 
         return userCalendars.get(userId);
-    }
-
-    private String getUserCalendarId(Long userId, Calendar calendarService) throws IOException {
-        String existingCalendarId = userRepository.getCalendarId(userId);
-        if (existingCalendarId != null && !existingCalendarId.isBlank() && !existingCalendarId.equals(DEFAULT_CALENDAR_ID)) {
-            return existingCalendarId;
-        }
-
-        String userTimeZone = timeZoneService.getUserZoneId(userId).getId();
-
-        com.google.api.services.calendar.model.Calendar newCalendar =
-                new com.google.api.services.calendar.model.Calendar()
-                        .setSummary(BOT_TITLE)
-                        .setTimeZone(userTimeZone);
-
-        String newCalendarId = calendarService.calendars()
-                .insert(newCalendar)
-                .execute()
-                .getId();
-
-        userRepository.saveCalendarId(userId, newCalendarId);
-        return newCalendarId;
     }
 
 }

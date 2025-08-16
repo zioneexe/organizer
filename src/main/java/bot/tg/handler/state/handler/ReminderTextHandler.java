@@ -72,6 +72,7 @@ public class ReminderTextHandler extends StateHandler {
         if (isConnected) {
             this.googleCalendarService.createCalendarEventAndReturnLink(context.userId, reminderId, dto)
                     .ifPresent(calendarLink -> replyTextBuilder
+                            .append("\n\n")
                             .append(GOOGLE_EVENT_ADDED)
                             .append(calendarLink));
         }

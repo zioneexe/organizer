@@ -27,18 +27,23 @@ public class StickerService {
         TelegramContext context = request.getContext();
 
         if (context.sticker == null) {
+            log.debug("No sticker in context for userId={}", context.userId);
             return null;
         }
 
         String stickerSetName = context.sticker.getSetName();
 
-        if (stickerSetName == null) return null;
+        if (stickerSetName == null) {
+            log.debug("Sticker in context has no set name for userId={}", context.userId);
+            return null;
+        }
 
         GetStickerSet getStickerSet = new GetStickerSet(stickerSetName);
 
         try {
             StickerSet stickerSet = telegramClient.execute(getStickerSet);
             List<Sticker> stickers = stickerSet.getStickers();
+            log.debug("Retrieved {} stickers from set '{}' for userId={}", stickers.size(), stickerSetName, context.userId);
 
             List<Sticker> otherStickers = stickers.stream()
                     .filter(sticker -> !sticker.getFileId().equals(context.sticker.getFileId()))
@@ -51,10 +56,11 @@ public class StickerService {
                         .chatId(context.userId)
                         .sticker(new InputFile(randomSticker.getFileId()))
                         .build();
+            } else {
+                log.debug("No alternative stickers found in set '{}' for userId={}", stickerSetName, context.userId);
             }
-
         } catch (TelegramApiException e) {
-            log.error("Failed to retrieve stickers: {}", e.getMessage());
+            log.error("Failed to retrieve stickers from set '{}': {}", stickerSetName, e.getMessage(), e);
         }
 
         return null;

@@ -3,7 +3,7 @@ package bot.tg.handler.callback.handler;
 import bot.tg.dto.TelegramContext;
 import bot.tg.handler.callback.CallbackHandler;
 import bot.tg.helper.MenuHelper;
-import bot.tg.helper.TaskMessageHelper;
+import bot.tg.helper.TaskHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.user.UserRequest;
 import bot.tg.user.UserSession;
@@ -44,7 +44,7 @@ public class EditTaskHandler extends CallbackHandler {
 
         if (context.data.startsWith(EDIT_TASK + COLON_DELIMITER)) {
             String taskId = context.data.split(COLON_DELIMITER)[1];
-            InlineKeyboardMarkup keyboard = TaskMessageHelper.formTaskEditingKeyboard(taskId);
+            InlineKeyboardMarkup keyboard = TaskHelper.formTaskEditingKeyboard(taskId);
 
             TelegramHelper.sendEditMessageWithMarkup(telegramClient, context.messageId, context.chatId, TASK_EDIT_QUESTION, keyboard);
         }

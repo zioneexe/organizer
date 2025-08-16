@@ -3,9 +3,7 @@ package bot.tg.schedule;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.service.TimeZoneService;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -17,6 +15,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+
+import static bot.tg.constant.Reminder.Response.REMINDER_NOTIFICATION_MESSAGE;
 
 @Component
 @NoArgsConstructor
@@ -48,7 +48,7 @@ public class ReminderJob implements Job {
                 .atZone(ZoneOffset.UTC)
                 .withZoneSameInstant(userTimeZone);
 
-        String message = "🔔 Нагадування на " + userZonedDateTime.toLocalTime() + ": " + text;
+        String message = REMINDER_NOTIFICATION_MESSAGE + userZonedDateTime.toLocalTime() + ": " + text;
         TelegramHelper.sendSimpleMessage(telegramClient, userId, message);
     }
 }
