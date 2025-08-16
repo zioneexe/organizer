@@ -25,25 +25,25 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class GoogleClientService {
 
-    @Value("${GOOGLE_CLIENT_ID}")
-    public String clientId;
+    private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
+    private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";
+
     private static final String UNAUTHORIZED_USER = "❌ Користувач не авторизований";
-    @Value("${GOOGLE_REDIRECT_URI}")
-    public String redirectUri;
     private static final String APPLICATION_NAME = "Organizer";
-    private final TokenSerializationService tokenSerializationService;
 
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final NetHttpTransport HTTP_TRANSPORT = createHttpTransport();
-
-    private static final String SERVER_TOKEN_URL = "https://oauth2.googleapis.com/token";
-    private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";
     private final TokenStore tokenStore;
+    private final TokenSerializationService tokenSerializationService;
     @Value("${GOOGLE_CLIENT_SECRET}")
     private String clientSecret;
+    @Value("${GOOGLE_CLIENT_ID}")
+    public String clientId;
+    @Value("${GOOGLE_REDIRECT_URI}")
+    public String redirectUri;
 
     public String getAuthorizationUrl(String telegramUserId) {
-        return new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR_EVENTS))
+        return new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR))
                 .setAccessType("offline")
                 .set("prompt", "consent")
                 .setState(telegramUserId)
