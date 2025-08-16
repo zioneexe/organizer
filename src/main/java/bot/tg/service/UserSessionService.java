@@ -14,6 +14,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.HashMap;
 import java.util.Map;
 
+import static bot.tg.constant.Core.DEFAULT_CALENDAR_ID;
+
 @Service
 @RequiredArgsConstructor
 public class UserSessionService {
@@ -47,6 +49,7 @@ public class UserSessionService {
                             .username(username)
                             .timeZone(SupportedTimeZone.getDefault().getZoneId())
                             .isGoogleConnected(false)
+                            .calendarId(DEFAULT_CALENDAR_ID)
                             .greetingsEnabled(true)
                             .preferredGreetingTime(Time.DEFAULT_REMINDER_TIME)
                             .build()

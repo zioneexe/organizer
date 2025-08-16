@@ -30,6 +30,9 @@ public class User {
     @BsonProperty("is_google_connected")
     private Boolean isGoogleConnected;
 
+    @BsonProperty("calendar_id")
+    private String calendarId;
+
     @BsonProperty("greetings_enabled")
     private Boolean greetingsEnabled;
 
