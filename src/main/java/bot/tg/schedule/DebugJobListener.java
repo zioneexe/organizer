@@ -12,7 +12,7 @@ public class DebugJobListener implements JobListener {
 
     @Override
     public String getName() {
-        return "DebugJobListener";
+        return "Debug Job Listener";
     }
 
     @Override

@@ -62,6 +62,7 @@ public class TimeZoneService {
     }
 
     public ZoneId getUserZoneId(Long userId) {
+        log.debug("Retrieving time zone for user: {}", userId);
         String userTimeZone = userRepository.getById(userId).getTimeZone();
         return userTimeZone == null || userTimeZone.isBlank() ?
                 ZoneOffset.UTC : ZoneId.of(userTimeZone);

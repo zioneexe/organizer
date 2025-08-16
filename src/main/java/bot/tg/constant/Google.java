@@ -5,7 +5,7 @@ public final class Google {
     private Google() {
     }
 
-    public static final String GOOGLE_EVENT_ADDED = "\n\nПодія додана в Google Календар: ";
+    public static final String GOOGLE_EVENT_ADDED = "Подія додана в Google Календар: ";
 
     public static final String GOOGLE_AUTHORIZE = "🔗 Авторизуватися в Google";
     public static final String GOOGLE_CONNECT_BUTTON = "Щоб підключити Google Календар, натисніть кнопку нижче:";

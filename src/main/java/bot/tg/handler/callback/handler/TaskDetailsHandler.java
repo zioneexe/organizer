@@ -2,7 +2,7 @@ package bot.tg.handler.callback.handler;
 
 import bot.tg.dto.TelegramContext;
 import bot.tg.handler.callback.CallbackHandler;
-import bot.tg.helper.TaskMessageHelper;
+import bot.tg.helper.TaskHelper;
 import bot.tg.helper.TelegramHelper;
 import bot.tg.model.TodoTask;
 import bot.tg.repository.TaskRepository;
@@ -12,11 +12,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.List;
 import java.util.Map;
 
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
@@ -48,16 +45,14 @@ public class TaskDetailsHandler extends CallbackHandler {
         }
 
         TodoTask task = taskRepository.getById(taskId);
-        Map.Entry<List<List<InlineKeyboardButton>>, String> details = TaskMessageHelper.formDetailsMessage(task);
-        List<InlineKeyboardButton> buttons = details.getKey().getFirst();
+        Map.Entry<InlineKeyboardMarkup, String> details = TaskHelper.formDetailsMessage(task);
+        InlineKeyboardMarkup keyboard = details.getKey();
 
         EditMessageText editMessage = EditMessageText.builder()
                 .chatId(context.userId)
                 .messageId(context.messageId)
                 .text(details.getValue())
-                .replyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(List.of(new InlineKeyboardRow(buttons)))
-                        .build())
+                .replyMarkup(keyboard)
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
         TelegramHelper.safeExecute(telegramClient, editMessage);

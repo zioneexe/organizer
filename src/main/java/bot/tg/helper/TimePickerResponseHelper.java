@@ -18,10 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static bot.tg.constant.Callback.IGNORE;
+import static bot.tg.constant.Core.Pagination.*;
+import static bot.tg.constant.Core.Response.CANCEL;
+import static bot.tg.constant.Core.Response.CONFIRM;
 import static bot.tg.constant.Greetings.Callback.*;
 import static bot.tg.constant.Greetings.Response.GREETING_TIME;
-import static bot.tg.constant.Reminder.Callback.*;
+import static bot.tg.constant.Reminder.Callback.REMINDER_CANCEL;
+import static bot.tg.constant.Reminder.Callback.REMINDER_CONFIRM;
 import static bot.tg.constant.Reminder.Response.REMINDER_TIME;
+import static bot.tg.constant.Reminder.TimePicker.*;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;
 
 public class TimePickerResponseHelper {
@@ -84,23 +89,23 @@ public class TimePickerResponseHelper {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
 
         InlineKeyboardRow hourRow = new InlineKeyboardRow(
-                button("<<", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + "-3"),
-                button("<", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + "-1"),
+                button(PAGINATION_DOUBLE_PREV, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + MINUS_THREE),
+                button(PAGINATION_PREV, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + MINUS_ONE),
                 button(timeDisplay, IGNORE),
-                button(">", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + "+1"),
-                button(">>", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + "+3")
+                button(PAGINATION_NEXT, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + PLUS_ONE),
+                button(PAGINATION_DOUBLE_NEXT, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_HOUR + COLON_DELIMITER + PLUS_THREE)
         );
 
         InlineKeyboardRow minuteRow = new InlineKeyboardRow(
-                button("-5 хв", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + "-5"),
-                button("-1 хв", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + "-1"),
-                button("+1 хв", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + "+1"),
-                button("+5 хв", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + "+5")
+                button(REMINDER_TIME_PICKER_MINUS_FIVE_MIN, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + MINUS_FIVE),
+                button(REMINDER_TIME_PICKER_MINUS_MIN, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + MINUS_ONE),
+                button(REMINDER_TIME_PICKER_PLUS_MIN, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + PLUS_ONE),
+                button(REMINDER_TIME_PICKER_PLUS_FIVE_MIN, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CHANGE_MINUTE + COLON_DELIMITER + PLUS_FIVE)
         );
 
         InlineKeyboardRow confirmRow = new InlineKeyboardRow(
-                button("✅ Підтвердити", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CONFIRM),
-                button("❎ Скасувати", REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CANCEL)
+                button(CONFIRM, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CONFIRM),
+                button(CANCEL, REMINDER_TIME_PICKER + COLON_DELIMITER + REMINDER_CANCEL)
         );
 
         keyboardRows.add(hourRow);
@@ -116,23 +121,23 @@ public class TimePickerResponseHelper {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
 
         InlineKeyboardRow hourRow = new InlineKeyboardRow(
-                button("<<", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + "-3"),
-                button("<", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + "-1"),
+                button(PAGINATION_DOUBLE_PREV, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + MINUS_THREE),
+                button(PAGINATION_PREV, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + MINUS_ONE),
                 button(timeDisplay, IGNORE),
-                button(">", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + "+1"),
-                button(">>", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + "+3")
+                button(PAGINATION_NEXT, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + PLUS_ONE),
+                button(PAGINATION_DOUBLE_NEXT, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_HOUR + COLON_DELIMITER + PLUS_THREE)
         );
 
         InlineKeyboardRow minuteRow = new InlineKeyboardRow(
-                button("-5 хв", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + "-5"),
-                button("-1 хв", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + "-1"),
-                button("+1 хв", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + "+1"),
-                button("+5 хв", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + "+5")
+                button(REMINDER_TIME_PICKER_MINUS_FIVE_MIN, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + MINUS_FIVE),
+                button(REMINDER_TIME_PICKER_MINUS_MIN, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + MINUS_ONE),
+                button(REMINDER_TIME_PICKER_PLUS_MIN, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + PLUS_ONE),
+                button(REMINDER_TIME_PICKER_PLUS_FIVE_MIN, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CHANGE_MINUTE + COLON_DELIMITER + PLUS_THREE)
         );
 
         InlineKeyboardRow confirmRow = new InlineKeyboardRow(
-                button("✅ Підтвердити", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CONFIRM),
-                button("❎ Скасувати", GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CANCEL)
+                button(CONFIRM, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CONFIRM),
+                button(CANCEL, GREETING_TIME_PICKER + COLON_DELIMITER + GREETING_CANCEL)
         );
 
         keyboardRows.add(hourRow);

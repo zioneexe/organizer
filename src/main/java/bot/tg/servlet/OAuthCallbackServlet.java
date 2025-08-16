@@ -16,7 +16,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.IOException;
 
-import static bot.tg.constant.ResponseMessage.ERROR;
+import static bot.tg.constant.Core.Response.ERROR;
 
 @Component
 @RequiredArgsConstructor

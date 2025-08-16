@@ -15,12 +15,14 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.auth.oauth2.TokenStore;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Collections;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GoogleClientService {
@@ -45,18 +47,25 @@ public class GoogleClientService {
     public String redirectUri;
 
     public String getAuthorizationUrl(String telegramUserId) {
-        return new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR))
+        String url = new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR))
                 .setAccessType("offline")
                 .set("prompt", "consent")
                 .setState(telegramUserId)
                 .build();
+        log.debug("Generated Google authorization URL for userId={}: {}", telegramUserId, url);
+        return url;
     }
 
     public Credential getCredentialFromStoredTokens(String userId) throws Exception {
         String json = tokenStore.load(userId);
-        if (json == null) throw new IllegalStateException(UNAUTHORIZED_USER);
+        if (json == null) {
+            log.warn("No stored token found for userId={}", userId);
+            throw new IllegalStateException(UNAUTHORIZED_USER);
+        }
 
         TokenResponse tokenResponse = tokenSerializationService.deserialize(json);
+        log.debug("Loaded credential from stored token for userId={}", userId);
+
         return new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                 .setTransport(HTTP_TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
@@ -67,6 +76,7 @@ public class GoogleClientService {
     }
 
     public Calendar getCalendarService(Credential credential) {
+        log.debug("Creating Calendar service instance");
         return new Calendar.Builder(
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
@@ -75,6 +85,7 @@ public class GoogleClientService {
     }
 
     public Credential exchangeCodeForTokens(String code) throws Exception {
+        log.debug("Exchanging authorization code for tokens");
         var tokenResponse = new GoogleAuthorizationCodeTokenRequest(
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
@@ -97,6 +108,7 @@ public class GoogleClientService {
         String tokenString = tokenStore.load(userId);
         TokenResponse tokenResponse = tokenSerializationService.deserialize(tokenString);
 
+        log.info("Revoking refresh token for userId={}", userId);
         String refreshToken = tokenResponse.getRefreshToken();
         revokeToken(refreshToken);
     }
@@ -110,6 +122,7 @@ public class GoogleClientService {
         HttpRequest request = requestFactory.buildPostRequest(url, content);
         HttpResponse response = request.execute();
 
+        log.debug("Token revoked, response code={}", response.getStatusCode());
         response.disconnect();
     }
 
