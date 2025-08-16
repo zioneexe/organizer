@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -47,7 +48,7 @@ public class GoogleClientService {
     public String redirectUri;
 
     public String getAuthorizationUrl(String telegramUserId) {
-        String url = new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, Collections.singleton(CalendarScopes.CALENDAR))
+        String url = new GoogleAuthorizationCodeRequestUrl(clientId, redirectUri, List.of(CalendarScopes.CALENDAR, CalendarScopes.CALENDAR_EVENTS))
                 .setAccessType("offline")
                 .set("prompt", "consent")
                 .setState(telegramUserId)

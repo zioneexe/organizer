@@ -9,6 +9,7 @@ import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
@@ -94,13 +95,17 @@ public class GoogleCalendarService {
         }
     }
 
-    private String getUserCalendarId(Long userId, Calendar calendarService) throws IOException {
+    private String getUserCalendarId(Long userId, Calendar calendarService) {
         String existingCalendarId = userRepository.getCalendarId(userId);
-        if (existingCalendarId != null && !existingCalendarId.isBlank() && !existingCalendarId.equals(DEFAULT_CALENDAR_ID)) {
-            log.debug("Found existing calendarId={} for userId={}", existingCalendarId, userId);
+
+        if (isCalendarAccessible(existingCalendarId, calendarService)) {
             return existingCalendarId;
         }
 
+        return createNewCalendarOrFallback(userId, calendarService);
+    }
+
+    private String createNewCalendarOrFallback(Long userId, Calendar calendarService) {
         String userTimeZone = timeZoneService.getUserZoneId(userId).getId();
         log.info("Creating new calendar for userId={} with timeZone={}", userId, userTimeZone);
 
@@ -109,14 +114,15 @@ public class GoogleCalendarService {
                         .setSummary(BOT_TITLE)
                         .setTimeZone(userTimeZone);
 
-        String newCalendarId = calendarService.calendars()
-                .insert(newCalendar)
-                .execute()
-                .getId();
-        log.info("Created new calendar with id={} for userId={}", newCalendarId, userId);
-
-        userRepository.saveCalendarId(userId, newCalendarId);
-        return newCalendarId;
+        try {
+            String newCalendarId = calendarService.calendars().insert(newCalendar).execute().getId();
+            log.info("Created new calendar with id={} for userId={}", newCalendarId, userId);
+            userRepository.saveCalendarId(userId, newCalendarId);
+            return newCalendarId;
+        } catch (IOException e) {
+            log.warn("Failed to create calendar for userId={}, using default calendar. Error: {}", userId, e.getMessage());
+            return DEFAULT_CALENDAR_ID;
+        }
     }
 
     private Event buildCalendarEvent(long userId, ReminderCreateDto reminder) {
@@ -169,6 +175,24 @@ public class GoogleCalendarService {
         }
 
         return userCalendars.get(userId);
+    }
+
+    private boolean isCalendarAccessible(String calendarId, Calendar calendarService) {
+        if (calendarId == null || calendarId.isBlank()) return false;
+
+        try {
+            calendarService.calendars().get(calendarId).execute();
+            log.debug("Found accessible calendarId={}", calendarId);
+            return true;
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == 404 || e.getStatusCode() == 403) {
+                log.warn("Calendar {} not found or inaccessible", calendarId);
+                return false;
+            }
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
