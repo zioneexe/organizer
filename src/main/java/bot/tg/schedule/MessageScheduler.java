@@ -69,7 +69,7 @@ public class MessageScheduler {
         }
     }
 
-    public void schedulePillsReminder(long userId, List<Time> reminderTimes) {
+    public void schedulePillsReminderInKyiv(long userId, List<Time> reminderTimes) {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("userId", userId);
 
@@ -90,6 +90,7 @@ public class MessageScheduler {
             Trigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity(triggerKey)
                     .withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(time.getHour(), time.getMinute())
+                            .inTimeZone(TimeZone.getTimeZone("Europe/Kyiv"))
                             .withMisfireHandlingInstructionFireAndProceed())
                     .build();
 

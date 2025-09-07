@@ -32,6 +32,6 @@ public class ApplicationLifecycleHandler implements CommandLineRunner {
         log.info("Scheduling startup jobs.");
         messageService.scheduleGreetingsToAll();
         messageService.scheduleUnfiredReminders();
-        messageService.schedulePillsReminderForUser();
+        messageService.schedulePillsReminderForUserInKyiv();
     }
 }

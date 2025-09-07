@@ -53,7 +53,7 @@ public class MessageService {
         messageScheduler.cancelReminder(reminder);
     }
 
-    public void schedulePillsReminderForUser() {
+    public void schedulePillsReminderForUserInKyiv() {
         List<Time> reminderTimes = List.of(
                 new Time(7, 0),
                 new Time(9, 30),
@@ -61,7 +61,7 @@ public class MessageService {
                 new Time(22, 30)
         );
 
-        messageScheduler.schedulePillsReminder(this.pillsReminderUserId, reminderTimes);
+        messageScheduler.schedulePillsReminderInKyiv(this.pillsReminderUserId, reminderTimes);
     }
 
     public void scheduleGreetingForUser(User user) {
@@ -81,6 +81,7 @@ public class MessageService {
                 continue;
             }
             messageScheduler.scheduleGreetingForUser(user);
+
             log.info("Scheduling daily greeting for user with id={}", user.getUserId());
         }
     }
