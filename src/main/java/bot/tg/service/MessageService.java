@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -74,8 +76,12 @@ public class MessageService {
         List<User> users = userRepository.getAll();
 
         for (User user : users) {
-            if (!user.getGreetingsEnabled()) continue;
+            if (!user.getGreetingsEnabled()) {
+                log.debug("Daily greetings are disabled for user with id={}", user.getUserId());
+                continue;
+            }
             messageScheduler.scheduleGreetingForUser(user);
+            log.info("Scheduling daily greeting for user with id={}", user.getUserId());
         }
     }
 

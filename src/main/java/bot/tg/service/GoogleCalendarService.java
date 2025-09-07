@@ -9,6 +9,7 @@ import bot.tg.model.Reminder;
 import bot.tg.repository.ReminderRepository;
 import bot.tg.repository.UserRepository;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -25,14 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static bot.tg.constant.Core.DEFAULT_CALENDAR_ID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GoogleCalendarService {
 
-    private static final String REMINDERS_ID = "primary";
-
-    private static final String EVENT_TITLE = "Telegram Reminder Bot";
+    private static final String BOT_TITLE = "Organizer Telegram Bot";
+    private static final String EVENT_TITLE = "Telegram Bot Reminder";
     private static final String EVENT_DESCRIPTION = "\uD83D\uDD14 Created by Organizer Telegram Bot";
     private static final String EVENT_COLOR_ID = "4";
 
@@ -42,14 +45,20 @@ public class GoogleCalendarService {
     private final GoogleClientService googleClientService;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
+    private final TimeZoneService timeZoneService;
 
     public Optional<String> createCalendarEventAndReturnLink(Long userId, String reminderId, ReminderCreateDto reminder) {
         try {
+            log.debug("Creating calendar event for userId={}, reminderId={}", userId, reminderId);
             Event event = buildCalendarEvent(userId, reminder);
             Calendar calendar = getCalendarForUser(userId);
+            String calendarId = getUserCalendarId(userId, calendar);
+            log.debug("Using calendarId={} for userId={}", calendarId, userId);
+
             event = calendar.events()
-                    .insert(REMINDERS_ID, event)
+                    .insert(calendarId, event)
                     .execute();
+            log.info("Created event with id={} for userId={}", event.getId(), userId);
 
             GoogleCalendarEvent googleCalendarEvent = GoogleCalendarEventMapper.fromDto(event);
             googleCalendarEvent.setAttachedAt(LocalDateTime.now(ZoneOffset.UTC));
@@ -66,20 +75,53 @@ public class GoogleCalendarService {
     public void deleteCalendarEvent(Long userId, String reminderId) {
         try {
             Calendar calendar = getCalendarForUser(userId);
+            String calendarId = getUserCalendarId(userId, calendar);
 
             Reminder reminder = reminderRepository.getById(reminderId);
             if (reminder == null || reminder.getGoogleCalendarEvent() == null) {
+                log.warn("No reminder or GoogleCalendarEvent found for reminderId={} userId={}", reminderId, userId);
                 return;
             }
 
             String eventId = reminder.getGoogleCalendarEvent().getId();
             calendar.events()
-                    .delete(REMINDERS_ID, eventId)
+                    .delete(calendarId, eventId)
                     .execute();
+            log.info("Deleted event with id={} for userId={}", eventId, userId);
 
             reminderRepository.detachCalendarEvent(reminderId);
         } catch (Exception e) {
             log.error("Error in deleting calendar event: {}", e.getMessage());
+        }
+    }
+
+    private String getUserCalendarId(Long userId, Calendar calendarService) {
+        String existingCalendarId = userRepository.getCalendarId(userId);
+
+        if (isCalendarAccessible(existingCalendarId, calendarService)) {
+            return existingCalendarId;
+        }
+
+        return createNewCalendarOrFallback(userId, calendarService);
+    }
+
+    private String createNewCalendarOrFallback(Long userId, Calendar calendarService) {
+        String userTimeZone = timeZoneService.getUserZoneId(userId).getId();
+        log.info("Creating new calendar for userId={} with timeZone={}", userId, userTimeZone);
+
+        com.google.api.services.calendar.model.Calendar newCalendar =
+                new com.google.api.services.calendar.model.Calendar()
+                        .setSummary(BOT_TITLE)
+                        .setTimeZone(userTimeZone);
+
+        try {
+            String newCalendarId = calendarService.calendars().insert(newCalendar).execute().getId();
+            log.info("Created new calendar with id={} for userId={}", newCalendarId, userId);
+            userRepository.saveCalendarId(userId, newCalendarId);
+            return newCalendarId;
+        } catch (IOException e) {
+            log.warn("Failed to create calendar for userId={}, using default calendar. Error: {}", userId, e.getMessage());
+            return DEFAULT_CALENDAR_ID;
         }
     }
 
@@ -133,6 +175,24 @@ public class GoogleCalendarService {
         }
 
         return userCalendars.get(userId);
+    }
+
+    private boolean isCalendarAccessible(String calendarId, Calendar calendarService) {
+        if (calendarId == null || calendarId.isBlank()) return false;
+
+        try {
+            calendarService.calendars().get(calendarId).execute();
+            log.debug("Found accessible calendarId={}", calendarId);
+            return true;
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == 404 || e.getStatusCode() == 403) {
+                log.warn("Calendar {} not found or inaccessible", calendarId);
+                return false;
+            }
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

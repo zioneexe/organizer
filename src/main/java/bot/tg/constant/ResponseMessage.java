@@ -7,8 +7,6 @@ public final class ResponseMessage {
 
     public static final String UNKNOWN_COMMAND = "❓ Вибач, я не зрозумів, що ти мав на увазі.\nСпробуй /help.";
     public static final String INVALID_TIME = "⏰ Не можна вибрати час у минулому";
-    public static final String ALRIGHT = "Гаразд!";
-    public static final String ERROR = "❌ Помилка: ";
 
     public static final String CREATION_CANCELLED = "Створення скасовано.";
     public static final String TIME_CHANGE_CANCELLED = "Зміна часу скасована.";

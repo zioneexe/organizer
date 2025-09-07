@@ -22,8 +22,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static bot.tg.constant.Reminder.Callback.*;
+import static bot.tg.constant.Reminder.Callback.REMINDER_CANCEL;
+import static bot.tg.constant.Reminder.Callback.REMINDER_CONFIRM;
 import static bot.tg.constant.Reminder.Response.REMINDER_TEXT;
+import static bot.tg.constant.Reminder.TimePicker.*;
 import static bot.tg.constant.ResponseMessage.CREATION_CANCELLED;
 import static bot.tg.constant.ResponseMessage.INVALID_TIME;
 import static bot.tg.constant.Symbol.COLON_DELIMITER;

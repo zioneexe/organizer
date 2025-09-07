@@ -25,6 +25,13 @@ public final class Task {
         public static final String TASK_EDIT_DELETE_LABEL = "Видалити";
         public static final String TASK_EDIT_CANCEL_LABEL = "Скасувати";
 
+        public static final String TASK_GO_BACK = "🔙 Назад";
+        public static final String TASK_COMPLETED_DETAILS = "✅ Виконано";
+        public static final String TASK_IN_PROGRESS_DETAILS = "🟡 У процесі";
+
+        public static final String TASK_NOTHING_FOR_TODAY = "\uD83D\uDCDD Завдань на сьогодні поки немає.";
+        public static final String TASK_YOUR_TASKS = "📝 Ваші завдання на сьогодні:";
+
         public static final String TASK_UPDATE_NOT_FOUND = "Помилка: завдання для редагування не знайдено.";
         public static final String TASK_UPDATE_LABEL_SUCCESS = "Назву оновлено ✅";
         public static final String TASK_UPDATE_DESCRIPTION_SUCCESS = "Опис оновлено ✅";

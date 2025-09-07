@@ -14,10 +14,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class UserRepository implements Repository<User, UserUpdateDto, Long> {
 
@@ -134,4 +132,17 @@ public class UserRepository implements Repository<User, UserUpdateDto, Long> {
         DeleteResult result = users.deleteOne(Filters.eq("user_id", id));
         return result.getDeletedCount() > 0;
     }
+
+    public String getCalendarId(Long userId) {
+        User user = getById(userId);
+        return user != null ? user.getCalendarId() : null;
+    }
+
+    public void saveCalendarId(Long userId, String newCalendarId) {
+        Bson filter = Filters.eq("user_id", userId);
+        Bson update = Updates.set("calendar_id", newCalendarId);
+
+        users.updateOne(filter, update);
+    }
+
 }

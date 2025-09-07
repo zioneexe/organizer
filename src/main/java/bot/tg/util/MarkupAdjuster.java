@@ -1,8 +1,8 @@
-package bot.tg.helper;
+package bot.tg.util;
 
-public class MarkupHelper {
+public class MarkupAdjuster {
 
-    private MarkupHelper() {
+    private MarkupAdjuster() {
     }
 
     public static String escapeMarkdown(String text) {
