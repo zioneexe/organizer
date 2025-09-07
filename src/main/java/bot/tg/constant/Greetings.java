@@ -4,8 +4,7 @@ public final class Greetings {
 
     public static String GREETINGS_CHOICE_MESSAGE = "Обери час для привітань або вимкни чи увімкни їх за потреби.";
 
-    private Greetings() {
-    }
+    private Greetings() {}
 
     public static final class Button {
 
@@ -13,8 +12,7 @@ public final class Greetings {
         public static final String SWITCH_GREETING_OFF = "\uD83C\uDF1A Вимкнути ранкові привітання";
         public static final String CHOOSE_APPROPRIATE_TIME = "🕒 Обрати зручний час";
 
-        private Button() {
-        }
+        private Button() {}
 
     }
 
@@ -25,8 +23,8 @@ public final class Greetings {
 
         public static final String SWITCHED_GREETING_ON = "Ранкові привітання увімкнено.";
         public static final String SWITCHED_GREETING_OFF = "Ранкові привітання вимкнено.";
-        private Response() {
-        }
+
+        private Response() {}
 
     }
 
@@ -37,8 +35,8 @@ public final class Greetings {
         public static final String GREETING_CHANGE_MINUTE = "greeting_change_minute";
         public static final String GREETING_CONFIRM = "greeting_confirm";
         public static final String GREETING_CANCEL = "greeting_cancel";
-        private Callback() {
-        }
+
+        private Callback() {}
 
     }
 

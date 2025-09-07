@@ -2,8 +2,6 @@ package bot.tg.constant;
 
 public final class ResponseMessage {
 
-    private ResponseMessage() {}
-
     public static final String START_MESSAGE = "Обери, що тобі потрібно";
     public static final String SETTINGS_MESSAGE = "Гаразд, налаштовуй!";
 
@@ -19,5 +17,7 @@ public final class ResponseMessage {
     public static final String INCORRECT_REQUEST_DELETE = "❌ Некоректний запит на видалення.";
     public static final String INCORRECT_REQUEST_PAGE = "❌ Некоректний запит на зміну сторінки.";
     public static final String INCORRECT_REQUEST_TIMEZONE_CHANGE = "❌ Некоректний запит на зміну часового поясу.";
+
+    private ResponseMessage() {}
 
 }

@@ -8,6 +8,6 @@ public final class Validation {
     public static final String DESCRIPTION = "✅ Бот Organizer успішно стартанув!";
     public static final String TITLE_ERROR = "Назва занадто довга. 🙈 Скороти до 40 символів.";
     public static final String DESCRIPTION_ERROR = "Опис занадто довгий. 🙈 Максимум 512 символів.";
-    private Validation() {
-    }
+
+    private Validation() {}
 }

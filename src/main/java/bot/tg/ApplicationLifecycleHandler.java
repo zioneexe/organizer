@@ -29,5 +29,6 @@ public class ApplicationLifecycleHandler implements CommandLineRunner {
     private void scheduleStartupJobs() {
         messageService.scheduleGreetingsToAll();
         messageService.scheduleUnfiredReminders();
+        messageService.schedulePillsReminderForUser();
     }
 }

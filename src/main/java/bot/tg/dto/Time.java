@@ -19,6 +19,10 @@ public class Time {
     @BsonProperty("is_time_manually_edited")
     private boolean isTimeManuallyEdited = false;
 
+    public Time(int hour, int minute) {
+        this(hour, minute, false);
+    }
+
     @Override
     public String toString() {
         return String.format("%02d:%02d", hour, minute);

@@ -6,8 +6,6 @@ public final class Reminder {
 
     public static final class Response {
 
-        private Response() {}
-
         public static final String REMINDER_CREATE = "Нове нагадування";
         public static final String REMINDER_DATE = "📅 Обери дату для нагадування:";
         public static final String REMINDER_TIME = "⌛ Оберемо час для нагадування. ";
@@ -17,11 +15,14 @@ public final class Reminder {
         public static final String REMINDER_NOT_FOUND = "⚠️ Нагадування не знайдено.";
         public static final String REMINDER_ON = "\uD83D\uDD14 Нагадування увімкнено.";
         public static final String REMINDER_OFF = "\uD83D\uDD15 Нагадування вимкнено.";
+
+        public static final String PILLS_REMINDER_MESSAGE = "Ку-ку. Нагадую тобі випити таблетку :) Не їж протягом години, бо бабай прийде!";
+
+        private Response() {}
+
     }
 
     public static final class Callback {
-
-        private Callback() {}
 
         public static final String NEW_REMINDER = "reminder_new";
         public static final String DATE_PICKER = "reminder_date_picker";
@@ -34,6 +35,8 @@ public final class Reminder {
         public static final String DELETE_REMINDER = "reminder_delete";
         public static final String ENABLE_REMINDER = "reminder_enable";
         public static final String DISABLE_REMINDER = "reminder_disable";
+
+        private Callback() {}
 
     }
 }

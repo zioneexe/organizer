@@ -24,6 +24,9 @@ public class AppConfig {
     }
 
     @Bean
+    public int pillsReminderUserId(@Value("${PILLS_REMINDER_USER_ID}") int userId) { return userId; }
+
+    @Bean
     public String googleTimeZoneApiKey(@Value("${GOOGLE_TIMEZONE_API_KEY}") String googleTimeZoneApiKey) {
         return googleTimeZoneApiKey;
     }

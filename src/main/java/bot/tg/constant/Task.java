@@ -6,8 +6,6 @@ public final class Task {
 
     public static final class Response {
 
-        private Response() {}
-
         public static final String TASK_CREATE = "Нове завдання";
         public static final String TASK_TITLE = "Яка назва завдання? ✨";
         public static final String TASK_DESCRIPTION = "Який опис завдання? \uD83D\uDC40";
@@ -27,15 +25,15 @@ public final class Task {
         public static final String TASK_EDIT_DELETE_LABEL = "Видалити";
         public static final String TASK_EDIT_CANCEL_LABEL = "Скасувати";
 
-
         public static final String TASK_UPDATE_NOT_FOUND = "Помилка: завдання для редагування не знайдено.";
         public static final String TASK_UPDATE_LABEL_SUCCESS = "Назву оновлено ✅";
         public static final String TASK_UPDATE_DESCRIPTION_SUCCESS = "Опис оновлено ✅";
+
+        private Response() {}
+
     }
 
     public static final class Callback {
-
-        private Callback() {}
 
         public static final String NEW_TASK = "task_new";
         public static final String PAGE_TASK = "task_page";
@@ -50,5 +48,8 @@ public final class Task {
         public static final String EDIT_NAME_TASK = "task_edit_name";
         public static final String EDIT_DESCRIPTION_TASK = "task_edit_description";
         public static final String CANCEL_EDIT_TASK = "task_cancel_edit";
+
+        private Callback() {}
+
     }
 }

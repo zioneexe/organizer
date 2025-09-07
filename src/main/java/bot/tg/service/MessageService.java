@@ -1,5 +1,6 @@
 package bot.tg.service;
 
+import bot.tg.dto.Time;
 import bot.tg.model.Reminder;
 import bot.tg.model.User;
 import bot.tg.repository.ReminderRepository;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -22,6 +22,8 @@ public class MessageService {
     private final MessageScheduler messageScheduler;
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
+
+    private final int pillsReminderUserId;
 
     public void scheduleReminder(Reminder reminder) {
         Stream.of(reminder)
@@ -47,6 +49,17 @@ public class MessageService {
 
     public void cancelReminder(Reminder reminder) {
         messageScheduler.cancelReminder(reminder);
+    }
+
+    public void schedulePillsReminderForUser() {
+        List<Time> reminderTimes = List.of(
+                new Time(7, 0),
+                new Time(9, 30),
+                new Time(18, 0),
+                new Time(22, 30)
+        );
+
+        messageScheduler.schedulePillsReminder(this.pillsReminderUserId, reminderTimes);
     }
 
     public void scheduleGreetingForUser(User user) {

@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -67,6 +66,47 @@ public class MessageScheduler {
             scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to schedule greeting job for user " + user.getUserId(), e);
+        }
+    }
+
+    public void schedulePillsReminder(long userId, List<Time> reminderTimes) {
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("userId", userId);
+
+        JobKey jobKey = new JobKey("pills-reminder-job-" + userId, "pills-reminder");
+
+        JobDetail job = JobBuilder.newJob(PillsReminderJob.class)
+                .withIdentity(jobKey)
+                .usingJobData(dataMap)
+                .build();
+
+        Set<Trigger> triggers = new HashSet<>();
+
+        for (int i = 0; i < reminderTimes.size(); i++) {
+            Time time = reminderTimes.get(i);
+
+            TriggerKey triggerKey = new TriggerKey("pills-reminder-trigger-" + userId + "-" + i, "reminders");
+
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity(triggerKey)
+                    .withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(time.getHour(), time.getMinute())
+                            .withMisfireHandlingInstructionFireAndProceed())
+                    .build();
+
+            triggers.add(trigger);
+        }
+
+        try {
+            if (scheduler.checkExists(jobKey)) {
+                log.info("Job already exists for user {}", userId);
+                return;
+            }
+
+            scheduler.scheduleJob(job, triggers, true);
+            log.info("Scheduled job with {} triggers for user {}", triggers.size(), userId);
+        } catch (SchedulerException e) {
+            log.error("Failed to schedule pills reminder job for user {}. {}",  userId, e.getMessage());
+            throw new RuntimeException("Failed to schedule pills reminder for user: " + userId, e);
         }
     }
 
